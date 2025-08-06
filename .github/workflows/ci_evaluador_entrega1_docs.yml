@@ -1,0 +1,31 @@
+name: Evaluador Documentación Entrega 1
+on: workflow_dispatch
+jobs:
+  vale:
+    name: Check documentation with Vale
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: errata-ai/vale-action@v2.1.1
+        with:
+          version: 3.12.0
+          files: docs
+          fail_on_error: true
+          filter_mode: nofilter
+          reporter: local
+  validate:
+    needs: vale
+    name: Verify documentation diagrams
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.11
+      - name: Download validation script
+        uses: wei/curl@master
+        with:
+          args: https://raw.githubusercontent.com/MISW-4301-Desarrollo-Apps-en-la-Nube/proyecto-monitor/main/entrega1/validate_puml_files.py --output validate_puml_files.py
+      - name: Validate documentation diagrams
+        run: python validate_puml_files.py

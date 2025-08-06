@@ -1,0 +1,28 @@
+name: Evaluador Implementación Entrega 3
+on: workflow_dispatch
+jobs:
+  evaluate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v1
+        with:
+          node-version: 18
+          registry-url: https://registry.npmjs.org/
+      - name: Create evaluator folder
+        run: mkdir -p .evaluator
+      - name: Download validate scripts
+        run: curl -sSL -o .evaluator/entrega3.json https://raw.githubusercontent.com/MISW-4301-Desarrollo-Apps-en-la-Nube/proyecto-monitor/main/entrega3/entrega3.json
+      - name: Set up yq
+        uses: mikefarah/yq@v4.30.8
+      - name: Save host path to env variable
+        run: echo "BASE_PATH=$(yq '.url' config.yaml)" >> $GITHUB_ENV
+      - name: Test entrega 3 - Reset
+        run: newman run ".evaluator/entrega3.json" --env-var BASE_PATH=$BASE_PATH --verbose --folder "Reset" --insecure
+      - name: Test entrega 3 - RF-007 Verificar identidad
+        run: newman run ".evaluator/entrega3.json" --env-var BASE_PATH=$BASE_PATH --verbose --folder "RF-007 Verificar identidad" --insecure
+        if: always()
+      - name: Test entrega 3 works - RF-006 Tarjetas
+        run: newman run ".evaluator/entrega3.json" --env-var BASE_PATH=$BASE_PATH --verbose --folder "RF-006 Tarjetas" --insecure
+        if: always()
