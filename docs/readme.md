@@ -1,6 +1,6 @@
 # 📌 Equipo
 
-**Nombre del equipo:**
+**Nombre del equipo:** DANN_MISO_MAIA
 **Líder:** Manuel Eduardo Estévez Bretón Ruiz
 
 ---
@@ -8,10 +8,10 @@
 ## 👥 Integrantes
 
 ### Manuel Eduardo Estévez Bretón Ruiz
-- **GitHub:**
-- **Correo:**
-- **Rol:**
-- **Intereses:**
+- **GitHub:** manuelestevezb
+- **Correo:** me.estevez-breton10@uniandes.edu.co
+- **Rol:** Estudiante de Maestría en Inteligencia Artificial, egresado del pregrado en Administración de Empresas (Cum Laude)
+- **Intereses:** Inteligencia Artificial y Ciencia de Datos
 ---
 
 ### Jorge Luis Paternina Montiel
@@ -38,23 +38,27 @@
 
 ## 📅 Reglas del equipo
 
-### 1. Deadlines
+### 1. Forma de trabajo
+- Reunirse los domingos a las 6:00pm, hora Colombia, para hacer seguimiento y listar principales blockers. Dos semanas antes de cada entrega la reunión será para el *kick-off* de la misma.
+- Definir enfoque, asignación de tareas y responsables en estas reuniones, debe quedar en el kanban.
+
+### 2. Deadlines
 - Tener las entregas listas **el jueves de la semana de entrega** (entrega oficial: sábado).
 - Esto deja viernes y sábado para **revisar y corregir**.
 
-### 2. Gestión de retrasos
+### 3. Gestión de retrasos
 - Avisar si no se podrá cumplir la fecha límite **máximo el domingo anterior**.
+- La única excepción al literal anterior serán casos de fuerza mayor (e.g. Incapacidad médica) pero **el integrante con ese problema se compromete a al menos subir al repo su avance preliminar**
 - Redistribuir o ajustar tareas en función de la situación.
 
-### 3. Comunicación
-- Usar este canal como medio principal para dudas, actualizaciones y problemas.
+### 4. Comunicación
+- Usar el grupo de WhatsApp como medio principal de comunicación para dudas, actualizaciones y problemas.
 - Evitar avisos de último momento para dar margen de ajuste.
-
-### 4. Forma de trabajo
-- Hacer reuniones *kick-off* el domingo anterior a la entrega.
-- Definir enfoque, asignación de tareas y responsables en estas reuniones, debe quedar en el kanban.
 
 ### 5. Resolución de conflictos
 - Resolver mediante reunión virtual.
 - Entre dos personas: los demás miembros actúan como mediadores.
-- Entre tres o más: reunión para escuchar todas las perspectivas y buscar
+- Entre tres o más: reunión para escuchar todas las perspectivas y definir alternativas
+
+### 6. Tecnologías a usar
+- Python, FastAPI, Pytest y Docker.
