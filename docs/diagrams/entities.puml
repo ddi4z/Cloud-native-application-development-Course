@@ -1,12 +1,12 @@
 title Vista de información
 
-entity User
-entity Route
-entity Post
-entity Offer
-entity Score
+entity "users" as users
+entity "routes" as routes
+entity "posts" as posts
+entity "offers" as offers
+entity "scores" as scores
 
-Post -- "1" User
-Post -- "1" Route
-Offer "*" -- "1" Post
-Offer -- "1" Score
+posts -- "1" users
+posts -- "1" routes
+offers "*" -- "1" posts
+offers -- "1" scores
