@@ -43,11 +43,10 @@ def update_user(
     use_case: BaseUseCase = Depends(build_update_user_use_case),
 ):
     """
-    Actualiza los datos de un usuario.
-    Solo se modifican los campos que se reciben.
-    Campos permitidos: fullName, phoneNumber, dni, status.
+    Updates a user's data.
+    Only the received fields will be modified.
+    Allowed fields: fullName, phoneNumber, dni, status.
     """
-    # Validar que al menos uno de los campos esté presente
     if not any([update_data.status, update_data.dni, update_data.fullName, update_data.phoneNumber]):
         raise HTTPException(status_code=400, detail="Debe enviar al menos un campo para actualizar.")
 

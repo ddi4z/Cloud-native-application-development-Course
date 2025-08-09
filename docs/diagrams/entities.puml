@@ -1,0 +1,12 @@
+title Vista de información
+
+entity User
+entity Route
+entity Post
+entity Offer
+entity Score
+
+Post -- "1" User
+Post -- "1" Route
+Offer "*" -- "1" Post
+Offer -- "1" Score
