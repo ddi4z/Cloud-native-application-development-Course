@@ -30,10 +30,10 @@
 ---
 
 ### Javier Steven Barrera Toro
-- **GitHub:**
-- **Correo:**
-- **Rol:**
-- **Intereses:**
+- **GitHub:** j4vierb
+- **Correo:** js.barrerat1@uniandes.edu.co
+- **Rol:** Estudiante de pregrado 
+- **Intereses:** Arquitectura y diseño de software. Procesamiento y manejo de datos a gran escala. ML. 
 ---
 
 ## 📅 Reglas del equipo
