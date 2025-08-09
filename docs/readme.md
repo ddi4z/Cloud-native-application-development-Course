@@ -61,4 +61,4 @@
 - Entre tres o más: reunión para escuchar todas las perspectivas y definir alternativas
 
 ### 6. Tecnologías a usar
-- Python, FastAPI, Pytest y Docker.
+- Python, Poetry, FastAPI, Pytest y Docker.
