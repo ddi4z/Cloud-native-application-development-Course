@@ -1,14 +1,15 @@
 from abc import ABC, abstractmethod
-from typing import List, Optional
+from typing import Optional
 
-from users_app.src.domain.models.user import User
+from src.domain.models.user import User
+from src.domain.models.user_creation_request import UserCreationRequest
 
 
 class UserRepositoryPort(ABC):
     """User repository interface."""
 
     @abstractmethod
-    def create(self, user: User) -> User:
+    def create(self, userDto: UserCreationRequest) -> User:
         """Create a new user."""
         pass
 

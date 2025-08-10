@@ -3,7 +3,7 @@ name = "users_app"
 version = "1.0.0"
 description = "Poetry para la aplicacion de users."
 authors = [
-  "César Forero <d.diazm@uniandes.edu.co>"
+  "Daniel Diaz <d.diazm@uniandes.edu.co>"
 ]
 license = "MIT"
 readme = "README.md"
@@ -15,11 +15,11 @@ requires = ["poetry-core>=2.0.0,<3.0.0"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.dependencies]
-python = "~3.13"
+python = "~3.11"
 fastapi = "~0.115.12"
 uvicorn = "~0.27.1"
 python-dotenv = "~1.0.1"
-pydantic = "~2.6.1"
+pydantic = {extras = ["email"], version = "^2.11.7"}
 pydantic-settings = "~2.1.0 "
 python-multipart = "^0.0.20"
 

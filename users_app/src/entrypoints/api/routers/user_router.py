@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import JSONResponse, PlainTextResponse
 from fastapi.security import OAuth2PasswordBearer
 
-from assembly import (
+from src.assembly import (
     build_create_user_use_case,
     build_update_user_use_case,
     build_authenticate_user_use_case,
@@ -11,17 +11,18 @@ from assembly import (
     build_get_users_count_use_case,
     build_reset_users_use_case
 )
-from users_app.src.domain.models.auth_request import AuthRequest
-from users_app.src.domain.models.user import User
-from domain.use_cases.base_use_case import BaseUseCase
-from errors import InvalidCredentialsError, InvalidTokenError, MissingTokenError, UserAlreadyExistsError, UserNotFoundError
-from users_app.src.domain.models.user_update_request import UserUpdateRequest
+from src.domain.models.auth_request import AuthRequest
+from src.domain.models.user import User
+from src.domain.use_cases.base_use_case import BaseUseCase
+from src.errors import InvalidCredentialsError, InvalidTokenError, MissingTokenError, UserAlreadyExistsError, UserNotFoundError
+from src.domain.models.user_update_request import UserUpdateRequest
+from src.domain.models.user_creation_request import UserCreationRequest
 
 router = APIRouter(prefix="/users")
 
 # 1. Creación de usuarios
-@router.post("/", response_model=User, status_code=201)
-def create_user(user: User, use_case: BaseUseCase = Depends(build_create_user_use_case)):
+@router.post("/", status_code=201)
+def create_user(user: UserCreationRequest, use_case: BaseUseCase = Depends(build_create_user_use_case)):
     """
     Create a new user.
 
@@ -29,7 +30,11 @@ def create_user(user: User, use_case: BaseUseCase = Depends(build_create_user_us
     Returns the created user with ID and createdAt timestamp.
     """
     try:
-        return use_case.execute(user)
+        created_user = use_case.execute(user)
+        return {
+            "id": created_user.id,
+            "createdAt": created_user.createdAt.isoformat(timespec="seconds")
+        }
     except UserAlreadyExistsError as err:
         raise HTTPException(status_code=412, detail=str(err))
     except ValueError as err:

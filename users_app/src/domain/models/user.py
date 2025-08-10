@@ -1,5 +1,6 @@
 from enum import Enum
 from datetime import datetime
+from typing import Optional
 from pydantic import BaseModel, Field, EmailStr
 
 class UserStatus(str, Enum):
@@ -11,11 +12,11 @@ class UserStatus(str, Enum):
 class User(BaseModel):
     """User domain model."""
     id: str = Field(description="User identifier in UUID format")
-    username: str = Field(min_length=1, description="Username without spaces or special characters")
+    username: str = Field(min_length=1, pattern=r"^[A-Za-z0-9_-]+$", description="Username without spaces or special characters")
     email: EmailStr = Field(description="User email address in valid format")
-    phoneNumber: str = Field(description="Phone number for contact")
-    dni: str = Field(description="National ID number")
-    fullName: str = Field(description="Full name of the user")
+    phoneNumber: Optional[str] = Field(description="Phone number for contact")
+    dni: Optional[str] = Field(description="National ID number")
+    fullName: Optional[str] = Field(description="Full name of the user")
     password: str = Field(description="Hashed password")
     salt: str = Field(description="Salt used for password hashing")
     token: str = Field(description="Current authentication token")

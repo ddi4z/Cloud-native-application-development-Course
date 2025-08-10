@@ -1,9 +1,13 @@
+import os
 from typing import Dict, Optional
+from uuid import uuid4
 
-from users_app.src.domain.models.user import User
-from users_app.src.domain.ports.user_repository_port import UserRepositoryPort
-from errors import UserNotFoundError, AuthenticationError
-
+from src.domain.models.user import User, UserStatus
+from src.domain.ports.user_repository_port import UserRepositoryPort
+from src.errors import InvalidCredentialsError, UserNotFoundError
+from src.domain.models.user_creation_request import UserCreationRequest
+from datetime import datetime, timedelta
+import hashlib
 
 class InMemoryUserRepositoryAdapter(UserRepositoryPort):
     """In-memory implementation of UserRepository."""
@@ -13,12 +17,34 @@ class InMemoryUserRepositoryAdapter(UserRepositoryPort):
 
     def sequence(self) -> int:
         """Generate a new sequence number."""
-        return len(self.memory_store) + 1
+        return str(len(self.memory_store) + 1)
 
-    def create(self, user: User) -> User:
+    def create(self, userDto: UserCreationRequest) -> User:
         """Create a new user."""
-        user.id = self.sequence()
+        time_now = datetime.now().isoformat(timespec="seconds")
+        time_in_1_hour = (datetime.now() + timedelta(hours=1)).isoformat(timespec="seconds")
+        salt = os.urandom(16).hex()
+        password_hash = hashlib.sha256((userDto.password + salt).encode()).hexdigest()
+
+        user = User(
+            id=self.sequence(),
+            username=userDto.username,
+            email=userDto.email,
+            phoneNumber=userDto.phoneNumber,
+            dni=userDto.dni,
+            fullName=userDto.fullName,
+            password=password_hash,
+            salt=salt,
+            token=str(uuid4()),
+            status=UserStatus.NOT_VERIFIED,
+            expireAt=time_in_1_hour,
+            createdAt=time_now,
+            updatedAt=time_now
+        )
+
         self.memory_store[user.id] = user
+        self.tokens_store[user.token] = user.id
+
         return user
 
     def update(self, user_id: str, user: User) -> User:
@@ -35,7 +61,7 @@ class InMemoryUserRepositoryAdapter(UserRepositoryPort):
                 token = f"token-{user.id}"
                 self.tokens_store[token] = user.id
                 return user
-        raise AuthenticationError("Invalid username or password")
+        raise InvalidCredentialsError("Invalid username or password")
 
     def get_current_user(self, token: str) -> Optional[User]:
         """Get the current user from a token."""

@@ -1,6 +1,6 @@
-from users_app.src.domain.models.user import User
-from domain.ports.user_repository_port import UserRepositoryPort
-from domain.use_cases.base_use_case import BaseUseCase
+from src.domain.models.user import User
+from src.domain.ports.user_repository_port import UserRepositoryPort
+from src.domain.use_cases.base_use_case import BaseUseCase
 
 class UpdateUserUseCase(BaseUseCase):
     """Use case for updating a user."""

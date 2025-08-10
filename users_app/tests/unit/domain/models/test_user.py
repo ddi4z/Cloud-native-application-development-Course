@@ -1,7 +1,6 @@
 import pytest
 from pydantic import ValidationError
-
-from users_app.src.domain.models.user import User
+from src.domain.models.user import User
 
 
 def test_create_user_with_valid_data(valid_user_data):

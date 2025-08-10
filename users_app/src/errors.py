@@ -15,3 +15,7 @@ class MissingTokenError(Exception):
 class InvalidTokenError(Exception):
     """Exception raised when the provided authentication token is invalid."""
     pass
+
+class UserAlreadyExistsError(Exception):
+    """Exception raised when trying to create a user that already exists."""
+    pass
