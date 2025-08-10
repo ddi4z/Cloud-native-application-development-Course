@@ -1,34 +1,35 @@
-from adapters.memory.pet_repository_adapter import InMemoryPetRepositoryAdapter
+from src.adapters.memory.offer_repository_adapter import InMemoryOfferRepositoryAdapter
+
 from src.domain.use_cases.base_use_case import BaseUseCase
-from src.domain.use_cases.create_pet_use_case import CreatePetUseCase
-from src.domain.use_cases.delete_pet_use_case import DeletePetUseCase
-from src.domain.use_cases.get_pet_use_case import GetPetUseCase
-from src.domain.use_cases.get_pets_use_case import GetAllPetsUseCase
-from src.domain.use_cases.update_pet_use_case import UpdatePetUseCase
+from src.domain.use_cases.create_offer_use_case import CreateOfferUseCase
+from src.domain.use_cases.delete_offer_use_case import DeleteOfferUseCase
+from src.domain.use_cases.get_offer_use_case import GetOfferUseCase
+from src.domain.use_cases.get_offers_use_case import GetAllOffersUseCase
+from src.domain.use_cases.update_offer_use_case import UpdateOfferUseCase
 
-repository: InMemoryPetRepositoryAdapter = InMemoryPetRepositoryAdapter()
-
-
-def build_create_pet_use_case() -> BaseUseCase:
-    """Get create pet use case."""
-    return CreatePetUseCase(repository)
+repository: InMemoryOfferRepositoryAdapter = InMemoryOfferRepositoryAdapter()
 
 
-def build_get_pet_use_case() -> BaseUseCase:
-    """Get pet use case."""
-    return GetPetUseCase(repository)
+def build_create_offer_use_case() -> BaseUseCase:
+    """Get create offer use case."""
+    return CreateOfferUseCase(repository)
 
 
-def build_get_pets_use_case() -> BaseUseCase:
-    """Get pets use case."""
-    return GetAllPetsUseCase(repository)
+def build_get_offer_use_case() -> BaseUseCase:
+    """Get offer use case."""
+    return GetOfferUseCase(repository)
 
 
-def build_update_pet_use_case() -> BaseUseCase:
-    """Update pet use case."""
-    return UpdatePetUseCase(repository)
+def build_get_offers_use_case() -> BaseUseCase:
+    """Get offers use case."""
+    return GetAllOffersUseCase(repository)
 
 
-def build_delete_pet_use_case() -> BaseUseCase:
-    """Get delete pet use case."""
-    return DeletePetUseCase(repository)
+def build_update_offer_use_case() -> BaseUseCase:
+    """Update offer use case."""
+    return UpdateOfferUseCase(repository)
+
+
+def build_delete_offer_use_case() -> BaseUseCase:
+    """Get delete offer use case."""
+    return DeleteOfferUseCase(repository)

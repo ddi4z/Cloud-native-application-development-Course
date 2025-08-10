@@ -1,4 +1,4 @@
-class PetNotFoundError(Exception):
-    """Exception raised when a pet is not found."""
+class OfferNotFoundError(Exception):
+    """Exception raised when an offer is not found."""
 
     pass

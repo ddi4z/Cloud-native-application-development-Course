@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 
 from config import Settings
-from entrypoints.api.routers.pet_router import router as pet_router
+from src.entrypoints.api.routers.offer_router import router as offer_router
 
 app = FastAPI(title=Settings.app_name)
-app.include_router(pet_router)
+app.include_router(offer_router)
