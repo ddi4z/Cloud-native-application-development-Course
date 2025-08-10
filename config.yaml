@@ -12,9 +12,9 @@ team:
 board: <link al dashboard de tareas del equipo>
 docs: <link al github pages del equipo>
 users_app:
-  folder: users_app
-  image_name: <nombre de la imagen de la aplicación de usuarios, mismo que el nombre en el archivo de despliegue de k8s>
-  image_tag: <tag de la imagen de la aplicación de usuarios, por ejemplo: latest, v1.0.0. Debe ser el mismo que el tag en el archivo de despliegue de k8s>
+  folder: "users_app"
+  image_name: "users-app"
+  image_tag: "v1.0.0"
   authors:
     - d.diazm
 posts_app:
