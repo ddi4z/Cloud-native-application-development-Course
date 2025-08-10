@@ -1,8 +1,8 @@
 from typing import List
 
-from domain.models.pet import Pet
-from domain.ports.pet_repository_port import PetRepositoryPort
-from domain.use_cases.base_use_case import BaseUseCase
+from src.domain.models.pet import Pet
+from src.domain.ports.pet_repository_port import PetRepositoryPort
+from src.domain.use_cases.base_use_case import BaseUseCase
 
 
 class GetAllPetsUseCase(BaseUseCase):

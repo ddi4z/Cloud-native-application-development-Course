@@ -1,9 +1,9 @@
 team:
-   name: <nombre del equipo>
+   name: DANN_MISO_MAIA  
    members:
       - user: me.estevez-breton10
         percentage: <0 a 100>
-      - user: <usuario uniandes>
+      - user: j.paterninam@uniandes.edu.co 
         percentage: <0 a 100>
       - user: d.diazm
         percentage: <0 a 100>
@@ -22,7 +22,7 @@ posts_app:
   image_name: <nombre de la imagen de la aplicación de publicaciones, mismo que el nombre en el archivo de despliegue de k8s>
   image_tag: <tag de la imagen de la aplicación de publicaciones, por ejemplo: latest, v1.0.0. Debe ser el mismo que el tag en el archivo de despliegue de k8s>
   authors:
-    - <usuario uniandes>
+    - me.estevez-breton10
 offers_app:
   folder: <nombre de la carpeta donde está la aplicación de ofertas>
   image_name: <nombre de la imagen de la aplicación de ofertas, mismo que el nombre en el archivo de despliegue de k8s>
@@ -34,4 +34,4 @@ routes_app:
   image_name: <nombre de la imagen de la aplicación de trayectos, mismo que el nombre en el archivo de despliegue de k8s>
   image_tag: <tag de la imagen de la aplicación de trayectos, por ejemplo: latest, v1.0.0. Debe ser el mismo que el tag en el archivo de despliegue de k8s>
   authors:
-    - <usuario uniandes>
+    - j.paterninam@uniandes.edu.co 

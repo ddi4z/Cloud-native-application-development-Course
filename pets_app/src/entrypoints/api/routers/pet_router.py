@@ -3,16 +3,16 @@ from typing import List
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import JSONResponse, PlainTextResponse
 
-from assembly import (
+from src.assembly import (
     build_create_pet_use_case,
     build_delete_pet_use_case,
     build_get_pet_use_case,
     build_get_pets_use_case,
     build_update_pet_use_case,
 )
-from domain.models.pet import Pet
-from domain.use_cases.base_use_case import BaseUseCase
-from errors import PetNotFoundError
+from src.domain.models.pet import Pet
+from src.domain.use_cases.base_use_case import BaseUseCase
+from src.errors import PetNotFoundError
 
 router = APIRouter(prefix="/pets")
 
