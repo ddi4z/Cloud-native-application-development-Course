@@ -16,10 +16,10 @@
 ---
 
 ### Jorge Luis Paternina Montiel
-- **GitHub:**  
-- **Correo:**  
-- **Rol:**  
-- **Intereses:**  
+- **GitHub:** jorgepaternina2 
+- **Correo:** j.paterninam@uniandes.edu.co 
+- **Rol:** Estudiante de maestría en Inteligencia Artificial. Egresado de Administración de Empresas y Negocios Internacionales.  
+- **Intereses:** IA genetativa y sistemas de recomendaciones.   
 
 ---
 
