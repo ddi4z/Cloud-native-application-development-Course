@@ -1,6 +1,7 @@
 from typing import Optional
-from fastapi import APIRouter, Depends, HTTPException, Response
+from fastapi import APIRouter, Depends, Response
 from fastapi.responses import JSONResponse, PlainTextResponse
+from fastapi.encoders import jsonable_encoder
 
 from src.assembly import (
     build_create_user_use_case,
@@ -74,11 +75,11 @@ def generate_token(
     try:
         user = use_case.execute(credentials.username, credentials.password)
         return JSONResponse(
-            content={
+            content=jsonable_encoder({
                 "id": user.id,
                 "token": user.token,
                 "expireAt": user.expireAt
-            },
+            }),
             status_code=200
         )
     except InvalidCredentialsError:
