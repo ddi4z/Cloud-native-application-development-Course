@@ -18,11 +18,15 @@ spec:
         imagePullPolicy: Never
         ports:
         - containerPort: 9000
+        env:
+        - name: DATABASE_URL
+          value: postgres://user:password@users-db-service:5432/usersdb
+
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: users-app
+  name: users-app-service
 spec:
   type: NodePort
   selector:
@@ -31,3 +35,107 @@ spec:
     - port: 9000
       targetPort: 9000
       nodePort: 30007
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: users-db
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: users-db
+  template:
+    metadata:
+      labels:
+        app: users-db
+    spec:
+      containers:
+      - name: users-db
+        image: postgres:15
+        env:
+        - name: POSTGRES_DB
+          value: usersdb
+        - name: POSTGRES_USER
+          value: user
+        - name: POSTGRES_PASSWORD
+          value: password
+        ports:
+        - containerPort: 5432
+        volumeMounts:
+        - mountPath: /var/lib/postgresql/data
+          name: postgres-data
+        readinessProbe:
+          exec:
+            command:
+              - pg_isready
+              - -U
+              - user
+          initialDelaySeconds: 5
+          periodSeconds: 10
+          failureThreshold: 3
+        livenessProbe:
+          exec:
+            command:
+              - pg_isready
+              - -U
+              - user
+          initialDelaySeconds: 15
+          periodSeconds: 20
+          failureThreshold: 3
+      volumes:
+      - name: postgres-data
+        emptyDir: {}
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: users-db-service
+spec:
+  selector:
+    app: users-db
+  ports:
+    - port: 5432
+      targetPort: 5432
+
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: users-app-network
+spec:
+  podSelector:
+    matchLabels:
+      app: users-app
+  policyTypes:
+    - Egress
+  egress:
+    - to:
+        - podSelector:
+            matchLabels:
+              app: users-db
+      ports:
+        - protocol: TCP
+          port: 5432
+
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: users-db-network
+spec:
+  podSelector:
+    matchLabels:
+      app: users-db
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app: users-app
+      ports:
+        - protocol: TCP
+          port: 5432
