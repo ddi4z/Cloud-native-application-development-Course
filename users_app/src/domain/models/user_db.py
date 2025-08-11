@@ -1,10 +1,9 @@
-from sqlalchemy import Column, String, DateTime, Enum as SQLEnum
-from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy import Column, String, DateTime, Enum as SQLEnum, orm
 from src.domain.models.user import UserStatus
 from sqlalchemy.sql import func
 import uuid
 
-Base = declarative_base()
+Base = orm.declarative_base()
 
 class UserDB(Base):
     __tablename__ = "users"

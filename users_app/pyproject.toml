@@ -70,7 +70,7 @@ max-complexity = 20
 [tool.pytest.ini_options]
 # https://docs.pytest.org/en/7.2.x/reference/customize.html for reference
 python_files = "test_*.py"
-pythonpath = "src"
+pythonpath = "."
 testpaths = [
   "tests"
 ]
