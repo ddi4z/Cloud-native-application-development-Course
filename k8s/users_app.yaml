@@ -1,3 +1,4 @@
+# users-app: Deployment y Service
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -35,6 +36,19 @@ spec:
     - port: 9000
       targetPort: 9000
       nodePort: 30007
+
+# users-db: PersistentVolumeClaim, Deployment y Service
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: users-db-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
 
 ---
 apiVersion: apps/v1
@@ -86,7 +100,8 @@ spec:
           failureThreshold: 3
       volumes:
       - name: postgres-data
-        emptyDir: {}
+        persistentVolumeClaim:
+          claimName: users-db-pvc
 
 ---
 apiVersion: v1
@@ -100,37 +115,18 @@ spec:
     - port: 5432
       targetPort: 5432
 
+# Network Policy para la comunicación del servicio de usuarios
 ---
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
-  name: users-app-network
-spec:
-  podSelector:
-    matchLabels:
-      app: users-app
-  policyTypes:
-    - Egress
-  egress:
-    - to:
-        - podSelector:
-            matchLabels:
-              app: users-db
-      ports:
-        - protocol: TCP
-          port: 5432
-
----
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-  name: users-db-network
+  name: users-network
 spec:
   podSelector:
     matchLabels:
       app: users-db
   policyTypes:
-    - Ingress
+    - Ingress 
   ingress:
     - from:
         - podSelector:
