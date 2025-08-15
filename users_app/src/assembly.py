@@ -12,7 +12,7 @@ from src.adapters.postgres.user_repository_adapter import PostgresUserRepository
 from src.adapters.memory.user_repository_adapter import InMemoryUserRepositoryAdapter
 
 # Shared in-memory repository instance for all user use cases
-#repository: UserRepositoryPort = InMemoryUserRepositoryAdapter()
+# repository: UserRepositoryPort = InMemoryUserRepositoryAdapter()
 repository: UserRepositoryPort = PostgresUserRepositoryAdapter()
 
 
