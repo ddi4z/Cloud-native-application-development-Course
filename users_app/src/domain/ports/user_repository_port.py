@@ -34,6 +34,6 @@ class UserRepositoryPort(ABC):
         pass
 
     @abstractmethod
-    def reset(self) -> dict:
-        """Delete all users and return confirmation message."""
+    def reset(self) -> None:
+        """Delete all users."""
         pass

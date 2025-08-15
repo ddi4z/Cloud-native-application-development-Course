@@ -6,10 +6,14 @@ from src.domain.use_cases.authenticate_user_use_case import AuthenticateUserUseC
 from src.domain.use_cases.get_current_user_use_case import GetCurrentUserUseCase
 from src.domain.use_cases.get_users_count_use_case import GetUsersCountUseCase
 from src.domain.use_cases.reset_users_use_case import ResetUsersUseCase
+from src.domain.ports.user_repository_port import UserRepositoryPort
+
+from src.adapters.postgres.user_repository_adapter import PostgresUserRepositoryAdapter
 from src.adapters.memory.user_repository_adapter import InMemoryUserRepositoryAdapter
 
 # Shared in-memory repository instance for all user use cases
-repository: InMemoryUserRepositoryAdapter = InMemoryUserRepositoryAdapter()
+#repository: UserRepositoryPort = InMemoryUserRepositoryAdapter()
+repository: UserRepositoryPort = PostgresUserRepositoryAdapter()
 
 
 def build_create_user_use_case() -> BaseUseCase:

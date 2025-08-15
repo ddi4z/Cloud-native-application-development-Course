@@ -7,6 +7,10 @@ class InvalidCredentialsError(Exception):
     """Exception raised when the provided credentials are invalid."""
     pass
 
+class MissingUserInformationError(Exception):
+    """Exception raised when the provided user information is incomplete."""
+    pass
+
 
 class MissingTokenError(Exception):
     """Exception raised when the authentication token is missing."""
