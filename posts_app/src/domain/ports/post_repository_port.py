@@ -1,39 +1,47 @@
 from abc import ABC, abstractmethod
-from typing import Optional
+from typing import Optional, Protocol, List
+from uuid import UUID
+from datetime import datetime, timezone
 
-from src.domain.models.user import User
-from src.domain.models.user_creation_request import UserCreationRequest
+from src.domain.models.posts import Post
 
 
-class UserRepositoryPort(ABC):
+class PostRepositoryPort(ABC):
     """User repository interface."""
 
     @abstractmethod
-    def create(self, userDto: UserCreationRequest) -> User:
-        """Create a new user."""
+    def create(self, routeId:str, expireAt:datetime, userId:str) -> Post:
+        """Create a new post."""
         pass
 
     @abstractmethod
-    def update(self, user_id: str, user: User) -> User:
-        """Update an existing user by ID."""
+    def filter(self, routeId:str, expireAt:datetime, owner:str) -> Post:
+        """Filter posts matching certain criteria."""
         pass
 
     @abstractmethod
-    def authenticate(self, username: str, password: str) -> Optional[User]:
-        """Authenticate a user by username and password."""
+    def query(self, id: str) -> Optional[Post]:
+        """Get information from a specific post."""
         pass
 
     @abstractmethod
-    def get_current_user(self, token: str) -> Optional[User]:
-        """Get the current user from a token."""
+    def delete(self, id:UUID) -> None:
+        """Delete a post from the database."""
         pass
 
     @abstractmethod
     def count(self) -> int:
-        """Get total number of users."""
+        """Count existing posts in database."""
+        pass
+
+    @abstractmethod
+    def ping(self) -> str:
+        """Check service status."""
         pass
 
     @abstractmethod
     def reset(self) -> None:
-        """Delete all users."""
+        """Delete all posts in database."""
         pass
+
+    

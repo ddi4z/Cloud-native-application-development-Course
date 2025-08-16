@@ -1,15 +1,18 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 from pydantic import BaseModel, Field, EmailStr
 from typing import Optional
 from uuid import UUID, uuid4
 
 
-class User(BaseModel):
+class Post(BaseModel):
     """Post domain model."""
-    routeId: str = Field(description="Route identifier in UUID format") # Duda, debería ser UUID?
-    expireAt: datetime = Field(description="Date and time of post offers deadlines in ISO format")
-    userId: str = Field(description="User Id of the user that owns the post")
+    id: UUID
+    routeId: str = Field(description="Route identifier in UUID format")
+    userId: str = Field(description="User Id of the user who owns the post")
+    expireAt: datetime = Field(description="Date and time when post offer expires, in ISO format")
+    createdAt: datetime = Field(description="Date and time when the post was created")
+    
 
 
 
@@ -32,7 +35,9 @@ class User(BaseModel):
     @staticmethod
     def new(routeId: str = 'test_123', expireAt=datetime.now(timezone.utc), userId: str='user_test123') -> "Post":
         return Post(
+            id = uuid4(),
             routeId=str(uuid4()),
+            userId=str(uuid4()),
             expireAt=datetime.now(timezone.utc),
-            userId=str(uuid4())
+            createdAt=datetime.now(timezone.utc),
         )

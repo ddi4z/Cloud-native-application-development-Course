@@ -1,25 +1,19 @@
-class UserNotFoundError(Exception):
-    """Exception raised when a user is not found."""
+class MissingPostInformationError(Exception):
+    """Exception raised when the provided user information is incomplete."""
     pass
 
+class InvalidExpirationDate(Exception):
+    """Exception raised when the provided expiration date is not in the future."""
+    pass
+
+class PostNotFoundError(Exception):
+    """Exception raised when a post is not found."""
+    pass
 
 class InvalidCredentialsError(Exception):
     """Exception raised when the provided credentials are invalid."""
     pass
 
-class MissingUserInformationError(Exception):
-    """Exception raised when the provided user information is incomplete."""
-    pass
-
-
-class MissingTokenError(Exception):
-    """Exception raised when the authentication token is missing."""
-    pass
-
-class InvalidTokenError(Exception):
-    """Exception raised when the provided authentication token is invalid."""
-    pass
-
-class UserAlreadyExistsError(Exception):
-    """Exception raised when trying to create a user that already exists."""
+class MissingIdError(Exception):
+    """Exception raised when the post id is missing."""
     pass
