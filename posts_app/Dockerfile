@@ -1,5 +1,5 @@
 FROM python:3.11 AS base
-LABEL author="d.diazm@uniandes.edu.co"
+LABEL author="me.estevez-breton10@uniandes.edu.co"
 
 RUN pip install poetry
 
