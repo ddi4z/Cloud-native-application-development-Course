@@ -12,7 +12,7 @@ from src.assembly import (
 )
 from src.domain.models.offer import Offer
 from src.domain.use_cases.base_use_case import BaseUseCase
-from src.errors import OfferNotFoundError
+from src.errors import OfferNotFoundError, PreconditionOfferFailedError, InvalidFieldInOfferError
 
 router = APIRouter(prefix="/offers")
 
@@ -23,11 +23,19 @@ def health_check():
     return "pong"
 
 
-@router.post("/", response_model=Offer)
+@router.post("/", response_model=Offer, status_code=201)
 def create_offer(offer: Offer, use_case: BaseUseCase = Depends(build_create_offer_use_case)):
     """Create a new offer."""
-    return use_case.execute(offer)
-
+    try:
+        return use_case.execute(offer)
+    except InvalidFieldInOfferError as e:
+        return JSONResponse(
+            {"error": str(e)}, status_code=400
+        )
+    except PreconditionOfferFailedError as e:
+        return JSONResponse(
+            {"error": str(e)}, status_code=412
+        )
 
 @router.get("/{offer_id}", response_model=Offer)
 def get_offer(offer_id: int, use_case: BaseUseCase = Depends(build_get_offer_use_case)):

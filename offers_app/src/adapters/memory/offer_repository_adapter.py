@@ -1,9 +1,10 @@
 from typing import Dict, List, Optional
 
-from src.domain.models.offer import Offer
+from src.domain.models.offer import Offer, OfferSize
 from src.domain.ports.offer_repository_port import OfferRepositoryPort
-from errors import OfferNotFoundError
+from src.errors import OfferNotFoundError, InvalidFieldInOfferError, PreconditionOfferFailedError
 
+from uuid import UUID
 
 class InMemoryOfferRepositoryAdapter(OfferRepositoryPort):
     """In memory implementation of OfferRepository."""
@@ -14,9 +15,34 @@ class InMemoryOfferRepositoryAdapter(OfferRepositoryPort):
         """Generate a new sequence number."""
         return len(self.memory_store) + 1
 
-    # TODO: Implement
     def create(self, offer: Offer) -> Offer:
         """Create a new offer."""
+        if offer.postId is None \
+            or offer.userId is None \
+            or offer.description is None \
+            or offer.size is None \
+            or offer.fragile is None \
+            or offer.offer is None:
+            raise InvalidFieldInOfferError(
+                "All offer fields must be provided and non-null"
+            )
+        
+        try:
+            UUID(offer.postId)
+            UUID(offer.userId)
+        except ValueError:
+            raise InvalidFieldInOfferError(
+                "postId and userId must be valid UUID strings"
+            )
+        
+        if offer.offer < 0:
+            raise PreconditionOfferFailedError("offer must be a non-negative integer")
+    
+        if offer.size not in [size.value for size in OfferSize]:
+            raise PreconditionOfferFailedError(
+                f"size must be one of {[size.value for size in OfferSize]}"
+            )
+
         offer.id = self.sequence()
         self.memory_store[offer.id] = offer
         return offer
