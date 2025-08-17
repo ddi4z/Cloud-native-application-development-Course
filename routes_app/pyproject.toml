@@ -2,15 +2,10 @@
 name = "routes_app"
 version = "0.1.0"
 description = "Servicio de trayectos para la Entrega 1"
-authors = ["<tu nombre> <tu.email@ejemplo.com>"]
+authors = ["Jorge Paternina <j.paterninam@uniandes.edu.co>"]
 license = "MIT"
 readme = "README.md"
-package-mode = false
-packages = [
-  { include = "entrypoints", from = "src" },
-  { include = "domain", from = "src" },
-  { include = "ports", from = "src" }
-]
+packages = [{ include = "routes_app", from = "src" }]
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
