@@ -1,0 +1,59 @@
+[tool.poetry]
+name = "routes_app"
+version = "0.1.0"
+description = "Servicio de trayectos para la Entrega 1"
+authors = ["<tu nombre> <tu.email@ejemplo.com>"]
+license = "MIT"
+readme = "README.md"
+package-mode = false
+packages = [{ include = "*", from = "src" }]
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.dependencies]
+python = "~3.11"
+fastapi = "~0.115.0"
+uvicorn = "~0.27.1"
+python-dotenv = "~1.0.1"
+pydantic = "~2.6.1"
+pydantic-settings = "~2.1.0"
+
+[tool.poetry.group.dev.dependencies]
+black = "~25.1.0"
+ruff = "~0.11.12"
+bandit = "~1.8.3"
+flake8 = "~7.2.0"
+isort = "~6.0.1"
+pytest = "~8.4.0"
+pytest-cov = "~6.1.1"
+pytest-mock = "~3.14.1"
+pytest-env = "~1.1.5"
+faker = "~37.3.0"
+
+[tool.isort]
+profile = "black"
+multi_line_output = 3
+
+[tool.bandit]
+exclude_dirs = ["./tests"]
+skips = ["B101"]
+
+[tool.ruff]
+src = ["src"]
+fix = true
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.ruff.lint.mccabe]
+max-complexity = 20
+
+[tool.pytest.ini_options]
+python_files = "test_*.py"
+pythonpath = "src"
+testpaths = [ "tests" ]
+env = [
+  "LOG_LEVEL = INFO"
+]
