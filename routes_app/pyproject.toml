@@ -6,7 +6,11 @@ authors = ["<tu nombre> <tu.email@ejemplo.com>"]
 license = "MIT"
 readme = "README.md"
 package-mode = false
-packages = [{ include = "*", from = "src" }]
+packages = [
+  { include = "entrypoints", from = "src" },
+  { include = "domain", from = "src" },
+  { include = "ports", from = "src" }
+]
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
