@@ -5,6 +5,7 @@ from uuid import UUID
 from fastapi import APIRouter, HTTPException, Query, Depends
 from fastapi.responses import PlainTextResponse
 from pydantic import BaseModel, Field, ValidationError 
+from fastapi.encoders import jsonable_encoder
 
 # Importamos los Casos de Uso
 from routes_app.domain.use_cases.base_use_case import BaseUseCase
@@ -73,7 +74,7 @@ def create_trayecto(
         return TrayectoOut.model_validate(nuevo_trayecto.model_dump())
     except ValidationError as e:
         # Devolver 422 para errores de validación 
-        raise HTTPException(status_code=422, detail=e.errors())
+        raise HTTPException(status_code=412, detail=jsonable_encoder(e.errors()))
 
 @router.get("/", response_model=List[TrayectoOut])
 def list_trayectos(
@@ -84,10 +85,10 @@ def list_trayectos(
     """Lista todos los trayectos o filtra por flightId."""
     if flightId:
         trayecto = get_by_flight_id_uc.execute(flightId)
-        return [TrayectoOut.model_validate(trayecto)] if trayecto else []
+        return [TrayectoOut.model_validate(trayecto.model_dump())] if trayecto else []
     
     items = list_uc.execute()
-    return [TrayectoOut.model_validate(t) for t in items]
+    return [TrayectoOut.model_validate(t.model_dump()) for t in items]
 
 @router.get("/{trayecto_id}", response_model=TrayectoOut)
 def get_trayecto(
@@ -98,7 +99,7 @@ def get_trayecto(
     trayecto = use_case.execute(trayecto_id)
     if not trayecto:
         raise HTTPException(status_code=404, detail="Trayecto no encontrado")
-    return TrayectoOut.model_validate(trayecto)
+    return TrayectoOut.model_validate(trayecto.model_dump())
 
 @router.delete("/{trayecto_id}", status_code=204)
 def delete_trayecto(
