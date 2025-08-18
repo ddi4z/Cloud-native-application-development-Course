@@ -69,7 +69,9 @@ spec:
       containers:
         - name: routes-app
           image: routes-app:latest
-          imagePullPolicy: Never 
+          imagePullPolicy: Never
+          command: ["/bin/sh", "-c"]
+          args: ["sleep 1d"] 
           ports:
             - containerPort: 8000
           env:
