@@ -1,22 +1,8 @@
----
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: routes-db-pvc
-  labels:
-    app: routes-db
-spec:
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: 1Gi
-
----
+# Despliegue DB (PostgreSQL)
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: routes-db
+  name: routes-db-deployment 
   labels:
     app: routes-db
 spec:
@@ -30,34 +16,31 @@ spec:
         app: routes-db
     spec:
       containers:
-        - name: routes-db
+        - name: postgres
           image: postgres:15-alpine
           ports:
             - containerPort: 5432
           env:
-            - name: POSTGRES_USER
-              value: user
-            - name: POSTGRES_PASSWORD
-              value: password
             - name: POSTGRES_DB
-              value: routesdb
+              value: "routes_db" 
+            - name: POSTGRES_USER
+              value: "user"
+            - name: POSTGRES_PASSWORD
+              value: "password"
           volumeMounts:
             - mountPath: /var/lib/postgresql/data
-              name: routes-db-storage
+              name: db-storage 
       volumes:
-        - name: routes-db-storage
-          persistentVolumeClaim:
-            claimName: routes-db-pvc
+        - name: db-storage
+          emptyDir: {} 
 
 ---
+# Servicio para la DB
 apiVersion: v1
 kind: Service
 metadata:
-  name: routes-db-service
-  labels:
-    app: routes-db
+  name: routes-db 
 spec:
-  type: ClusterIP
   selector:
     app: routes-db
   ports:
@@ -66,10 +49,11 @@ spec:
       targetPort: 5432
 
 ---
+# Despliegue de la Aplicación de Rutas
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: routes-app
+  name: routes-app-deployment
   labels:
     app: routes-app
 spec:
@@ -82,55 +66,49 @@ spec:
       labels:
         app: routes-app
     spec:
-      initContainers:
-        - name: wait-for-db
-          image: busybox:1.36.1
-          command: ['sh', '-c', 'until nc -z routes-db-service 5432; do echo waiting for db; sleep 2; done;']
       containers:
         - name: routes-app
-          image: routes-app:local   # <--- usa el tag que construiste y cargaste en minikube
+          image: routes-app:latest
+          imagePullPolicy: Never 
           ports:
-            - containerPort: 8000   # <--- uvicorn corre en 8000
+            - containerPort: 8000
           env:
             - name: DATABASE_URL
-              value: postgresql://user:password@routes-db-service:5432/routesdb
-          readinessProbe:           # <--- readiness
+              value: "postgresql://user:password@routes-db:5432/routes_db"
+          readinessProbe:
             httpGet:
-              path: /routes/ping    # <--- health con prefijo
+              path: /routes/ping
               port: 8000
-            initialDelaySeconds: 5
-            periodSeconds: 5
-            failureThreshold: 3
-          livenessProbe:            # <--- liveness
-            httpGet:
-              path: /routes/ping    # <--- health con prefijo
-              port: 8000
-            initialDelaySeconds: 10
+            initialDelaySeconds: 15 
             periodSeconds: 10
-            failureThreshold: 3
+          livenessProbe:
+            httpGet:
+              path: /routes/ping
+              port: 8000
+            initialDelaySeconds: 30
+            periodSeconds: 20
 
 ---
+# Servicio para la Aplicación
 apiVersion: v1
 kind: Service
 metadata:
   name: routes-app-service
-  labels:
-    app: routes-app
 spec:
   type: NodePort
   selector:
     app: routes-app
   ports:
     - protocol: TCP
-      port: 80
-      targetPort: 8000        # <--- apunta al 8000 del contenedor
-      nodePort: 30002         # <--- puerto de Minikube
+      port: 8000
+      targetPort: 8000
 
 ---
+# Política de Red para Aislar DB
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
-  name: routes-network
+  name: routes-db-policy
 spec:
   podSelector:
     matchLabels:
