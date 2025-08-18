@@ -89,7 +89,7 @@ def count_trayectos(use_case: BaseUseCase = Depends(build_count_trayectos_use_ca
 
 @router.get("/", response_model=List[TrayectoOut])
 def list_trayectos(
-    flightId: Optional[str] = Query(default=None),
+    flightId: Optional[str] = Query(default=None, alias="flight"),
     list_uc: BaseUseCase = Depends(build_list_trayectos_use_case),
     get_by_flight_id_uc: BaseUseCase = Depends(build_get_trayecto_by_flight_id_use_case)
 ):
@@ -112,7 +112,7 @@ def get_trayecto(
         raise HTTPException(status_code=404, detail="Trayecto no encontrado")
     return TrayectoOut.model_validate(trayecto.model_dump())
 
-@router.delete("/{trayecto_id}", status_code=204)
+@router.delete("/{trayecto_id}", status_code=200)
 def delete_trayecto(
     trayecto_id: UUID,
     use_case: BaseUseCase = Depends(build_delete_trayecto_use_case)
@@ -120,3 +120,6 @@ def delete_trayecto(
     """Elimina un trayecto por su ID."""
     if not use_case.execute(trayecto_id):
         raise HTTPException(status_code=404, detail="Trayecto no encontrado")
+    
+    # Añade una respuesta explícita para el caso de éxito
+    return {"msg": "el trayecto fue eliminado"}
