@@ -11,6 +11,7 @@ spec:
   resources:
     requests:
       storage: 1Gi
+
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -47,6 +48,7 @@ spec:
         - name: routes-db-storage
           persistentVolumeClaim:
             claimName: routes-db-pvc
+
 ---
 apiVersion: v1
 kind: Service
@@ -62,6 +64,7 @@ spec:
     - protocol: TCP
       port: 5432
       targetPort: 5432
+
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -80,24 +83,32 @@ spec:
         app: routes-app
     spec:
       initContainers:
-      - name: wait-for-db
-        image: busybox:1.36.1
-        command: ['sh', '-c', 'until nc -z routes-db-service 5432; do echo waiting for db; sleep 2; done;']
+        - name: wait-for-db
+          image: busybox:1.36.1
+          command: ['sh', '-c', 'until nc -z routes-db-service 5432; do echo waiting for db; sleep 2; done;']
       containers:
         - name: routes-app
-          image: routes-app:v1.0.0
+          image: routes-app:local   # <--- usa el tag que construiste y cargaste en minikube
           ports:
-            - containerPort: 9000
+            - containerPort: 8000   # <--- uvicorn corre en 8000
           env:
             - name: DATABASE_URL
               value: postgresql://user:password@routes-db-service:5432/routesdb
-          livenessProbe:
+          readinessProbe:           # <--- readiness
             httpGet:
-              path: /ping
-              port: 9000
-            initialDelaySeconds: 5 
-            periodSeconds: 30
+              path: /routes/ping    # <--- health con prefijo
+              port: 8000
+            initialDelaySeconds: 5
+            periodSeconds: 5
             failureThreshold: 3
+          livenessProbe:            # <--- liveness
+            httpGet:
+              path: /routes/ping    # <--- health con prefijo
+              port: 8000
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            failureThreshold: 3
+
 ---
 apiVersion: v1
 kind: Service
@@ -112,8 +123,9 @@ spec:
   ports:
     - protocol: TCP
       port: 80
-      targetPort: 9000
-      nodePort: 30002
+      targetPort: 8000        # <--- apunta al 8000 del contenedor
+      nodePort: 30002         # <--- puerto de Minikube
+
 ---
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
