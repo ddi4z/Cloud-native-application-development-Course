@@ -1,0 +1,1119 @@
+{
+	"info": {
+		"_postman_id": "fc35193e-a1ed-42e0-b74d-a706c54ffb32",
+		"name": "[MISO] Entrega 1 - Routes",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "213032",
+		"_collection_link": "https://dann33.postman.co/workspace/8d59fc5a-160d-46bf-8d08-66ac887e9ddf/collection/213032-fc35193e-a1ed-42e0-b74d-a706c54ffb32?action=share&source=collection_link&creator=213032"
+	},
+	"item": [
+		{
+			"name": "Reset",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"console.log(pm.response.text())",
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{ROUTES_PATH}}/routes/reset",
+					"host": [
+						"{{ROUTES_PATH}}"
+					],
+					"path": [
+						"routes",
+						"reset"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Creación de trayecto plannedStartDate invalido",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"console.log(pm.response.text())",
+							"let jsonData = JSON.parse(responseBody);",
+							"pm.test(\"Status code is 412\", function () {",
+							"    pm.response.to.have.status(412);",
+							"});",
+							"",
+							"tests[\"Response has msg\"] = jsonData.msg === 'Las fechas del trayecto no son válidas';",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"let plannedStartDate = new Date();",
+							"(plannedStartDate.setDate(plannedStartDate.getDate() + 2));",
+							"plannedStartDate = plannedStartDate.toISOString();",
+							"",
+							"let plannedEndDate = new Date();",
+							"(plannedEndDate.setDate(plannedEndDate.getDate() + 10));",
+							"plannedEndDate = plannedEndDate.toISOString();",
+							"",
+							"const flightId = pm.variables.replaceIn(\"{{$randomInt}}\");",
+							"const sourceAirportCode = 'BOG';",
+							"const sourceCountry = 'Colombia';",
+							"const destinyAirportCode = 'LGW';",
+							"const destinyCountry = 'Inglaterra';",
+							"const bagCost = pm.variables.replaceIn(\"{{$randomInt}}\");",
+							"",
+							"pm.collectionVariables.set('ROUTE_FLIGHTID', flightId);",
+							"pm.collectionVariables.set('ROUTE_SOURCEAIRPORTCODE', sourceAirportCode);",
+							"pm.collectionVariables.set('ROUTE_SOURCECOUNTRY', sourceCountry);",
+							"pm.collectionVariables.set('ROUTE_DESTINYAIRPORTCODE', destinyAirportCode);",
+							"pm.collectionVariables.set('ROUTE_DESTINYCOUNTRY', destinyCountry);",
+							"pm.collectionVariables.set('ROUTE_BAGCOST', bagCost);",
+							"pm.collectionVariables.set('ROUTE_PLANNEDSTARTDATE', plannedStartDate);",
+							"pm.collectionVariables.set('ROUTE_PLANNEDENDDATE', plannedEndDate);"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"flightId\": \"{{ROUTE_FLIGHTID}}\",\n    \"sourceAirportCode\": \"{{ROUTE_SOURCEAIRPORTCODE}}\",\n    \"sourceCountry\": \"{{ROUTE_SOURCECOUNTRY}}\",\n    \"destinyAirportCode\": \"{{ROUTE_DESTINYAIRPORTCODE}}\",\n    \"destinyCountry\": \"{{ROUTE_DESTINYCOUNTRY}}\",\n    \"bagCost\": {{ROUTE_BAGCOST}},\n    \"plannedStartDate\": \"2022-08-01T21:20:53.214Z\",\n    \"plannedEndDate\": \"{{ROUTE_PLANNEDENDDATE}}\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{ROUTES_PATH}}/routes",
+					"host": [
+						"{{ROUTES_PATH}}"
+					],
+					"path": [
+						"routes"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Creación de trayecto plannedEndDate invalido",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"console.log(pm.response.text())",
+							"let jsonData = JSON.parse(responseBody);",
+							"",
+							"pm.test(\"Status code is 412\", function () {",
+							"    pm.response.to.have.status(412);",
+							"});",
+							"tests[\"Response has msg\"] = jsonData.msg === 'Las fechas del trayecto no son válidas';"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"flightId\": \"{{ROUTE_FLIGHTID}}\",\n    \"sourceAirportCode\": \"{{ROUTE_SOURCEAIRPORTCODE}}\",\n    \"sourceCountry\": \"{{ROUTE_SOURCECOUNTRY}}\",\n    \"destinyAirportCode\": \"{{ROUTE_DESTINYAIRPORTCODE}}\",\n    \"destinyCountry\": \"{{ROUTE_DESTINYCOUNTRY}}\",\n    \"bagCost\": {{ROUTE_BAGCOST}},\n    \"plannedStartDate\": \"{{ROUTE_PLANNEDSTARTDATE}}\",\n    \"plannedEndDate\": \"2022-08-01T21:20:53.214Z\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{ROUTES_PATH}}/routes",
+					"host": [
+						"{{ROUTES_PATH}}"
+					],
+					"path": [
+						"routes"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Creación de trayecto plannedStartDate y plannedEndDate invalidos",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"console.log(pm.response.text())",
+							"let jsonData = JSON.parse(responseBody);",
+							"",
+							"pm.test(\"Status code is 412\", function () {",
+							"    pm.response.to.have.status(412);",
+							"});",
+							"tests[\"Response has msg\"] = jsonData.msg === 'Las fechas del trayecto no son válidas';"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"flightId\": \"{{ROUTE_FLIGHTID}}\",\n    \"sourceAirportCode\": \"{{ROUTE_SOURCEAIRPORTCODE}}\",\n    \"sourceCountry\": \"{{ROUTE_SOURCECOUNTRY}}\",\n    \"destinyAirportCode\": \"{{ROUTE_DESTINYAIRPORTCODE}}\",\n    \"destinyCountry\": \"{{ROUTE_DESTINYCOUNTRY}}\",\n    \"bagCost\": {{ROUTE_BAGCOST}},\n    \"plannedStartDate\": \"2022-08-06T21:20:53.214Z\",\n    \"plannedEndDate\": \"2022-08-01T21:20:53.214Z\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{ROUTES_PATH}}/routes",
+					"host": [
+						"{{ROUTES_PATH}}"
+					],
+					"path": [
+						"routes"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Creación de trayecto",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"console.log(pm.response.text())",
+							"let jsonData = JSON.parse(responseBody);",
+							"",
+							"pm.test(\"Status code is 201\", function () {",
+							"    pm.response.to.have.status(201);",
+							"});",
+							"tests[\"Response has id\"] = jsonData.id !== undefined;",
+							"tests[\"Response has createdAt\"] = jsonData.createdAt !== undefined;",
+							"",
+							"if(jsonData.id) {",
+							"    pm.collectionVariables.set('ROUTE_ID', jsonData.id);",
+							"}",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"let plannedStartDate = new Date();",
+							"(plannedStartDate.setDate(plannedStartDate.getDate() + 2));",
+							"plannedStartDate = plannedStartDate.toISOString();",
+							"",
+							"let plannedEndDate = new Date();",
+							"(plannedEndDate.setDate(plannedEndDate.getDate() + 10));",
+							"plannedEndDate = plannedEndDate.toISOString();",
+							"",
+							"const flightId = pm.variables.replaceIn(\"{{$randomInt}}\");",
+							"const sourceAirportCode = 'BOG';",
+							"const sourceCountry = 'Colombia';",
+							"const destinyAirportCode = 'LGW';",
+							"const destinyCountry = 'Inglaterra';",
+							"const bagCost = pm.variables.replaceIn(\"{{$randomInt}}\");",
+							"",
+							"pm.collectionVariables.set('ROUTE_FLIGHTID', flightId);",
+							"pm.collectionVariables.set('ROUTE_SOURCEAIRPORTCODE', sourceAirportCode);",
+							"pm.collectionVariables.set('ROUTE_SOURCECOUNTRY', sourceCountry);",
+							"pm.collectionVariables.set('ROUTE_DESTINYAIRPORTCODE', destinyAirportCode);",
+							"pm.collectionVariables.set('ROUTE_DESTINYCOUNTRY', destinyCountry);",
+							"pm.collectionVariables.set('ROUTE_BAGCOST', bagCost);",
+							"pm.collectionVariables.set('ROUTE_PLANNEDSTARTDATE', plannedStartDate);",
+							"pm.collectionVariables.set('ROUTE_PLANNEDENDDATE', plannedEndDate);"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"flightId\": \"{{ROUTE_FLIGHTID}}\",\n    \"sourceAirportCode\": \"{{ROUTE_SOURCEAIRPORTCODE}}\",\n    \"sourceCountry\": \"{{ROUTE_SOURCECOUNTRY}}\",\n    \"destinyAirportCode\": \"{{ROUTE_DESTINYAIRPORTCODE}}\",\n    \"destinyCountry\": \"{{ROUTE_DESTINYCOUNTRY}}\",\n    \"bagCost\": {{ROUTE_BAGCOST}},\n    \"plannedStartDate\": \"{{ROUTE_PLANNEDSTARTDATE}}\",\n    \"plannedEndDate\": \"{{ROUTE_PLANNEDENDDATE}}\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{ROUTES_PATH}}/routes",
+					"host": [
+						"{{ROUTES_PATH}}"
+					],
+					"path": [
+						"routes"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Creación de trayecto flightId ya existe",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"console.log(pm.response.text())",
+							"pm.test(\"Status code is 412\", function () {",
+							"    pm.response.to.have.status(412);",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"flightId\": \"{{ROUTE_FLIGHTID}}\",\n    \"sourceAirportCode\": \"{{ROUTE_SOURCEAIRPORTCODE}}\",\n    \"sourceCountry\": \"{{ROUTE_SOURCECOUNTRY}}\",\n    \"destinyAirportCode\": \"{{ROUTE_DESTINYAIRPORTCODE}}\",\n    \"destinyCountry\": \"{{ROUTE_DESTINYCOUNTRY}}\",\n    \"bagCost\": {{ROUTE_BAGCOST}},\n    \"plannedStartDate\": \"{{ROUTE_PLANNEDSTARTDATE}}\",\n    \"plannedEndDate\": \"{{ROUTE_PLANNEDENDDATE}}\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{ROUTES_PATH}}/routes",
+					"host": [
+						"{{ROUTES_PATH}}"
+					],
+					"path": [
+						"routes"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Creación de trayecto campos faltantes",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"console.log(pm.response.text())",
+							"pm.test(\"Status code is 400\", function () {",
+							"    pm.response.to.have.status(400);",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"bagCost\": {{ROUTE_BAGCOST}}\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{ROUTES_PATH}}/routes",
+					"host": [
+						"{{ROUTES_PATH}}"
+					],
+					"path": [
+						"routes"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Consultar cantidad rutas",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"console.log(pm.response.text())",
+							"let jsonData = JSON.parse(responseBody);",
+							"",
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"tests[\"Should exist 1 route\"] = jsonData.count === 1"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{ROUTES_PATH}}/routes/count",
+					"host": [
+						"{{ROUTES_PATH}}"
+					],
+					"path": [
+						"routes",
+						"count"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Buscar trayectos sin filtros",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"console.log(pm.response.text())",
+							"let jsonData = JSON.parse(responseBody);",
+							"",
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"tests[\"One route should be present\"] = jsonData.length === 1;",
+							"",
+							"let route = jsonData[0];",
+							"tests[\"Route should have id\"] = route.id !== undefined;",
+							"tests[\"Route should have flightId\"] = route.flightId !== undefined;",
+							"tests[\"Route should have sourceAirportCode\"] = route.sourceAirportCode !== undefined;",
+							"tests[\"Route should have sourceCountry\"] = route.sourceCountry !== undefined;",
+							"tests[\"Route should have destinyAirportCode\"] = route.destinyAirportCode !== undefined;",
+							"tests[\"Route should have destinyCountry\"] = route.destinyCountry !== undefined;",
+							"tests[\"Route should have bagCost\"] = route.bagCost !== undefined;",
+							"tests[\"Route should have plannedStartDate\"] = route.plannedStartDate !== undefined;",
+							"tests[\"Route should have plannedEndDate\"] = route.plannedEndDate !== undefined;",
+							"tests[\"Route should have createdAt\"] = route.createdAt !== undefined;"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{ROUTES_PATH}}/routes",
+					"host": [
+						"{{ROUTES_PATH}}"
+					],
+					"path": [
+						"routes"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Buscar trayectos filtro flightId",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"console.log(pm.response.text())",
+							"let jsonData = JSON.parse(responseBody);",
+							"",
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"tests[\"One route should be present\"] = jsonData.length === 1;",
+							"",
+							"let route = jsonData[0];",
+							"tests[\"Route should have id\"] = route.id !== undefined;",
+							"tests[\"Route should have correct flightId\"] = route.flightId === pm.collectionVariables.get(\"ROUTE_FLIGHTID\");",
+							"tests[\"Route should have sourceAirportCode\"] = route.sourceAirportCode !== undefined;",
+							"tests[\"Route should have sourceCountry\"] = route.sourceCountry !== undefined;",
+							"tests[\"Route should have destinyAirportCode\"] = route.destinyAirportCode !== undefined;",
+							"tests[\"Route should have destinyCountry\"] = route.destinyCountry !== undefined;",
+							"tests[\"Route should have bagCost\"] = route.bagCost !== undefined;",
+							"tests[\"Route should have plannedStartDate\"] = route.plannedStartDate !== undefined;",
+							"tests[\"Route should have plannedEndDate\"] = route.plannedEndDate !== undefined;",
+							"tests[\"Route should have createdAt\"] = route.createdAt !== undefined;"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{ROUTES_PATH}}/routes?flight={{ROUTE_FLIGHTID}}",
+					"host": [
+						"{{ROUTES_PATH}}"
+					],
+					"path": [
+						"routes"
+					],
+					"query": [
+						{
+							"key": "flight",
+							"value": "{{ROUTE_FLIGHTID}}"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Buscar trayectos filtro flightId que no existe",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"console.log(pm.response.text())",
+							"let jsonData = JSON.parse(responseBody);",
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"tests[\"No routes should be present\"] = jsonData.length === 0;"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{ROUTES_PATH}}/routes?flight={{ROUTE_FLIGHTID}}fake",
+					"host": [
+						"{{ROUTES_PATH}}"
+					],
+					"path": [
+						"routes"
+					],
+					"query": [
+						{
+							"key": "flight",
+							"value": "{{ROUTE_FLIGHTID}}fake"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Consultar trayecto",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"console.log(pm.response.text())",
+							"let jsonData = JSON.parse(responseBody);",
+							"",
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"tests[\"Route should have correct id\"] = jsonData.id === pm.collectionVariables.get(\"ROUTE_ID\");",
+							"tests[\"Route should have flightId\"] = jsonData.flightId !== undefined;",
+							"tests[\"Route should have sourceAirportCode\"] = jsonData.sourceAirportCode !== undefined;",
+							"tests[\"Route should have sourceCountry\"] = jsonData.sourceCountry !== undefined;",
+							"tests[\"Route should have destinyAirportCode\"] = jsonData.destinyAirportCode !== undefined;",
+							"tests[\"Route should have destinyCountry\"] = jsonData.destinyCountry !== undefined;",
+							"tests[\"Route should have bagCost\"] = jsonData.bagCost !== undefined;",
+							"tests[\"Route should have plannedStartDate\"] = jsonData.plannedStartDate !== undefined;",
+							"tests[\"Route should have plannedEndDate\"] = jsonData.plannedEndDate !== undefined;",
+							"tests[\"Route should have createdAt\"] = jsonData.createdAt !== undefined;"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{ROUTES_PATH}}/routes/{{ROUTE_ID}}",
+					"host": [
+						"{{ROUTES_PATH}}"
+					],
+					"path": [
+						"routes",
+						"{{ROUTE_ID}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Consultar trayecto con id que no es UUID",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"console.log(pm.response.text())",
+							"pm.test(\"Status code is 400\", function () {",
+							"    pm.response.to.have.status(400);",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{ROUTES_PATH}}/routes/1",
+					"host": [
+						"{{ROUTES_PATH}}"
+					],
+					"path": [
+						"routes",
+						"1"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Consultar trayecto que no existe",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"console.log(pm.response.text())",
+							"pm.test(\"Status code is 404\", function () {",
+							"    pm.response.to.have.status(404);",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{ROUTES_PATH}}/routes/bf8792d2-3097-11ee-be56-0242ac120002",
+					"host": [
+						"{{ROUTES_PATH}}"
+					],
+					"path": [
+						"routes",
+						"bf8792d2-3097-11ee-be56-0242ac120002"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Eliminar trayecto con id que no es UUID",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"console.log(pm.response.text())",
+							"pm.test(\"Status code is 400\", function () {",
+							"    pm.response.to.have.status(400);",
+							"});",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "DELETE",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{ROUTES_PATH}}/routes/1",
+					"host": [
+						"{{ROUTES_PATH}}"
+					],
+					"path": [
+						"routes",
+						"1"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Eliminar trayecto",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"console.log(pm.response.text())",
+							"let jsonData = JSON.parse(responseBody);",
+							"",
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"tests[\"Should have msg\"] = jsonData.msg === \"el trayecto fue eliminado\";",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "DELETE",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{ROUTES_PATH}}/routes/{{ROUTE_ID}}",
+					"host": [
+						"{{ROUTES_PATH}}"
+					],
+					"path": [
+						"routes",
+						"{{ROUTE_ID}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Eliminar trayecto que no existe",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"console.log(pm.response.text())",
+							"pm.test(\"Status code is 404\", function () {",
+							"    pm.response.to.have.status(404);",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "DELETE",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{ROUTES_PATH}}/routes/bf8792d2-3097-11ee-be56-0242ac120002",
+					"host": [
+						"{{ROUTES_PATH}}"
+					],
+					"path": [
+						"routes",
+						"bf8792d2-3097-11ee-be56-0242ac120002"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Consultar cantidad rutas",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"console.log(pm.response.text())",
+							"let jsonData = JSON.parse(responseBody);",
+							"",
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"tests[\"Should exist 0 routes\"] = jsonData.count === 0"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{ROUTES_PATH}}/routes/count",
+					"host": [
+						"{{ROUTES_PATH}}"
+					],
+					"path": [
+						"routes",
+						"count"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Consulta de salud del servicio",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"console.log(pm.response.text())",
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{ROUTES_PATH}}/routes/ping",
+					"host": [
+						"{{ROUTES_PATH}}"
+					],
+					"path": [
+						"routes",
+						"ping"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "ROUTES_PATH",
+			"value": "http://localhost:3002",
+			"type": "string"
+		},
+		{
+			"key": "ROUTE_FLIGHTID",
+			"value": ""
+		},
+		{
+			"key": "ROUTE_SOURCEAIRPORTCODE",
+			"value": ""
+		},
+		{
+			"key": "ROUTE_SOURCECOUNTRY",
+			"value": ""
+		},
+		{
+			"key": "ROUTE_DESTINYAIRPORTCODE",
+			"value": ""
+		},
+		{
+			"key": "ROUTE_DESTINYCOUNTRY",
+			"value": ""
+		},
+		{
+			"key": "ROUTE_BAGCOST",
+			"value": ""
+		},
+		{
+			"key": "ROUTE_PLANNEDSTARTDATE",
+			"value": ""
+		},
+		{
+			"key": "ROUTE_PLANNEDENDDATE",
+			"value": ""
+		},
+		{
+			"key": "ROUTE_ID",
+			"value": ""
+		}
+	]
+}
