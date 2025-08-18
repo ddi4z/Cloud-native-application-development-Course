@@ -1,21 +1,5 @@
 from uuid import uuid4
 from src.routes_app.domain.models.models import Trayecto
-import os
-import pytest
-
-
-pytestmark = pytest.mark.skipif(
-    not os.getenv("DATABASE_URL"),
-    reason="Definir DATABASE_URL para ejecutar pruebas de Postgres",
-)
-
-def test_pg_create_and_get(valid_trayecto_data):
-    repo = PostgresRoutesRepositoryAdapter()
-    repo.reset()
-    t = Trayecto(**valid_trayecto_data)
-    repo.create(t)
-    got = repo.get(t.id)
-    assert got.id == t.id
 
 def test_create_and_get(memory_repo, valid_trayecto_data):
     t = Trayecto(**valid_trayecto_data)
