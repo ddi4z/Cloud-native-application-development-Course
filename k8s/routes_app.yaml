@@ -1,55 +1,4 @@
-# Despliegue DB (PostgreSQL)
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: routes-db-deployment 
-  labels:
-    app: routes-db
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: routes-db
-  template:
-    metadata:
-      labels:
-        app: routes-db
-    spec:
-      containers:
-        - name: postgres
-          image: postgres:15-alpine
-          ports:
-            - containerPort: 5432
-          env:
-            - name: POSTGRES_DB
-              value: "routes_db" 
-            - name: POSTGRES_USER
-              value: "user"
-            - name: POSTGRES_PASSWORD
-              value: "password"
-          volumeMounts:
-            - mountPath: /var/lib/postgresql/data
-              name: db-storage 
-      volumes:
-        - name: db-storage
-          emptyDir: {} 
-
----
-# Servicio para la DB
-apiVersion: v1
-kind: Service
-metadata:
-  name: routes-db 
-spec:
-  selector:
-    app: routes-db
-  ports:
-    - protocol: TCP
-      port: 5432
-      targetPort: 5432
-
----
-# Despliegue de la Aplicación de Rutas
+# k8s/routes_app.yaml (Versión ultra-simplificada para InMemory)
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -70,30 +19,9 @@ spec:
         - name: routes-app
           image: routes-app:latest
           imagePullPolicy: Never
-          command: ["/bin/sh", "-c"]
-          args: ["sleep 1d"] 
           ports:
             - containerPort: 8000
-          env:
-            - name: DATABASE_URL
-              value: "postgresql://user:password@routes-db:5432/routes_db"
-          readinessProbe:
-            httpGet:
-              path: /routes/ping
-              port: 8000
-            initialDelaySeconds: 60 
-            periodSeconds: 30
-            failureThreshold: 5
-          livenessProbe:
-            httpGet:
-              path: /routes/ping
-              port: 8000
-            initialDelaySeconds: 90
-            periodSeconds: 30
-            failureThreshold: 5
-
 ---
-# Servicio para la Aplicación
 apiVersion: v1
 kind: Service
 metadata:
@@ -106,24 +34,3 @@ spec:
     - protocol: TCP
       port: 8000
       targetPort: 8000
-
----
-# Política de Red para Aislar DB
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-  name: routes-db-policy
-spec:
-  podSelector:
-    matchLabels:
-      app: routes-db
-  policyTypes:
-    - Ingress
-  ingress:
-    - from:
-        - podSelector:
-            matchLabels:
-              app: routes-app
-      ports:
-        - protocol: TCP
-          port: 5432
