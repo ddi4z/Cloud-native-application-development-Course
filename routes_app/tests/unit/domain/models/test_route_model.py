@@ -1,27 +1,27 @@
-from uuid import UUID
-from datetime import datetime, timezone
-from src.routes_app.domain.models import Trayecto
+import pytest
+from datetime import datetime, timedelta, timezone
+from src.routes_app.domain.models.models import Trayecto
 
+def test_trayecto_valido(trayecto):
+    assert trayecto.flightId == "FL123"
+    assert trayecto.sourceAirportCode == "BOG"
+    assert trayecto.destinyAirportCode == "MDE"
+    assert trayecto.plannedEndDate > trayecto.plannedStartDate
 
-def test_trayecto_campos_basicos_y_ids():
-    t = Trayecto(
-        flightId="AA001",
-        sourceAirportCode="BOG",
-        sourceCountry="Colombia",
-        destinyAirportCode="MIA",
-        destinyCountry="USA",
-        bagCost=50,
-        plannedStartDate=datetime(2030, 1, 1, 10, 0, 0, tzinfo=timezone.utc),
-        plannedEndDate=datetime(2030, 1, 1, 14, 0, 0, tzinfo=timezone.utc),
-    )
+def test_airport_codes_deben_ser_3_letras_y_upper(valid_trayecto_data):
+    data = valid_trayecto_data.copy()
+    data["sourceAirportCode"] = "bo1"  # inválido
+    with pytest.raises(ValueError):
+        Trayecto(**data)
 
-    assert isinstance(t.id, UUID)
-    assert t.flightId == "AA001"
-    assert t.sourceAirportCode == "BOG"
-    assert t.destinyAirportCode == "MIA"
-    assert t.bagCost == 50
-    assert t.plannedStartDate.tzinfo is not None
-    assert t.plannedEndDate.tzinfo is not None
-    # createdAt/updatedAt se autogeneran en UTC
-    assert t.createdAt.tzinfo is not None
-    assert t.updatedAt.tzinfo is not None
+def test_inicio_no_puede_ser_pasado(valid_trayecto_data):
+    data = valid_trayecto_data.copy()
+    data["plannedStartDate"] = datetime.now(timezone.utc) - timedelta(days=1)
+    with pytest.raises(ValueError):
+        Trayecto(**data)
+
+def test_end_debe_ser_posterior(valid_trayecto_data):
+    data = valid_trayecto_data.copy()
+    data["plannedEndDate"] = data["plannedStartDate"]  # igual → inválido
+    with pytest.raises(ValueError):
+        Trayecto(**data)
