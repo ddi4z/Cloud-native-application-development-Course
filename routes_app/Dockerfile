@@ -2,7 +2,7 @@ FROM python:3.11-slim as builder
 WORKDIR /app
 RUN pip install poetry
 COPY poetry.lock pyproject.toml ./
-RUN poetry install --no-root --no-dev
+RUN poetry install --no-root --only main
 COPY ./src ./src
 
 FROM python:3.11-slim
