@@ -68,7 +68,7 @@ def create_trayecto(
     """Crea un nuevo trayecto."""
     if get_by_flight_id_uc.execute(payload.flightId):
         return JSONResponse(
-            status_code=409, 
+            status_code=412, 
             content={"msg": "flightId ya existe"}
         )
 
