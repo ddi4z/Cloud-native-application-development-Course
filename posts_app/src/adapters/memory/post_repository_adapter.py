@@ -30,17 +30,17 @@ class InMemoryUserRepositoryAdapter(PostRepositoryPort):
         if post_dto.expireAt <= datetime.now(timezone.utc):
             raise InvalidExpirationDate("Expiration date must be in the future.")
 
-        time_now = datetime.now().isoformat(timespec="seconds")
+        time_now = datetime.now(timezone.utc).isoformat(timespec="seconds")
 
         post = Post(
-            id=self.sequence,
+            id=self.sequence(),
             routeId=post_dto.routeId,
             userId=post_dto.userId,
-            expireAt=post_dto.expireAt,
+            expireAt=post_dto.expireAt.astimezone(timezone.utc).isoformat(timespec="seconds"),
             createdAt=time_now
             )
 
-        self.memory_store[post.id] = post
+        self.memory_store[post.id] = post      
 
         return post
     
@@ -54,30 +54,46 @@ class InMemoryUserRepositoryAdapter(PostRepositoryPort):
         
         """Get a list of post matching certain criteria """
         items: List[Post] = list(self.memory_store.values())
-        now = datetime.now().isoformat(timespec="seconds")
 
-        def is_expired(p: Post) -> bool:
-            return p.expireAt is not None and p.expireAt <= now
+        if expire is not None and not isinstance(expire, bool):
+            raise InvalidCredentialsError('Expired has to be boolean')
+        
+        if route is not None and not isinstance(route, UUID):
+            raise InvalidCredentialsError('Route has tu be a valid id')
+        
+        if owner is not None and not isinstance(owner, UUID):
+            raise InvalidCredentialsError('Owner has tu be a valid id')
+
 
         if expire is not None:
-            items = [p for p in items if (is_expired(p) if expire else not is_expired(p))]
+            if expire:
+                items = [p for p in items if p.expireAt <= datetime.now(timezone.utc)]
+            else:
+                items = [p for p in items if p.expireAt > datetime.now(timezone.utc)]
 
         if route is not None:
-            items = [p for p in items if getattr(p, "routeId", None) == route]
+            items = [p for p in items if p.routeId == route]
 
         if owner is not None:
-            items = [p for p in items if getattr(p, "userId", None) == owner]
+            items = [p for p in items if p.userId == owner]
             
         return items
 
 
 
-    def query(self, id: UUID) -> Optional[Post]:
+    def query(self, id: str) -> Optional[Post]:
         """Get information on a specific post"""
-        if not id:
-            raise MissingIdError("Id is missing from the request header.")
+         # 1) validate input presence
+        if not isinstance(id, (str, UUID)) or (isinstance(id, str) and not id.strip()):
+            raise InvalidCredentialsError("Id is required and must be a UUID string.")
+
+        # 2) parse to UUID (400 if invalid)
+        try:
+            post_id = id if isinstance(id, UUID) else UUID(id)
+        except (ValueError, TypeError):
+            raise InvalidCredentialsError("Id doesn't have the correct format. Expected UUID.")
         
-        post = self.memory_store.get(id)
+        post = self.memory_store.get(post_id)
 
         if not post:
             raise PostNotFoundError("The provided id is not in the database")
@@ -109,12 +125,13 @@ class InMemoryUserRepositoryAdapter(PostRepositoryPort):
         except KeyError:
             raise PostNotFoundError("The provided id is not in the database")
 
-
-
     def count(self) -> int:
         """Get total number of users."""
         return len(self.memory_store)
-
+    
+    def ping(self) -> str:
+        """Check service status."""
+        return 'pong'
 
     def reset(self) -> None:
         """Delete all users."""

@@ -10,4 +10,4 @@ class QueryPostUseCase(BaseUseCase):
 
     def execute(self, id) -> Post:
         """Get information on a post."""
-        return self.post_repository.filter(id)
+        return self.post_repository.query(id)

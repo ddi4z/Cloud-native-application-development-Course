@@ -42,6 +42,6 @@ def build_query_post_use_case() -> BaseUseCase:
     return QueryPostUseCase(repository)
 
 
-def build_reset_users_use_case() -> BaseUseCase:
+def build_reset_post_use_case() -> BaseUseCase:
     """Get reset post use case."""
     return ResetPostUseCase(repository)

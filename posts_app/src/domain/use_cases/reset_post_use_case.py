@@ -1,7 +1,7 @@
 from src.domain.ports.post_repository_port import PostRepositoryPort
 from src.domain.use_cases.base_use_case import BaseUseCase
 
-class CreatePostUseCase(BaseUseCase):
+class ResetPostUseCase(BaseUseCase):
     """Use case for deleting all posts"""
 
     def __init__(self, post_repository: PostRepositoryPort):
