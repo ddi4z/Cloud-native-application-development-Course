@@ -12,7 +12,8 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
     y devuelve un código 400 Bad Request.
     """
     return JSONResponse(
-        status_code=400
+        status_code=400,
+        content={"detail": "Error de validación: campos requeridos faltantes o con formato incorrecto"},
     )
 
 
