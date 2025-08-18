@@ -70,7 +70,7 @@ def create_trayecto(
     try:
         trayecto_a_crear = Trayecto(**payload.model_dump())
         nuevo_trayecto = use_case.execute(trayecto_a_crear)
-        return TrayectoOut.model_validate(nuevo_trayecto)
+        return TrayectoOut.model_validate(nuevo_trayecto.model_dump())
     except ValidationError as e:
         # Devolver 422 para errores de validación 
         raise HTTPException(status_code=422, detail=e.errors())
