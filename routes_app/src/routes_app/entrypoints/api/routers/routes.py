@@ -82,6 +82,11 @@ def create_trayecto(
             content={"msg": "Las fechas del trayecto no son válidas"},
         )
 
+@router.get("/count", response_model=dict)
+def count_trayectos(use_case: BaseUseCase = Depends(build_count_trayectos_use_case)):
+    """Cuenta el número total de trayectos."""
+    return {"count": use_case.execute()}
+
 @router.get("/", response_model=List[TrayectoOut])
 def list_trayectos(
     flightId: Optional[str] = Query(default=None),
@@ -115,8 +120,3 @@ def delete_trayecto(
     """Elimina un trayecto por su ID."""
     if not use_case.execute(trayecto_id):
         raise HTTPException(status_code=404, detail="Trayecto no encontrado")
-
-@router.get("/count", response_model=dict)
-def count_trayectos(use_case: BaseUseCase = Depends(build_count_trayectos_use_case)):
-    """Cuenta el número total de trayectos."""
-    return {"count": use_case.execute()}
