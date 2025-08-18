@@ -9,3 +9,7 @@ class TrayectoNotFoundError(TrayectoError):
 class FlightIdAlreadyExistsError(TrayectoError):
     """Excepción para cuando se intenta crear un trayecto con un flightId que ya existe."""
     pass
+
+class InfrastructureError(TrayectoError):
+    """Excepción para errores inesperados en capas externas (BD, APIs, etc.)."""
+    pass

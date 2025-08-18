@@ -17,8 +17,8 @@ from routes_app.adapters.postgres.routes_repository_adapter import PostgresRoute
 
 # Instanciación del Repositorio
 
-# repository: RoutesRepositoryPort = InMemoryRoutesRepositoryAdapter()
-repository: RoutesRepositoryPort = PostgresRoutesRepositoryAdapter()
+repository: RoutesRepositoryPort = InMemoryRoutesRepositoryAdapter()
+# repository: RoutesRepositoryPort = PostgresRoutesRepositoryAdapter()
 
 
 # Constructores (Builders) para cada caso de uso 

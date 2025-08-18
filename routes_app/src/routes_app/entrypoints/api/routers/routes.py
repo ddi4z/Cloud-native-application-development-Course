@@ -5,6 +5,8 @@ from uuid import UUID
 from fastapi import APIRouter, HTTPException, Query, Depends
 from fastapi.responses import PlainTextResponse
 from pydantic import BaseModel, Field, ValidationError 
+from fastapi.encoders import jsonable_encoder
+from fastapi.responses import JSONResponse
 
 # Importamos los Casos de Uso
 from routes_app.domain.use_cases.base_use_case import BaseUseCase
@@ -65,29 +67,39 @@ def create_trayecto(
 ):
     """Crea un nuevo trayecto."""
     if get_by_flight_id_uc.execute(payload.flightId):
-        raise HTTPException(status_code=409, detail="flightId ya existe")
+        return JSONResponse(
+            status_code=412, 
+            content={"msg": "flightId ya existe"}
+        )
 
     try:
         trayecto_a_crear = Trayecto(**payload.model_dump())
         nuevo_trayecto = use_case.execute(trayecto_a_crear)
-        return TrayectoOut.model_validate(nuevo_trayecto)
-    except ValidationError as e:
-        # Devolver 422 para errores de validación 
-        raise HTTPException(status_code=422, detail=e.errors())
+        return TrayectoOut.model_validate(nuevo_trayecto.model_dump())
+    except ValidationError:
+        return JSONResponse(
+            status_code=412,
+            content={"msg": "Las fechas del trayecto no son válidas"},
+        )
+
+@router.get("/count", response_model=dict)
+def count_trayectos(use_case: BaseUseCase = Depends(build_count_trayectos_use_case)):
+    """Cuenta el número total de trayectos."""
+    return {"count": use_case.execute()}
 
 @router.get("/", response_model=List[TrayectoOut])
 def list_trayectos(
-    flightId: Optional[str] = Query(default=None),
+    flightId: Optional[str] = Query(default=None, alias="flight"),
     list_uc: BaseUseCase = Depends(build_list_trayectos_use_case),
     get_by_flight_id_uc: BaseUseCase = Depends(build_get_trayecto_by_flight_id_use_case)
 ):
     """Lista todos los trayectos o filtra por flightId."""
     if flightId:
         trayecto = get_by_flight_id_uc.execute(flightId)
-        return [TrayectoOut.model_validate(trayecto)] if trayecto else []
+        return [TrayectoOut.model_validate(trayecto.model_dump())] if trayecto else []
     
     items = list_uc.execute()
-    return [TrayectoOut.model_validate(t) for t in items]
+    return [TrayectoOut.model_validate(t.model_dump()) for t in items]
 
 @router.get("/{trayecto_id}", response_model=TrayectoOut)
 def get_trayecto(
@@ -98,9 +110,9 @@ def get_trayecto(
     trayecto = use_case.execute(trayecto_id)
     if not trayecto:
         raise HTTPException(status_code=404, detail="Trayecto no encontrado")
-    return TrayectoOut.model_validate(trayecto)
+    return TrayectoOut.model_validate(trayecto.model_dump())
 
-@router.delete("/{trayecto_id}", status_code=204)
+@router.delete("/{trayecto_id}", status_code=200)
 def delete_trayecto(
     trayecto_id: UUID,
     use_case: BaseUseCase = Depends(build_delete_trayecto_use_case)
@@ -108,8 +120,6 @@ def delete_trayecto(
     """Elimina un trayecto por su ID."""
     if not use_case.execute(trayecto_id):
         raise HTTPException(status_code=404, detail="Trayecto no encontrado")
-
-@router.get("/count", response_model=dict)
-def count_trayectos(use_case: BaseUseCase = Depends(build_count_trayectos_use_case)):
-    """Cuenta el número total de trayectos."""
-    return {"count": use_case.execute()}
+    
+    # Añade una respuesta explícita para el caso de éxito
+    return {"msg": "el trayecto fue eliminado"}

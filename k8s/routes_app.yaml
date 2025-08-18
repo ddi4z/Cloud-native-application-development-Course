@@ -2,7 +2,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: routes-db-deployment 
+  name: routes-db-deployment
   labels:
     app: routes-db
 spec:
@@ -22,24 +22,25 @@ spec:
             - containerPort: 5432
           env:
             - name: POSTGRES_DB
-              value: "routes_db" 
+              value: "routes_db"
             - name: POSTGRES_USER
               value: "user"
             - name: POSTGRES_PASSWORD
               value: "password"
           volumeMounts:
             - mountPath: /var/lib/postgresql/data
-              name: db-storage 
+              name: db-storage
       volumes:
         - name: db-storage
-          emptyDir: {} 
+          emptyDir: {}
+
 
 ---
 # Servicio para la DB
 apiVersion: v1
 kind: Service
 metadata:
-  name: routes-db 
+  name: routes-db
 spec:
   selector:
     app: routes-db
@@ -47,6 +48,7 @@ spec:
     - protocol: TCP
       port: 5432
       targetPort: 5432
+
 
 ---
 # Despliegue de la Aplicación de Rutas
@@ -71,7 +73,7 @@ spec:
           image: routes-app:latest
           imagePullPolicy: Never
           command: ["/bin/sh", "-c"]
-          args: ["sleep 1d"] 
+          args: ["sleep 1d"]
           ports:
             - containerPort: 8000
           env:
@@ -81,14 +83,17 @@ spec:
             httpGet:
               path: /routes/ping
               port: 8000
-            initialDelaySeconds: 15 
-            periodSeconds: 10
+            initialDelaySeconds: 60
+            periodSeconds: 30
+            failureThreshold: 5
           livenessProbe:
             httpGet:
               path: /routes/ping
               port: 8000
-            initialDelaySeconds: 30
-            periodSeconds: 20
+            initialDelaySeconds: 90
+            periodSeconds: 30
+            failureThreshold: 5
+
 
 ---
 # Servicio para la Aplicación
@@ -104,6 +109,7 @@ spec:
     - protocol: TCP
       port: 8000
       targetPort: 8000
+
 
 ---
 # Política de Red para Aislar DB
