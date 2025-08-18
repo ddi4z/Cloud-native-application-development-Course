@@ -13,4 +13,4 @@ COPY src /app/src
 
 # Arrancar 
 EXPOSE 8000
-CMD ["poetry", "run", "uvicorn", "routes_app.entrypoints.api.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["poetry", "run", "uvicorn", "src.routes_app.entrypoints.api.main:app", "--host", "0.0.0.0", "--port", "8000"]
