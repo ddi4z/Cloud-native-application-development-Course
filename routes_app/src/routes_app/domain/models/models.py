@@ -30,10 +30,18 @@ class Trayecto(BaseModel):
         if not v.isalpha() or len(v) != 3:
             raise ValueError(f"'{v}' Código de aeropuerto inválido. Debe contener 3 letras.")
         return v.upper()
+    
+    @field_validator('plannedStartDate')
+    @classmethod
+    def validate_start_date_in_future(cls, v: datetime) -> datetime:
+        """Valida que la fecha de inicio no esté en el pasado."""
+        if v < datetime.now(timezone.utc):
+            raise ValueError("La fecha de inicio no puede estar en el pasado.")
+        return v
 
-    @model_validator(mode='after')
+    @model_validator(mode='after') # Para validar las fechas con los datos "limpios"
     def check_dates(self) -> 'Trayecto':
-        """Valida que la fecha de fin planeada sea posterior a la de inicio."""
+        """Valida que la fecha de fin sea posterior a la de inicio."""
         if self.plannedEndDate <= self.plannedStartDate:
             raise ValueError("La fecha de fin debe ser posterior a la fecha de inicio.")
         return self 
