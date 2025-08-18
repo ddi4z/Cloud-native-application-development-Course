@@ -75,7 +75,7 @@ def create_trayecto(
     except ValidationError:
         raise HTTPException(
             status_code=412,
-            detail={"msg": "Las fechas del trayecto no son válidas"} 
+            content={"msg": "Las fechas del trayecto no son válidas"}
         )
 
 @router.get("/", response_model=List[TrayectoOut])
