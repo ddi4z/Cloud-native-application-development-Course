@@ -67,14 +67,17 @@ def create_trayecto(
 ):
     """Crea un nuevo trayecto."""
     if get_by_flight_id_uc.execute(payload.flightId):
-        raise HTTPException(status_code=409, detail="flightId ya existe")
+        return JSONResponse(
+            status_code=409, 
+            content={"msg": "flightId ya existe"}
+        )
 
     try:
         trayecto_a_crear = Trayecto(**payload.model_dump())
         nuevo_trayecto = use_case.execute(trayecto_a_crear)
         return TrayectoOut.model_validate(nuevo_trayecto.model_dump())
     except ValidationError:
-        raise JSONResponse(
+        return JSONResponse(
             status_code=412,
             content={"msg": "Las fechas del trayecto no son válidas"},
         )
