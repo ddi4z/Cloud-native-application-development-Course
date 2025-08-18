@@ -6,6 +6,7 @@ from fastapi import APIRouter, HTTPException, Query, Depends
 from fastapi.responses import PlainTextResponse
 from pydantic import BaseModel, Field, ValidationError 
 from fastapi.encoders import jsonable_encoder
+from fastapi.responses import JSONResponse
 
 # Importamos los Casos de Uso
 from routes_app.domain.use_cases.base_use_case import BaseUseCase
@@ -73,9 +74,9 @@ def create_trayecto(
         nuevo_trayecto = use_case.execute(trayecto_a_crear)
         return TrayectoOut.model_validate(nuevo_trayecto.model_dump())
     except ValidationError:
-        raise HTTPException(
+        raise JSONResponse(
             status_code=412,
-            content={"msg": "Las fechas del trayecto no son válidas"}
+            content={"msg": "Las fechas del trayecto no son válidas"},
         )
 
 @router.get("/", response_model=List[TrayectoOut])
