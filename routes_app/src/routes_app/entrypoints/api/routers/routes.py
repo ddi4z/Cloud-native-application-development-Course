@@ -72,11 +72,10 @@ def create_trayecto(
         trayecto_a_crear = Trayecto(**payload.model_dump())
         nuevo_trayecto = use_case.execute(trayecto_a_crear)
         return TrayectoOut.model_validate(nuevo_trayecto.model_dump())
-    except ValidationError as e:
-        # Devolver 422 para errores de validación 
+    except ValidationError:
         raise HTTPException(
             status_code=412,
-            detail={"msg": "Las fechas del trayecto no son válidas"}
+            detail={"msg": "Las fechas del trayecto no son válidas"} 
         )
 
 @router.get("/", response_model=List[TrayectoOut])
