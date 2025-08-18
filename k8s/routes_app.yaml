@@ -1,4 +1,4 @@
-# k8s/routes_app.yaml (Versión ultra-simplificada para InMemory)
+
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -21,6 +21,18 @@ spec:
           imagePullPolicy: Never
           ports:
             - containerPort: 8000
+          readinessProbe:
+            httpGet:
+              path: /routes/ping 
+              port: 8000
+            initialDelaySeconds: 20 
+            periodSeconds: 15
+          livenessProbe:
+            httpGet:
+              path: /routes/ping 
+              port: 8000
+            initialDelaySeconds: 45
+            periodSeconds: 20
 ---
 apiVersion: v1
 kind: Service
