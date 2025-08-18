@@ -2,8 +2,8 @@ import pytest
 from datetime import datetime, timedelta, timezone
 from uuid import uuid4
 
-from src.routes_app.domain.models.models import Trayecto
-from src.routes_app.adapters.memory.routes_repository_adapter import InMemoryRoutesRepositoryAdapter
+from routes_app.domain.models.models import Trayecto
+from routes_app.adapters.memory.routes_repository_adapter import InMemoryRoutesRepositoryAdapter
 
 @pytest.fixture
 def future_window():
