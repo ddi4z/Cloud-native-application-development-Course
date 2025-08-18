@@ -9,7 +9,7 @@ class Settings:
     @property
     @lru_cache()
     def app_name(self) -> str:
-        return os.getenv("APP_NAME", "User example")
+        return os.getenv("APP_NAME", "Post example")
 
     @classmethod
     @property

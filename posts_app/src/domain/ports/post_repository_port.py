@@ -1,21 +1,21 @@
 from abc import ABC, abstractmethod
 from typing import Optional, Protocol, List
 from uuid import UUID
-from datetime import datetime, timezone
 
 from src.domain.models.posts import Post
+from src.domain.models.post_creation_request import PostCreationRequest
 
 
 class PostRepositoryPort(ABC):
     """User repository interface."""
 
     @abstractmethod
-    def create(self, routeId:str, expireAt:datetime, userId:str) -> Post:
+    def create(self, post_dto: PostCreationRequest) -> Post:
         """Create a new post."""
         pass
 
     @abstractmethod
-    def filter(self, routeId:str, expireAt:datetime, owner:str) -> Post:
+    def filter(self, expire:bool, route:str, owner:str) -> Post:
         """Filter posts matching certain criteria."""
         pass
 
