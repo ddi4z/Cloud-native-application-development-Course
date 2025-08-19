@@ -7,17 +7,17 @@ app = FastAPI(title=Settings.app_name)
 app.include_router(post_router)
 
 
+# Add custom exception handler here
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
-from fastapi import Request
-from starlette.status import HTTP_422_UNPROCESSABLE_ENTITY
+from fastapi.requests import Request
 
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
     return JSONResponse(
-        status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+        status_code=400,
         content={
             "detail": exc.errors(),
-            "body": exc.body  # Optional: for debugging
-        }
+            "body": exc.body
+        },
     )

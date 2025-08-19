@@ -48,7 +48,7 @@ def create_post(post_dto: PostCreationRequest, use_case: BaseUseCase = Depends(b
             "createdAt": created_post.createdAt.isoformat(timespec="seconds")
         }
     except InvalidExpirationDate:
-        return JSONResponse(content={"msg": 'La fecha de expiración no es válida'}, status_code=412)
+        return JSONResponse(content={"msg": 'La fecha expiración no es válida'}, status_code=412)
     except InvalidCredentialsError:
         return Response(status_code=400)
     except MissingPostInformationError:
@@ -92,7 +92,7 @@ def filter_post(
             for post in posts
         ]
 
-        return result # JSONResponse(content=result, status_code=200)
+        return result
     except InvalidCredentialsError:
         return Response(status_code=400)
 

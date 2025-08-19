@@ -9,12 +9,12 @@ from src.domain.use_cases.reset_post_use_case import ResetPostUseCase
 
 from src.domain.ports.post_repository_port import PostRepositoryPort
 
-# from src.adapters.postgres.user_repository_adapter import PostgresUserRepositoryAdapter
-from src.adapters.memory.post_repository_adapter import InMemoryUserRepositoryAdapter
+from src.adapters.postgres.post_repository_adapter import PostgresUserRepositoryAdapter
+# from src.adapters.memory.post_repository_adapter import InMemoryUserRepositoryAdapter
 
-# Shared in-memory repository instance for all user use cases
-repository: PostRepositoryPort = InMemoryUserRepositoryAdapter()
-#repository: PostRepositoryPort = PostgresUserRepositoryAdapter()
+# Shared in-memory repository instance for all post use cases
+# repository: PostRepositoryPort = InMemoryUserRepositoryAdapter()
+repository: PostRepositoryPort = PostgresUserRepositoryAdapter()
 
 
 def build_create_post_use_case() -> BaseUseCase:
