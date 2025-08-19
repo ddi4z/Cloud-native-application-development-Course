@@ -26,6 +26,15 @@ def health_check():
     """Healthcheck endpoint."""
     return "pong"
 
+# 5. Consultar cantidad de entidades
+@router.get("/count")
+def get_posts_count(use_case: BaseUseCase = Depends(build_count_post_use_case)):
+    """
+    Retrieve the total number of post entities stored in the database.
+    All attributes in the response are required.
+    """
+    return JSONResponse(content={"count": use_case.execute()},status_code=200)
+
 
 # 1. Creación de posts
 @router.post("", status_code=201)
@@ -72,29 +81,26 @@ def filter_post(
     Returns:
         PostList: List; list of posts matching certain criteria. If no parameter is given, will return all posts
     """
-    try:
-        posts = use_case.execute(expire=expire, route=route, owner=owner)
+    posts = use_case.execute(expire=expire, route=route, owner=owner)
         
-        result = [
-            {
-                "id": str(post.id),
-                "routeId": str(post.routeId) if getattr(post, "routeId", None) else None,
-                "userId": str(post.userId) if getattr(post, "userId", None) else None,
-                "expireAt": (
-                    post.expireAt.isoformat(timespec="seconds")
-                    if isinstance(post.expireAt, datetime) else post.expireAt
-                ),
-                "createdAt": (
-                    post.createdAt.isoformat(timespec="seconds")
-                    if isinstance(post.createdAt, datetime) else post.createdAt
-                ),
-            }
-            for post in posts
-        ]
+    result = [
+        {
+            "id": str(post.id),
+            "routeId": str(post.routeId) if getattr(post, "routeId", None) else None,
+            "userId": str(post.userId) if getattr(post, "userId", None) else None,
+            "expireAt": (
+                post.expireAt.isoformat(timespec="seconds")
+                if isinstance(post.expireAt, datetime) else post.expireAt
+            ),
+            "createdAt": (
+                post.createdAt.isoformat(timespec="seconds")
+                if isinstance(post.createdAt, datetime) else post.createdAt
+            ),
+        }
+        for post in posts
+    ]
 
-        return result
-    except InvalidCredentialsError:
-        return Response(status_code=400)
+    return result
 
 
 # 3. Consultar una publicación
@@ -164,19 +170,7 @@ def delete_post(
     except InvalidCredentialsError as err:
         return Response(status_code=400)
 
-# 5. Consultar cantidad de entidades
-@router.get("count")
-def get_posts_count(use_case: BaseUseCase = Depends(build_count_post_use_case)):
-    """
-    Retrieve the total number of post entities stored in the database.
-    All attributes in the response are required.
-    """
-    return JSONResponse(
-        content={
-            "count": use_case.execute()
-        },
-        status_code=200
-    )
+
 
 # 7. Restablecer base de datos
 @router.post("/reset")
