@@ -80,12 +80,14 @@ class PostgresUserRepositoryAdapter:
 
     def filter(self, expire: Optional[bool] = None, route: Optional[UUID] = None, owner: Optional[UUID] = None,) -> List[Post]:
         
+        """
         if expire is not None and not isinstance(expire, bool):
             raise InvalidCredentialsError('Expired has to be boolean')
         if route is not None and not isinstance(route, UUID):
             raise InvalidCredentialsError('Route has tu be a valid id')
         if owner is not None and not isinstance(owner, UUID):
             raise InvalidCredentialsError('Owner has tu be a valid id')
+            """
         
         time_now = datetime.now(timezone.utc)
         stmt = select(PostDB)
@@ -103,6 +105,7 @@ class PostgresUserRepositoryAdapter:
         with self._get_session() as s:
             rows = s.execute(stmt).scalars().all()
         return [self._to_domain(r) for r in rows]
+    
 
     def query(self, id: str) -> Optional[Post]:
         if not isinstance(id, (str, UUID)) or (isinstance(id, str) and not id.strip()):
@@ -133,6 +136,7 @@ class PostgresUserRepositoryAdapter:
                 raise PostNotFoundError("The provided id is not in the database")
             deleted = self._to_domain(row)
             s.delete(row)
+            s.commit()
             return deleted
         
     def ping(self) -> str:
