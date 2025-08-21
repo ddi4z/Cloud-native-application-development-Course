@@ -1,4 +1,5 @@
-from src.adapters.memory.offer_repository_adapter import InMemoryOfferRepositoryAdapter
+from src.adapters.postgres.db_config import SessionLocal
+from src.adapters.postgres.offer_repository_adapter import PostgresOfferRepositoryAdapter
 
 from src.domain.use_cases.base_use_case import BaseUseCase
 from src.domain.use_cases.create_offer_use_case import CreateOfferUseCase
@@ -8,8 +9,9 @@ from src.domain.use_cases.get_offers_use_case import GetAllOffersUseCase
 from src.domain.use_cases.count_offers_use_case import CountOffersUseCase
 from src.domain.use_cases.reset_offers_use_case import ResetOffersUseCase
 
-repository: InMemoryOfferRepositoryAdapter = InMemoryOfferRepositoryAdapter()
 
+# repository: InMemoryOfferRepositoryAdapter = InMemoryOfferRepositoryAdapter()
+repository: PostgresOfferRepositoryAdapter = PostgresOfferRepositoryAdapter(SessionLocal)
 
 def build_create_offer_use_case() -> BaseUseCase:
     """Get create offer use case."""

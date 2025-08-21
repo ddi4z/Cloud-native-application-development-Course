@@ -53,13 +53,10 @@ def create_offer(
         # FastAPI will automatically convert the Offer model
         # to the CreatedOfferDto model
         return use_case.execute(offer)
-    except Exception as e:
-        status_code = None
-        if isinstance(e, PreconditionOfferFailedError):
-            status_code = 412
-        elif isinstance(e, InvalidFieldInOfferError):
-            status_code = 400
-        raise HTTPException(status_code=status_code, detail=str(e))
+    except PreconditionOfferFailedError as e:
+        raise HTTPException(status_code=412, detail=str(e))
+    except InvalidFieldInOfferError as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
 
 @router.get("/{offer_id}", response_model=Offer, status_code=200)

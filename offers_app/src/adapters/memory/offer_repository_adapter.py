@@ -65,7 +65,7 @@ class InMemoryOfferRepositoryAdapter(OfferRepositoryPort):
         """Get all offers."""
         if postId is None and ownerId is None:
             return list(self.memory_store.values())
-        print(postId, ownerId)
+
         postId_uuid, ownerId_uuid = None, None
         try:
             postId_uuid = uuid.UUID(postId) if postId is not None else None

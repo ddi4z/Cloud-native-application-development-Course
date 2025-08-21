@@ -4,7 +4,6 @@ from enum import Enum
 from pydantic import BaseModel, Field
 from typing import Optional
 
-import uuid
 
 class OfferSize(str, Enum):
     """Enum for offer sizes."""
@@ -17,7 +16,7 @@ class OfferSize(str, Enum):
 class Offer(BaseModel):
     """Offer domain model."""
 
-    id: uuid.UUID | None = None
+    id: Optional[str] = None
     postId: Optional[str] = None
     userId: Optional[str] = None
 
