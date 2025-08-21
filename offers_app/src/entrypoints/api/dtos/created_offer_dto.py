@@ -1,5 +1,7 @@
 import uuid
+
 from pydantic import BaseModel
+
 
 class CreatedOfferDto(BaseModel):
     """Offer domain model."""

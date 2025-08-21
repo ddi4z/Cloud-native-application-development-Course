@@ -1,26 +1,24 @@
-from typing import List
+from typing import List, Optional
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from fastapi.responses import JSONResponse, PlainTextResponse
 
 from src.assembly import (
+    build_count_offers_use_case,
     build_create_offer_use_case,
     build_delete_offer_use_case,
     build_get_offer_use_case,
     build_get_offers_use_case,
-    build_count_offers_use_case,
     build_reset_offers_use_case,
 )
 from src.domain.models.offer import Offer
 from src.domain.use_cases.base_use_case import BaseUseCase
-from typing import Optional
-from fastapi import Query
+from src.entrypoints.api.dtos.created_offer_dto import CreatedOfferDto
 from src.errors import (
+    InvalidFieldInOfferError,
     OfferNotFoundError,
     PreconditionOfferFailedError,
-    InvalidFieldInOfferError,
 )
-from src.entrypoints.api.dtos.created_offer_dto import CreatedOfferDto
 
 router = APIRouter(prefix="/offers")
 
@@ -82,8 +80,9 @@ def get_offers(
     try:
         return use_case.execute(post, owner)
     except InvalidFieldInOfferError as _:
-        raise HTTPException(status_code=400, detail="Invalid format in query parameters")
-
+        raise HTTPException(
+            status_code=400, detail="Invalid format in query parameters"
+        )
 
 
 @router.delete("/{offer_id}", response_model=Offer)

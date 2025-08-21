@@ -1,8 +1,8 @@
 import datetime
 from enum import Enum
+from typing import Optional
 
 from pydantic import BaseModel, Field
-from typing import Optional
 
 
 class OfferSize(str, Enum):
@@ -28,8 +28,6 @@ class Offer(BaseModel):
     # Date and hour of the offer creation
     createdAt: str = Field(
         description="Creation date of the offer",
-        default_factory=lambda: datetime.datetime.now().isoformat(
-            timespec="seconds"
-        ),
+        default_factory=lambda: datetime.datetime.now().isoformat(timespec="seconds"),
         example="2023-10-01T12:00:00",
     )

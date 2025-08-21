@@ -1,7 +1,9 @@
-import uuid
 import datetime
+import uuid
 
-from sqlalchemy import Column, String, Boolean, Integer, DateTime, Enum as SqlEnum
+from sqlalchemy import Boolean, Column, DateTime
+from sqlalchemy import Enum as SqlEnum
+from sqlalchemy import Integer, String
 from sqlalchemy.dialects.postgresql import UUID
 
 from src.domain.models.offer import Offer, OfferSize
@@ -14,7 +16,9 @@ class OfferORM(Base):
 
     __tablename__ = "offers"
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, nullable=False)
+    id = Column(
+        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, nullable=False
+    )
     post_id = Column(UUID(as_uuid=True), nullable=False, index=True)
     user_id = Column(UUID(as_uuid=True), nullable=False, index=True)
 
@@ -34,6 +38,7 @@ class OfferORM(Base):
             f"<OfferORM(id={self.id}, post_id={self.post_id}, user_id={self.user_id}, "
             f"size={self.size}, offer={self.offer}, created_at={self.created_at})>"
         )
+
     # ---------- Mapeos ----------
 
     def to_domain(self) -> Offer:
@@ -46,7 +51,11 @@ class OfferORM(Base):
             size=str(self.size),  # 👈 Enum → str
             fragile=self.fragile,
             offer=self.offer,
-            createdAt=self.created_at.isoformat(timespec="seconds") if self.created_at else None,
+            createdAt=(
+                self.created_at.isoformat(timespec="seconds")
+                if self.created_at
+                else None
+            ),
         )
 
     @classmethod
@@ -60,7 +69,9 @@ class OfferORM(Base):
             size=OfferSize(offer.size),  # 👈 str → Enum
             fragile=offer.fragile,
             offer=offer.offer,
-            created_at=datetime.datetime.fromisoformat(offer.createdAt)
-            if offer.createdAt
-            else datetime.datetime.utcnow(),
+            created_at=(
+                datetime.datetime.fromisoformat(offer.createdAt)
+                if offer.createdAt
+                else datetime.datetime.utcnow()
+            ),
         )
