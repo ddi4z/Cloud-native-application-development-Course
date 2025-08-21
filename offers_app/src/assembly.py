@@ -6,6 +6,8 @@ from src.domain.use_cases.delete_offer_use_case import DeleteOfferUseCase
 from src.domain.use_cases.get_offer_use_case import GetOfferUseCase
 from src.domain.use_cases.get_offers_use_case import GetAllOffersUseCase
 from src.domain.use_cases.update_offer_use_case import UpdateOfferUseCase
+from src.domain.use_cases.count_offers_use_case import CountOffersUseCase
+from src.domain.use_cases.reset_offers_use_case import ResetOffersUseCase
 
 repository: InMemoryOfferRepositoryAdapter = InMemoryOfferRepositoryAdapter()
 
@@ -33,3 +35,11 @@ def build_update_offer_use_case() -> BaseUseCase:
 def build_delete_offer_use_case() -> BaseUseCase:
     """Get delete offer use case."""
     return DeleteOfferUseCase(repository)
+
+def build_count_offers_use_case() -> BaseUseCase:
+    """Get the numbers of offers use case."""
+    return CountOffersUseCase(repository)
+
+def build_reset_offers_use_case() -> BaseUseCase:
+    """Get reset offers use case."""
+    return ResetOffersUseCase(repository)

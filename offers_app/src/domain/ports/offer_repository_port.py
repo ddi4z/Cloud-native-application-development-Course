@@ -31,3 +31,13 @@ class OfferRepositoryPort(ABC):
     def delete(self, offer_id: int) -> Offer:
         """Delete a offer."""
         pass
+
+    @abstractmethod
+    def count(self) -> int:
+        """Count the number of offers."""
+        pass
+
+    @abstractmethod
+    def reset(self) -> None:
+        """Reset the offers repository."""
+        pass

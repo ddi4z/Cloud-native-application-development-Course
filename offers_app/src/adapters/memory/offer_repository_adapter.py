@@ -75,3 +75,11 @@ class InMemoryOfferRepositoryAdapter(OfferRepositoryPort):
         offer = self.memory_store[offer_id]
         del self.memory_store[offer_id]
         return offer
+    
+    def count(self) -> int:
+        """Count the number of offers."""
+        return len(self.memory_store)
+    
+    def reset(self) -> None:
+        """Reset the offers repository."""
+        self.memory_store.clear()
