@@ -72,10 +72,9 @@ class PostgresOfferRepositoryAdapter(OfferRepositoryPort):
             if postId is None and ownerId is None:
                 return mapped_offers
 
-            postId_uuid, ownerId_uuid = None, None
             try:
-                postId_uuid = uuid.UUID(postId) if postId is not None else None
-                ownerId_uuid = uuid.UUID(ownerId) if ownerId is not None else None
+                uuid.UUID(postId) if postId is not None else None
+                uuid.UUID(ownerId) if ownerId is not None else None
             except ValueError:
                 raise InvalidFieldInOfferError("postId and ownerId must be valid UUID strings")
             
