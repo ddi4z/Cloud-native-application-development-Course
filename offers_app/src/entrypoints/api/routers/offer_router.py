@@ -15,7 +15,12 @@ from src.domain.models.offer import Offer
 from src.domain.use_cases.base_use_case import BaseUseCase
 from typing import Optional
 from fastapi import Query
-from src.errors import OfferNotFoundError, PreconditionOfferFailedError, InvalidFieldInOfferError
+from src.errors import (
+    OfferNotFoundError,
+    PreconditionOfferFailedError,
+    InvalidFieldInOfferError,
+)
+from src.entrypoints.api.dtos.created_offer_dto import CreatedOfferDto
 
 router = APIRouter(prefix="/offers")
 
@@ -29,7 +34,7 @@ def health_check():
 @router.get("/count", status_code=200)
 def count_offers(use_case: BaseUseCase = Depends(build_count_offers_use_case)):
     """Count the number of offers."""
-    return JSONResponse({'count': use_case.execute()})
+    return JSONResponse({"count": use_case.execute()})
 
 
 @router.post("/reset", status_code=200)
@@ -39,22 +44,22 @@ def reset_offers(use_case: BaseUseCase = Depends(build_reset_offers_use_case)):
     return JSONResponse({"msg": "Offers repository reset successfully."})
 
 
-# TODO: The response model should contain id, userId and createdAt only
-# 400 and 412 status codes shouldn't have the body response
-@router.post("/", response_model=Offer, status_code=201)
-def create_offer(offer: Offer, use_case: BaseUseCase = Depends(build_create_offer_use_case)):
+@router.post("/", response_model=CreatedOfferDto, status_code=201)
+def create_offer(
+    offer: Offer, use_case: BaseUseCase = Depends(build_create_offer_use_case)
+):
     """Create a new offer."""
     try:
+        # FastAPI will automatically convert the Offer model
+        # to the CreatedOfferDto model
         return use_case.execute(offer)
     except Exception as e:
-        status_code = 400
+        status_code = None
         if isinstance(e, PreconditionOfferFailedError):
             status_code = 412
         elif isinstance(e, InvalidFieldInOfferError):
-            pass
-        return JSONResponse(
-            {"error": str(e)}, status_code=status_code
-        )
+            status_code = 400
+        return HTTPException(status_code=status_code, detail=str(e))
 
 
 @router.get("/{offer_id}", response_model=Offer, status_code=200)
@@ -74,15 +79,17 @@ def get_offer(offer_id: str, use_case: BaseUseCase = Depends(build_get_offer_use
 @router.get("/", response_model=List[Offer])
 def get_offers(
     post: Optional[str] = Query(None, description="ID of the post"),
-    owner: Optional[str] = Query(None, description="ID of the post"),  
-    use_case: BaseUseCase = Depends(build_get_offers_use_case)
+    owner: Optional[str] = Query(None, description="ID of the post"),
+    use_case: BaseUseCase = Depends(build_get_offers_use_case),
 ):
     """Get all offers."""
     return use_case.execute()
 
 
 @router.delete("/{offer_id}", response_model=Offer)
-def delete_offer(offer_id: str, use_case: BaseUseCase = Depends(build_delete_offer_use_case)):
+def delete_offer(
+    offer_id: str, use_case: BaseUseCase = Depends(build_delete_offer_use_case)
+):
     """Delete offer."""
     try:
         use_case.execute(offer_id)
