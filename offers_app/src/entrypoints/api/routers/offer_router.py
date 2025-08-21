@@ -12,6 +12,8 @@ from src.assembly import (
 )
 from src.domain.models.offer import Offer
 from src.domain.use_cases.base_use_case import BaseUseCase
+from typing import Optional
+from fastapi import Query
 from src.errors import OfferNotFoundError, PreconditionOfferFailedError, InvalidFieldInOfferError
 
 router = APIRouter(prefix="/offers")
@@ -28,30 +30,42 @@ def create_offer(offer: Offer, use_case: BaseUseCase = Depends(build_create_offe
     """Create a new offer."""
     try:
         return use_case.execute(offer)
-    except InvalidFieldInOfferError as e:
+    except Exception as e:
+        status_code = 400
+        if isinstance(e, PreconditionOfferFailedError):
+            status_code = 412
+        elif isinstance(e, InvalidFieldInOfferError):
+            pass
         return JSONResponse(
-            {"error": str(e)}, status_code=400
-        )
-    except PreconditionOfferFailedError as e:
-        return JSONResponse(
-            {"error": str(e)}, status_code=412
+            {"error": str(e)}, status_code=status_code
         )
 
-@router.get("/{offer_id}", response_model=Offer)
-def get_offer(offer_id: int, use_case: BaseUseCase = Depends(build_get_offer_use_case)):
+@router.get("/{offer_id}", response_model=Offer, status_code=200)
+def get_offer(offer_id: str, use_case: BaseUseCase = Depends(build_get_offer_use_case)):
     """Get a offer by ID."""
-    offer = use_case.execute(offer_id)
+    try:
+        offer = use_case.execute(offer_id)
+    except InvalidFieldInOfferError as e:
+        return JSONResponse({"error": str(e)}, status_code=400)
+
+    print(offer)
     if not offer:
         raise HTTPException(status_code=404, detail="offer not found")
     return offer
 
 
+# TODO
 @router.get("/", response_model=List[Offer])
-def get_offers(use_case: BaseUseCase = Depends(build_get_offers_use_case)):
+def get_offers(
+    post: Optional[str] = Query(None, description="ID of the post"),
+    owner: Optional[str] = Query(None, description="ID of the post"),  
+    use_case: BaseUseCase = Depends(build_get_offers_use_case)
+):
     """Get all offers."""
     return use_case.execute()
 
 
+# TODO
 @router.put("/{offer_id}", response_model=Offer)
 def update_offer(
     offer_id: int, offer: Offer, use_case: BaseUseCase = Depends(build_update_offer_use_case)
@@ -64,6 +78,7 @@ def update_offer(
         return JSONResponse({"error": str(err)}, status_code=404)
 
 
+# TODO
 @router.delete("/{offer_id}", response_model=Offer)
 def delete_offer(offer_id: int, use_case: BaseUseCase = Depends(build_delete_offer_use_case)):
     """Delete offer."""

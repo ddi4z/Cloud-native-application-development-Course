@@ -4,16 +4,16 @@ from src.domain.models.offer import Offer, OfferSize
 from src.domain.ports.offer_repository_port import OfferRepositoryPort
 from src.errors import OfferNotFoundError, InvalidFieldInOfferError, PreconditionOfferFailedError
 
-from uuid import UUID
+import uuid
 
 class InMemoryOfferRepositoryAdapter(OfferRepositoryPort):
     """In memory implementation of OfferRepository."""
 
-    memory_store: Dict[int, Offer] = {}
+    memory_store: Dict[uuid.uuid4, Offer] = {}
 
-    def sequence(self) -> int:
+    def sequence(self) -> uuid.uuid4:
         """Generate a new sequence number."""
-        return len(self.memory_store) + 1
+        return uuid.uuid4()
 
     def create(self, offer: Offer) -> Offer:
         """Create a new offer."""
@@ -28,8 +28,8 @@ class InMemoryOfferRepositoryAdapter(OfferRepositoryPort):
             )
         
         try:
-            UUID(offer.postId)
-            UUID(offer.userId)
+            uuid.UUID(offer.postId)
+            uuid.UUID(offer.userId)
         except ValueError:
             raise InvalidFieldInOfferError(
                 "postId and userId must be valid UUID strings"
@@ -47,9 +47,15 @@ class InMemoryOfferRepositoryAdapter(OfferRepositoryPort):
         self.memory_store[offer.id] = offer
         return offer
 
-    def get_by_id(self, offer_id: int) -> Optional[Offer]:
+    def get_by_id(self, offer_id: str) -> Optional[Offer]:
         """Get offer by ID."""
-        return self.memory_store.get(offer_id)
+
+        try:
+            identifier = uuid.UUID(offer_id)
+        except ValueError:
+            raise InvalidFieldInOfferError("offer_id must be a valid UUID string")
+
+        return self.memory_store.get(identifier)
 
     def get_all(self) -> List[Offer]:
         """Get all offers."""

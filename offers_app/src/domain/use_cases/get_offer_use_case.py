@@ -9,5 +9,5 @@ class GetOfferUseCase(BaseUseCase):
     def __init__(self, offer_repository: OfferRepositoryPort):
         self.offer_repository = offer_repository
 
-    def execute(self, offer_id: int) -> Offer:
+    def execute(self, offer_id: str) -> Offer:
         return self.offer_repository.get_by_id(offer_id)

@@ -13,7 +13,7 @@ class OfferRepositoryPort(ABC):
         pass
 
     @abstractmethod
-    def get_by_id(self, offer_id: int) -> Optional[Offer]:
+    def get_by_id(self, offer_id: str) -> Optional[Offer]:
         """Get offer by ID."""
         pass
 
