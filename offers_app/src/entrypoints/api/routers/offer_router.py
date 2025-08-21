@@ -59,7 +59,7 @@ def create_offer(
             status_code = 412
         elif isinstance(e, InvalidFieldInOfferError):
             status_code = 400
-        return HTTPException(status_code=status_code, detail=str(e))
+        raise HTTPException(status_code=status_code, detail=str(e))
 
 
 @router.get("/{offer_id}", response_model=Offer, status_code=200)
