@@ -1,5 +1,5 @@
 # First stage for building dependencies
-FROM python:3.11 AS builder
+FROM python:3.11-slim AS builder
 LABEL author="js.barrerat1@uniandes.edu.co"
 
 RUN pip install poetry \
@@ -12,7 +12,7 @@ COPY pyproject.toml poetry.lock ./
 RUN poetry export -f requirements.txt --without-hashes -o requirements.txt
 
 # Second stage for runtime
-FROM python:3.11 AS runtime
+FROM python:3.11-slim AS runtime
 
 WORKDIR /app
 
