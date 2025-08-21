@@ -1,12 +1,15 @@
 from src.domain.models.offer import Offer
 from src.domain.ports.offer_repository_port import OfferRepositoryPort
 
+from typing import Optional, List
+
 from sqlalchemy.orm import Session
 from .models import OfferORM
 from src.domain.models.offer import OfferSize
 from src.errors import (
     InvalidFieldInOfferError,
-    PreconditionOfferFailedError
+    PreconditionOfferFailedError,
+    OfferNotFoundError
 )
 import uuid
 
@@ -48,17 +51,80 @@ class PostgresOfferRepositoryAdapter(OfferRepositoryPort):
             db_session.refresh(orm)
             return orm.to_domain()
 
-    def get_by_id():
-        pass
+    def get_by_id(self, offer_id: str) -> Optional[Offer]:
+        """Get offer by ID."""
 
-    def get_all(self):
-        pass
+        try:
+            identifier = uuid.UUID(offer_id)
+        except ValueError:
+            raise InvalidFieldInOfferError("offer_id must be a valid UUID string")
+        
+        with self._session_factory() as db_session:
+            orm = db_session.query(OfferORM).filter(OfferORM.id == identifier).first()
+            if orm is None:
+                raise OfferNotFoundError(f"offer with id {offer_id} not found")
+            return orm.to_domain()
 
-    def delete():
-        pass 
+    def get_all(self, postId: Optional[str], ownerId: Optional[str]) -> list[Offer]:
+        with self._session_factory() as db_session:
+            offers: List[OfferORM] = db_session.query(OfferORM).all()
+            mapped_offers: List[Offer] = list(map(lambda x: x.to_domain(), offers))
+            if postId is None and ownerId is None:
+                return mapped_offers
 
-    def reset():
-        pass 
+            postId_uuid, ownerId_uuid = None, None
+            try:
+                postId_uuid = uuid.UUID(postId) if postId is not None else None
+                ownerId_uuid = uuid.UUID(ownerId) if ownerId is not None else None
+            except ValueError:
+                raise InvalidFieldInOfferError("postId and ownerId must be valid UUID strings")
+            
+            # only filter by postId
+            filtered_by_postId: List[Offer] = [
+                offer for offer in mapped_offers
+                if offer.postId == postId
+            ]
+            if postId is not None and ownerId is None:
+                return filtered_by_postId
+            
+            filtered_by_ownerId: List[Offer] = [
+                offer for offer in mapped_offers
+                if offer.userId == ownerId
+            ]
+            if ownerId is not None and postId is None:
+                return filtered_by_ownerId
+            
+            # filter by both postId and ownerId
+            return [
+                offer for offer in mapped_offers
+                if offer.postId == postId and offer.userId == ownerId
+            ]
 
-    def count():
-        pass
+
+    # TODO: Review this method
+    def delete(self, offer_id: str) -> Offer:
+        """Delete an offer."""
+        try:
+            identifier = uuid.UUID(offer_id)
+        except ValueError:
+            raise InvalidFieldInOfferError("offer_id must be a valid UUID string")
+        
+        with self._session_factory() as db_session:
+            orm = db_session.query(OfferORM).filter(OfferORM.id == identifier).first()
+            if orm is None:
+                raise OfferNotFoundError(f"offer with id {offer_id} not found")
+            db_session.delete(orm)
+            db_session.commit()
+            return orm.to_domain()
+
+    def reset(self) -> None:
+        """Reset the offers repository."""
+        with self._session_factory() as db_session:
+            db_session.query(OfferORM).delete()
+            db_session.commit()
+
+    # TODO: Review this method
+    def count(self) -> int:
+        """Count the number of offers."""
+        with self._session_factory() as db_session:
+            return db_session.query(OfferORM).count()
