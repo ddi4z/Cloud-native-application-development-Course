@@ -99,8 +99,6 @@ class PostgresOfferRepositoryAdapter(OfferRepositoryPort):
                 if offer.postId == postId and offer.userId == ownerId
             ]
 
-
-    # TODO: Review this method
     def delete(self, offer_id: str) -> Offer:
         """Delete an offer."""
         try:
@@ -122,7 +120,6 @@ class PostgresOfferRepositoryAdapter(OfferRepositoryPort):
             db_session.query(OfferORM).delete()
             db_session.commit()
 
-    # TODO: Review this method
     def count(self) -> int:
         """Count the number of offers."""
         with self._session_factory() as db_session:
