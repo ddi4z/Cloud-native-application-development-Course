@@ -5,7 +5,6 @@ from src.domain.use_cases.create_offer_use_case import CreateOfferUseCase
 from src.domain.use_cases.delete_offer_use_case import DeleteOfferUseCase
 from src.domain.use_cases.get_offer_use_case import GetOfferUseCase
 from src.domain.use_cases.get_offers_use_case import GetAllOffersUseCase
-from src.domain.use_cases.update_offer_use_case import UpdateOfferUseCase
 from src.domain.use_cases.count_offers_use_case import CountOffersUseCase
 from src.domain.use_cases.reset_offers_use_case import ResetOffersUseCase
 
@@ -25,12 +24,6 @@ def build_get_offer_use_case() -> BaseUseCase:
 def build_get_offers_use_case() -> BaseUseCase:
     """Get offers use case."""
     return GetAllOffersUseCase(repository)
-
-
-def build_update_offer_use_case() -> BaseUseCase:
-    """Update offer use case."""
-    return UpdateOfferUseCase(repository)
-
 
 def build_delete_offer_use_case() -> BaseUseCase:
     """Get delete offer use case."""

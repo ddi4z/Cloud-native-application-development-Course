@@ -23,12 +23,7 @@ class OfferRepositoryPort(ABC):
         pass
 
     @abstractmethod
-    def update(self, offer: Offer) -> Offer:
-        """Update an existing offer."""
-        pass
-
-    @abstractmethod
-    def delete(self, offer_id: int) -> Offer:
+    def delete(self, offer_id: str) -> Offer:
         """Delete a offer."""
         pass
 

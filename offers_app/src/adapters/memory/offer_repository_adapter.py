@@ -54,6 +54,9 @@ class InMemoryOfferRepositoryAdapter(OfferRepositoryPort):
             identifier = uuid.UUID(offer_id)
         except ValueError:
             raise InvalidFieldInOfferError("offer_id must be a valid UUID string")
+        
+        if identifier not in self.memory_store:
+            raise OfferNotFoundError(f"offer with id {offer_id} not found")
 
         return self.memory_store.get(identifier)
 
@@ -61,19 +64,18 @@ class InMemoryOfferRepositoryAdapter(OfferRepositoryPort):
         """Get all offers."""
         return list(self.memory_store.values())
 
-    def update(self, offer: Offer) -> Offer:
-        """Update an existing offer."""
-        if offer.id not in self.memory_store:
-            raise OfferNotFoundError(f"offer with id {offer.id} not found")
-        self.memory_store[offer.id] = offer
-        return offer
-
-    def delete(self, offer_id: int) -> Offer:
+    def delete(self, offer_id: str) -> Offer:
         """Delete an offer."""
-        if offer_id not in self.memory_store:
+        try:
+            identifier = uuid.UUID(offer_id)
+        except ValueError:
+            raise InvalidFieldInOfferError("offer_id must be a valid UUID string")
+
+        if identifier not in self.memory_store:
             raise OfferNotFoundError(f"offer with id {offer_id} not found")
-        offer = self.memory_store[offer_id]
-        del self.memory_store[offer_id]
+
+        offer = self.memory_store[identifier]
+        del self.memory_store[identifier]
         return offer
     
     def count(self) -> int:
