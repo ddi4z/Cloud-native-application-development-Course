@@ -1,0 +1,5 @@
+# Tarea: 
+# 1. Definir servicio offers-app-service entre usuario y pod. 
+# 2. Definir pod offers-app con la imagen creada.
+# 3. Definir servicio de comunicacion entre pod y offers-db. Otro pod
+# 4. Definir pod offers-db con una imagen de postgres 14. Esta imagen debe tener un volumen externo al pod llamado offers-db-volumen. 
