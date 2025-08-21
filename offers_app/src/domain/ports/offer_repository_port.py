@@ -18,7 +18,7 @@ class OfferRepositoryPort(ABC):
         pass
 
     @abstractmethod
-    def get_all(self) -> List[Offer]:
+    def get_all(self, postId: Optional[str], ownerId: Optional[str]) -> List[Offer]:
         """Get all offers."""
         pass
 

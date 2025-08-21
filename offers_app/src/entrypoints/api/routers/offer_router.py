@@ -75,7 +75,6 @@ def get_offer(offer_id: str, use_case: BaseUseCase = Depends(build_get_offer_use
     return offer
 
 
-# TODO: Do this thing :(
 @router.get("/", response_model=List[Offer])
 def get_offers(
     post: Optional[str] = Query(None, description="ID of the post"),
@@ -83,7 +82,11 @@ def get_offers(
     use_case: BaseUseCase = Depends(build_get_offers_use_case),
 ):
     """Get all offers."""
-    return use_case.execute()
+    try:
+        return use_case.execute(post, owner)
+    except InvalidFieldInOfferError as _:
+        raise HTTPException(status_code=400, detail="Invalid format in query parameters")
+
 
 
 @router.delete("/{offer_id}", response_model=Offer)

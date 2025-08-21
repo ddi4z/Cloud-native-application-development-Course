@@ -60,9 +60,38 @@ class InMemoryOfferRepositoryAdapter(OfferRepositoryPort):
 
         return self.memory_store.get(identifier)
 
-    def get_all(self) -> List[Offer]:
+
+    def get_all(self, postId: Optional[str], ownerId: Optional[str]) -> List[Offer]:
         """Get all offers."""
-        return list(self.memory_store.values())
+        if postId is None and ownerId is None:
+            return list(self.memory_store.values())
+        print(postId, ownerId)
+        postId_uuid, ownerId_uuid = None, None
+        try:
+            postId_uuid = uuid.UUID(postId) if postId is not None else None
+            ownerId_uuid = uuid.UUID(ownerId) if ownerId is not None else None
+        except ValueError:
+            raise InvalidFieldInOfferError("postId and ownerId must be valid UUID strings")
+
+        filtered_by_posts = [
+            offer for offer in self.memory_store.values()
+            if postId is not None and uuid.UUID(offer.postId) == postId_uuid
+        ]
+        if postId is not None and ownerId is None:
+            return list(filtered_by_posts)
+        
+        filtered_by_owners = [
+            offer for offer in self.memory_store.values()
+            if ownerId is not None and uuid.UUID(offer.userId) == ownerId_uuid
+        ]
+        if ownerId is not None and postId is None:
+            return list(filtered_by_owners)
+
+        return [
+            offer for offer in self.memory_store.values()
+            if (postId is None or uuid.UUID(offer.postId) == postId_uuid) and
+               (ownerId is None or uuid.UUID(offer.userId) == ownerId_uuid)
+        ]
 
     def delete(self, offer_id: str) -> Offer:
         """Delete an offer."""
