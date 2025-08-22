@@ -11,7 +11,7 @@ from src.errors import InvalidCredentialsError, MissingIdError, MissingPostInfor
 from src.domain.models.post_creation_request import PostCreationRequest
 
 
-class InMemoryUserRepositoryAdapter(PostRepositoryPort):
+class InMemoryPostRepositoryAdapter(PostRepositoryPort):
     """In-memory implementation of UserRepository."""
 
     memory_store: Dict[UUID, Post] = {}

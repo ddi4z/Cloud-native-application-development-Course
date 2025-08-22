@@ -1,200 +1,162 @@
 import time
 import pytest
 import hashlib
-from src.domain.models.user import User, UserStatus
-from src.domain.models.user_creation_request import UserCreationRequest
-from src.domain.models.user_update_request import UserUpdateRequest
-from src.adapters.postgres.user_repository_adapter import PostgresUserRepositoryAdapter
+from uuid import UUID
+from datetime import datetime, timedelta, timezone
+from src.domain.models.posts import Post
+from src.domain.models.post_creation_request import PostCreationRequest
+from src.adapters.postgres.post_repository_adapter import PostgresPostRepositoryAdapter
 from src.errors import (
+    MissingPostInformationError,
+    InvalidExpirationDate,
+    PostNotFoundError,
     InvalidCredentialsError,
-    InvalidTokenError,
-    MissingTokenError,
-    MissingUserInformationError,
-    UserAlreadyExistsError,
-    UserNotFoundError
+    MissingIdError
 )
+
+"""
+@pytest.fixture
+def repo(monkeypatch):
+    monkeypatch.setenv("DATABASE_URL", "sqlite:///:memory:")
+    return PostgresPostRepositoryAdapter()
+"""
 
 def test_init_raises_error_if_no_db_url(monkeypatch):
     monkeypatch.delenv("DATABASE_URL", raising=False)
     with pytest.raises(ValueError, match="DATABASE_URL not set"):
-        PostgresUserRepositoryAdapter()
+        PostgresPostRepositoryAdapter()
 
-def test_create_user_success(repo):
-    creation_request = UserCreationRequest(
-        username="new_user",
-        email="new_user@example.com",
-        password="secure_password"
-    )
-    user = repo.create(creation_request)
 
-    assert isinstance(user, User)
-    assert user.username == "new_user"
-    assert user.email == "new_user@example.com"
-    assert user.status == UserStatus.NOT_VERIFIED
-    assert user.token is not None
-    assert user.salt is not None
-    assert user.password is not None
+def test_create_post_success(repo):
+    creation_request = PostCreationRequest(
+        routeId="11111111-1111-1111-1111-111111111111",
+        expireAt=((datetime.now(timezone.utc) + timedelta(hours=24))),
+        userId="22222222-2222-2222-2222-222222222222"
+    )
+    post = repo.create(creation_request)
 
-def test_create_user_already_exists_by_username(repo, create_user_db):
-    create_user_db(
-        username="existing_user",
-        email="existing@example.com",
-        password="p",
-        salt="s",
-        token="t"
+    assert isinstance(post, Post)
+    assert post.routeId == UUID("11111111-1111-1111-1111-111111111111")
+    assert post.userId == UUID("22222222-2222-2222-2222-222222222222")
+    assert isinstance(post.id, UUID)
+    assert post.expireAt > datetime.now(timezone.utc)
+
+
+def test_create_post_with_missing_info(repo):
+    creation_request = PostCreationRequest(
+        routeId="11111111-1111-1111-1111-111111111111",
+        expireAt=((datetime.now(timezone.utc) + timedelta(hours=24))),
     )
-    
-    creation_request = UserCreationRequest(
-        username="existing_user",
-        email="other@example.com",
-        password="secure_password"
-    )
-    with pytest.raises(UserAlreadyExistsError, match="Username or email already exists."):
+    with pytest.raises(MissingPostInformationError, match="Route Id, Expiration date, and User id are all required."):
         repo.create(creation_request)
 
-def test_create_user_already_exists_by_email(repo, create_user_db):
-    create_user_db(
-        username="existing_user",
-        email="existing@example.com",
-        password="p",
-        salt="s",
-        token="t"
-    )
-    
-    creation_request = UserCreationRequest(
-        username="other_user",
-        email="existing@example.com",
-        password="secure_password"
-    )
-    with pytest.raises(UserAlreadyExistsError, match="Username or email already exists."):
-        repo.create(creation_request)
 
-def test_create_user_with_missing_info(repo):
-    creation_request = UserCreationRequest(
-        username="new_user",
-        email="new_user@example.com",
-        password=""
+def test_create_post_with_exp_date_not_future(repo):
+    creation_request = PostCreationRequest(
+        routeId="11111111-1111-1111-1111-111111111111",
+        expireAt=datetime.now(timezone.utc),
+        userId="22222222-2222-2222-2222-222222222222"
     )
-    with pytest.raises(MissingUserInformationError, match="Username, password, and email are required."):
-        repo.create(creation_request)
 
-def test_update_user_success(repo, create_user_db):
-    existing_user_db = create_user_db(
-        username="old_user",
-        email="old_user@example.com",
-        password="p",
-        salt="s",
-        token="t"
-    )
-    user_id = existing_user_db.id
-    initial_updated_at = existing_user_db.updatedAt
-
-    update_request = UserUpdateRequest(
-        fullName="Updated User Name",
-        status=UserStatus.VERIFIED
-    )
-    
     time.sleep(0.01)
-
-    updated_user = repo.update(user_id, update_request)
-
-    assert updated_user.fullName == "Updated User Name"
-    assert updated_user.status == UserStatus.VERIFIED
-    assert updated_user.updatedAt > initial_updated_at
-
-def test_update_user_not_found(repo):
-    update_request = UserUpdateRequest(fullName="Nonexistent User")
-    with pytest.raises(UserNotFoundError, match="User with id 999 not found."):
-        repo.update(999, update_request)
-
-def test_update_user_with_no_data(repo, create_user_db):
-    existing_user_db = create_user_db(
-        username="no_data_user",
-        email="no_data_user@example.com",
-        password="p",
-        salt="s",
-        token="t"
-    )
-    user_id = existing_user_db.id
     
-    update_request = UserUpdateRequest()
-    with pytest.raises(MissingUserInformationError, match="At least one field must be provided for update."):
-        repo.update(user_id, update_request)
+    with pytest.raises(InvalidExpirationDate, match="Expiration date must be in the future."):
+        repo.create(creation_request)
 
-def test_authenticate_success(repo, create_user_db):
-    password = "secure_password"
-    salt = "random_salt"
-    password_hash = hashlib.sha256((password + salt).encode()).hexdigest()
 
-    create_user_db(
-        username="auth_user",
-        email="auth@example.com",
-        password=password_hash,
-        salt=salt,
-        token="old_token"
+def test_filter_with_correct_information(repo):
+    route_id = UUID("11111111-1111-1111-1111-111111111111")
+    owner_id = UUID("22222222-2222-2222-2222-222222222222")
+
+    creation_request = PostCreationRequest(
+        routeId=route_id,
+        expireAt=datetime.now(timezone.utc) + timedelta(hours=24),
+        userId=owner_id
+    )
+    repo.create(creation_request)
+
+    filtered_posts = repo.filter(route=route_id, owner=owner_id)
+
+    assert isinstance(filtered_posts, list)
+    assert all(isinstance(p, Post) for p in filtered_posts)
+    assert all(p.routeId == route_id and p.userId == owner_id for p in filtered_posts)
+
+
+def test_query(repo):
+    route_id = "11111111-1111-1111-1111-111111111111"
+    user_id = "22222222-2222-2222-2222-222222222222"
+    expire_at = (datetime.now(timezone.utc) + timedelta(hours=24))
+
+    creation_request = PostCreationRequest(
+        routeId=route_id,
+        expireAt=expire_at,
+        userId=user_id
     )
 
-    authenticated_user = repo.authenticate("auth_user", password)
-    
-    assert authenticated_user is not None
-    assert authenticated_user.username == "auth_user"
-    assert authenticated_user.token != "old_token"
+    created_post = repo.create(creation_request)
 
-def test_authenticate_invalid_credentials_username(repo, create_user_db):
-    password = "secure_password"
-    salt = "random_salt"
-    password_hash = hashlib.sha256((password + salt).encode()).hexdigest()
-    
-    create_user_db(
-        username="valid_user",
-        email="valid@example.com",
-        password=password_hash,
-        salt=salt,
-        token="t"
-    )
+    created_post_id = created_post.id
 
-    with pytest.raises(InvalidCredentialsError, match="Invalid username or password."):
-        repo.authenticate("invalid_username", password)
+    result = repo.query(created_post_id)
 
-def test_authenticate_invalid_credentials_password(repo, create_user_db):
-    password = "secure_password"
-    salt = "random_salt"
-    password_hash = hashlib.sha256((password + salt).encode()).hexdigest()
+    assert isinstance(result, Post)
+    assert result.id == created_post_id
+    assert result.routeId == UUID(route_id)
+    assert result.expireAt == expire_at
+    assert isinstance(result.createdAt, datetime)
 
-    create_user_db(
-        username="valid_user",
-        email="valid@example.com",
-        password=password_hash,
-        salt=salt,
-        token="t"
-    )
 
-    with pytest.raises(InvalidCredentialsError, match="Invalid username or password."):
-        repo.authenticate("valid_user", "wrong_password")
+def test_query_wrong_information(repo):
+    wrong_query_id = 'sadasd'
 
-def test_authenticate_missing_info(repo):
-    with pytest.raises(MissingUserInformationError, match="Username and password are required."):
-        repo.authenticate("", "password")
+    with pytest.raises(InvalidCredentialsError, match="Id is required and must be a UUID string."):
+        repo.query(wrong_query_id)
 
-def test_get_current_user_missing_token(repo):
-    with pytest.raises(MissingTokenError, match="Token is missing from the request header."):
-        repo.get_current_user(None)
 
-def test_get_current_user_invalid_token(repo):
-    with pytest.raises(InvalidTokenError, match="The token is invalid or has expired."):
-        repo.get_current_user("invalid_token")
+def test_query_non_existent_post(repo):
+    non_existent_id = UUID('00000000-0000-0000-0000-000000000000')
+    with pytest.raises(PostNotFoundError, match="The provided id is not in the database"):
+        repo.query(non_existent_id)
 
-def test_count_users(repo, create_user_db):
-    create_user_db(username="u1", email="e1@e.com", password="p", salt="s", token="t1")
-    create_user_db(username="u2", email="e2@e.com", password="p", salt="s", token="t2")
-    
+
+def test_count_posts(repo):
+    repo.create(PostCreationRequest(
+        routeId='11111111-1111-1111-1111-111111111111',
+        expireAt=datetime.now(timezone.utc) + timedelta(hours=24),
+        userId='22222222-2222-2222-2222-222222222222'
+    ))
+
+    repo.create(PostCreationRequest(
+        routeId='33333333-3333-3333-3333-333333333333',
+        expireAt=datetime.now(timezone.utc) + timedelta(hours=24),
+        userId='11111111-1111-1111-1111-111111111111'
+    ))
+
     assert repo.count() == 2
 
-def test_reset_users(repo, create_user_db):
-    create_user_db(username="u1", email="e1@e.com", password="p", salt="s", token="t1")
-    
+
+def test_reset_users(repo):
+    repo.create(PostCreationRequest(
+        routeId='11111111-1111-1111-1111-111111111111',
+        expireAt=datetime.now(timezone.utc) + timedelta(hours=24),
+        userId='22222222-2222-2222-2222-222222222222'
+    ))
+
     assert repo.count() == 1
-    
+
     repo.reset()
-    
+
+    assert repo.count() == 0
+
+
+def test_delete(repo):
+    creation_request = PostCreationRequest(
+        routeId="11111111-1111-1111-1111-111111111111",
+        expireAt=datetime.now(timezone.utc) + timedelta(hours=24),
+        userId="22222222-2222-2222-2222-222222222222"
+    )
+
+    created_post = repo.create(creation_request)
+    repo.delete(created_post.id)
+
     assert repo.count() == 0
