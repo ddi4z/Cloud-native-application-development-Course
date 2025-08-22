@@ -4,7 +4,7 @@ import uuid
 from sqlalchemy import Boolean, Column, DateTime
 from sqlalchemy import Enum as SqlEnum
 from sqlalchemy import Integer, String
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy import String
 
 from src.domain.models.offer import Offer, OfferSize
 
@@ -17,10 +17,10 @@ class OfferORM(Base):
     __tablename__ = "offers"
 
     id = Column(
-        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, nullable=False
+        String(36), primary_key=True, default=lambda: str(uuid.uuid4()), nullable=False
     )
-    post_id = Column(UUID(as_uuid=True), nullable=False, index=True)
-    user_id = Column(UUID(as_uuid=True), nullable=False, index=True)
+    post_id = Column(String(36), nullable=False, index=True)
+    user_id = Column(String(36), nullable=False, index=True)
 
     description = Column(String, nullable=False)
     size = Column(SqlEnum(OfferSize), nullable=False)
@@ -48,7 +48,7 @@ class OfferORM(Base):
             postId=str(self.post_id),
             userId=str(self.user_id),
             description=self.description,
-            size=str(self.size),  # 👈 Enum → str
+            size=str(self.size),
             fragile=self.fragile,
             offer=self.offer,
             createdAt=(
@@ -62,11 +62,11 @@ class OfferORM(Base):
     def from_domain(cls, offer: Offer) -> "OfferORM":
         """Convierte un modelo de dominio (Pydantic) a entidad ORM."""
         return cls(
-            id=uuid.UUID(offer.id) if offer.id else uuid.uuid4(),
-            post_id=uuid.UUID(offer.postId),
-            user_id=uuid.UUID(offer.userId),
+            id=offer.id if offer.id else str(uuid.uuid4()),
+            post_id=offer.postId,
+            user_id=offer.userId,
             description=offer.description,
-            size=OfferSize(offer.size),  # 👈 str → Enum
+            size=OfferSize(offer.size),
             fragile=offer.fragile,
             offer=offer.offer,
             created_at=(
