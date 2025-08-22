@@ -88,7 +88,7 @@ spec:
 
 ---
 # Define the deployment for the offers-db
-apiVersion: db/v1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: offers-db-deployment
@@ -100,7 +100,7 @@ spec:
     matchLabels:
       app: offers-db
   template:
-    matadata:
+    metadata:
       labels:
         app: offers-db
     spec:
