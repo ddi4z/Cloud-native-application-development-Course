@@ -40,11 +40,19 @@ faker = "~37.3.0"
 # https://pycqa.github.io/isort/docs/configuration/black_compatibility/
 profile = "black"
 multi_line_output = 3
+skip = [".poetry"]
 
 [tool.bandit]
 # See https://bandit.readthedocs.io/en/latest/config.html for reference
 exclude_dirs = ["./tests"]
 skips = ["B101"]
+
+[tool.black]
+exclude = '''
+(
+  /(\.poetry)
+)
+'''
 
 [tool.pydoclint]
 # See https://jsh9.github.io/pydoclint/how_to_config.html#2-specifying-options-in-a-configuration-file for config reference.
