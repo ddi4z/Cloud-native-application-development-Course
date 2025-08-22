@@ -1,5 +1,6 @@
 from src.domain.models.offer import Offer
 
+
 def test_create_user_with_valid_data(valid_offer_data):
     """Test creating an offer with valid data."""
     offer = Offer(**valid_offer_data)

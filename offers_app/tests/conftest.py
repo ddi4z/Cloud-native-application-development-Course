@@ -1,26 +1,22 @@
-import pytest
-
-import sys
 import os
+import sys
+
+import pytest
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-from src.domain.models.offer import Offer, OfferSize
-from src.adapters.memory.offer_repository_adapter import InMemoryOfferRepositoryAdapter
-from src.adapters.postgres.models import OfferORM
+import uuid
 
+import sqlalchemy
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+
+from src.adapters.memory.offer_repository_adapter import InMemoryOfferRepositoryAdapter
+from src.adapters.postgres.models import Base
 from src.adapters.postgres.offer_repository_adapter import (
     PostgresOfferRepositoryAdapter,
 )
-
-from sqlalchemy import create_engine
-import sqlalchemy
-from sqlalchemy.orm import sessionmaker, Session
-
-from src.adapters.postgres.models import Base
-import datetime
-
-import uuid
+from src.domain.models.offer import Offer, OfferSize
 
 
 @pytest.fixture
@@ -109,6 +105,7 @@ def db_session(engine, tables):
     session.close()
     transaction.rollback()
     connection.close()
+
 
 @pytest.fixture
 def offer_repository_adapter(db_session):

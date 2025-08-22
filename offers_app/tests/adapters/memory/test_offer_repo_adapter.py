@@ -1,10 +1,13 @@
+import uuid
+
 import pytest
+
 from src.errors import (
     InvalidFieldInOfferError,
-    PreconditionOfferFailedError,
     OfferNotFoundError,
+    PreconditionOfferFailedError,
 )
-import uuid
+
 
 def test_create_valid_offer(repo, offer_model):
     created = repo.create(offer_model)
@@ -38,9 +41,11 @@ def test_create_invalid_size(repo, offer_model):
     with pytest.raises(PreconditionOfferFailedError):
         repo.create(offer_model)
 
+
 """
 These tests cover the get_by_id methods of the repository.
 """
+
 
 def test_get_by_id_success(repo, offer_model):
     created = repo.create(offer_model)
@@ -58,9 +63,11 @@ def test_get_by_id_not_found(repo, offer_model):
     with pytest.raises(OfferNotFoundError):
         repo.get_by_id(str(uuid.uuid4()))
 
+
 """
 These tests cover the get_all methods of the repository.
 """
+
 
 def test_get_all_no_filters(repo, offer_model):
     repo.create(offer_model)
@@ -90,9 +97,11 @@ def test_get_all_invalid_filter_uuid(repo):
     with pytest.raises(InvalidFieldInOfferError):
         repo.get_all(postId="invalid-uuid", ownerId=None)
 
+
 """
 These tests cover the delete methods of the repository.
 """
+
 
 def test_delete_success(repo, offer_model):
     created = repo.create(offer_model)
@@ -111,9 +120,12 @@ def test_delete_not_found(repo, offer_model):
     with pytest.raises(OfferNotFoundError):
         repo.delete(str(uuid.uuid4()))
 
+
 """
 These tests cover the delete methods of the repository.
 """
+
+
 def test_count_and_reset(repo, offer_model):
     repo.create(offer_model)
     assert repo.count() == 1

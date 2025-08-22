@@ -1,12 +1,13 @@
+import uuid
+
+import pytest
+
 from src.domain.models.offer import Offer, OfferSize
 from src.errors import (
     InvalidFieldInOfferError,
     OfferNotFoundError,
     PreconditionOfferFailedError,
 )
-
-import pytest
-import uuid
 
 
 def test_create_offer(offer_repository_adapter):
@@ -90,6 +91,7 @@ def test_get_by_id_success(offer_repository_adapter, offer_model):
     assert found.id == created.id
  """
 
+
 def test_get_by_id_invalid_uuid(offer_repository_adapter):
     repo = offer_repository_adapter
     with pytest.raises(InvalidFieldInOfferError):
@@ -155,6 +157,7 @@ def test_delete_success(offer_repository_adapter, offer_model):
     assert deleted.id == created.id
     assert repo.count() == 0
  """
+
 
 def test_delete_invalid_uuid(offer_repository_adapter):
     repo = offer_repository_adapter

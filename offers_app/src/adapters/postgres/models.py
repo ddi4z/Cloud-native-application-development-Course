@@ -4,7 +4,6 @@ import uuid
 from sqlalchemy import Boolean, Column, DateTime
 from sqlalchemy import Enum as SqlEnum
 from sqlalchemy import Integer, String
-from sqlalchemy import String
 
 from src.domain.models.offer import Offer, OfferSize
 

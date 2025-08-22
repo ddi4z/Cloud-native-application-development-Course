@@ -1,6 +1,7 @@
 from src.adapters.postgres.models import OfferORM
 from src.domain.models.offer import Offer, OfferSize
 
+
 def test_to_domain(offer_model):
     # Crear ORM desde dominio
     orm_instance: OfferORM = OfferORM.from_domain(offer_model)
@@ -9,6 +10,7 @@ def test_to_domain(offer_model):
     assert orm_instance.size.value == offer_model.size
     assert orm_instance.offer == offer_model.offer
 
+
 def test_from_domain(offer_model):
     # Convertir de nuevo a dominio
     orm_instance: OfferORM = OfferORM.from_domain(offer_model)
@@ -16,6 +18,7 @@ def test_from_domain(offer_model):
     assert domain_instance.size == str(OfferSize(offer_model.size))
     assert domain_instance.description == offer_model.description
     assert domain_instance.offer == offer_model.offer
+
 
 def test_offer_orm_repr(offer_model):
     # Comprobar la representación: 37
