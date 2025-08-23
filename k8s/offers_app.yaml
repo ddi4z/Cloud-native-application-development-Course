@@ -38,6 +38,17 @@ spec:
       labels:
         app: offers-app
     spec:
+      initContainers:
+      - name: wait-for-db
+        image: busybox
+        command:
+        - sh
+        - -c
+        - |
+          until nc -z offers-db-service 5432; do
+            echo "Waiting for postgres database..."
+            sleep 2
+          done
       containers:
       - name: offers-app
         image: offers-app:1.0.0
@@ -106,7 +117,7 @@ spec:
     spec:
       containers:
       - name: postgres
-        image: postgres:16-alpine
+        image: postgres:16.3-alpine
         ports: 
         - containerPort: 5432
         envFrom:
@@ -115,6 +126,15 @@ spec:
         volumeMounts:
         - name: offers-db-storage
           mountPath: /var/lib/postgresql/data
+
+        readinessProbe:
+          exec:
+            command:
+              - pg_isready
+              - -U
+              - $(POSTGRES_USER) # usa variable de entorno definida en ConfigMap
+          initialDelaySeconds: 5
+          periodSeconds: 5
 
       volumes:
         - name: offers-db-storage
