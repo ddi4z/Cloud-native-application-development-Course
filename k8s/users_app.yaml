@@ -93,7 +93,7 @@ spec:
               value: postgresql://user:password@users-db-service:5432/usersdb
           livenessProbe:
             httpGet:
-              path: /ping
+              path: users/ping
               port: 9000
             initialDelaySeconds: 5 
             periodSeconds: 30
