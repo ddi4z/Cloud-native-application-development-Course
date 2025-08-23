@@ -1,1 +1,41 @@
-title Vista de 
+@startuml components
+
+skinparam actorStyle awesome
+
+skinparam component {
+  BackgroundColor #FF000022
+  BorderColor red
+  FontColor black
+}
+
+skinparam database {
+  BackgroundColor #1E90FF
+  BorderColor black
+  FontColor white
+}
+
+title "Vista Funcional Componentes"
+
+actor User
+
+frame "env" {
+  component "users_app" as users_app
+  component "posts_app" as posts_app
+  component "offers_app" as offers_app
+  component "routes_app" as routes_app
+
+  database "\nusers_db\n" as users_db
+  database "\nposts_db\n" as posts_db
+  database "\noffers_db\n" as offers_db
+  database "\nroutes_db\n" as routes_db
+
+  User ..> users_app
+  User ..> posts_app
+  User ..> offers_app
+  User ..> routes_app
+
+  users_app --> users_db
+  posts_app --> posts_db
+  offers_app --> offers_db
+  routes_app --> routes_db
+}
