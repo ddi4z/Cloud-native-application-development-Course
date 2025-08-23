@@ -1,7 +1,11 @@
 # Importamos la clase base y cada caso de uso
 # Importamos la implementación InMemory y Postgres
-from routes_app.adapters.memory.routes_repository_adapter import (
-    InMemoryRoutesRepositoryAdapter,
+# from routes_app.adapters.memory.routes_repository_adapter import (
+#     InMemoryRoutesRepositoryAdapter,
+# )
+
+from routes_app.adapters.postgres.routes_repository_adapter import (
+    PostgresRoutesRepositoryAdapter
 )
 
 # Importamos ports
@@ -19,8 +23,8 @@ from routes_app.domain.use_cases.reset_trayectos_use_case import ResetTrayectosU
 
 # Instanciación del Repositorio
 
-repository: RoutesRepositoryPort = InMemoryRoutesRepositoryAdapter()
-# repository: RoutesRepositoryPort = PostgresRoutesRepositoryAdapter()
+# repository: RoutesRepositoryPort = InMemoryRoutesRepositoryAdapter()
+repository: RoutesRepositoryPort = PostgresRoutesRepositoryAdapter()
 
 
 # Constructores (Builders) para cada caso de uso
