@@ -1,8 +1,9 @@
+import logging
 from uuid import UUID
+
 from routes_app.domain.ports.routes_repository_port import RoutesRepositoryPort
 from routes_app.domain.use_cases.base_use_case import BaseUseCase
 from routes_app.errors import InfrastructureError
-import logging
 
 logger = logging.getLogger(__name__)
 

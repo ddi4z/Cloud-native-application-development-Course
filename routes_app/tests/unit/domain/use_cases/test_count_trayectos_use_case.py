@@ -1,6 +1,7 @@
+from uuid import uuid4
+
 from routes_app.domain.models.models import Trayecto
 from routes_app.domain.use_cases.count_trayectos_use_case import CountTrayectosUseCase
-from uuid import uuid4
 
 
 def test_count_returns_number_of_items(memory_repo, trayecto):

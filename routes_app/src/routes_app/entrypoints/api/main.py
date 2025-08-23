@@ -1,6 +1,7 @@
 from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
+
 from routes_app.entrypoints.api.routers.routes import router as routes_router
 
 app = FastAPI(title="Routes App", version="1.0.0")

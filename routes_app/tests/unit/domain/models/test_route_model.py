@@ -1,7 +1,9 @@
-import pytest
 from datetime import datetime, timedelta, timezone
 from uuid import uuid4
+
+import pytest
 from pydantic import ValidationError
+
 from routes_app.domain.models.models import Trayecto
 
 

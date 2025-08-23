@@ -3,13 +3,14 @@ from typing import List
 from uuid import UUID
 
 from dotenv import load_dotenv
-from sqlalchemy import create_engine, Column, String, Integer, DateTime, UUID as PG_UUID
+from sqlalchemy import UUID as PG_UUID
+from sqlalchemy import Column, DateTime, Integer, String, create_engine
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy.orm import sessionmaker, Session, declarative_base
+from sqlalchemy.orm import Session, declarative_base, sessionmaker
 
 from routes_app.domain.models.models import Trayecto
 from routes_app.domain.ports.routes_repository_port import RoutesRepositoryPort
-from routes_app.errors import TrayectoNotFoundError, FlightIdAlreadyExistsError
+from routes_app.errors import FlightIdAlreadyExistsError, TrayectoNotFoundError
 
 load_dotenv()
 

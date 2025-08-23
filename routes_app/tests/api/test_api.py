@@ -1,6 +1,8 @@
-from fastapi.testclient import TestClient
-from routes_app.entrypoints.api.main import app
 from datetime import datetime, timedelta, timezone
+
+from fastapi.testclient import TestClient
+
+from routes_app.entrypoints.api.main import app
 
 client = TestClient(app)
 

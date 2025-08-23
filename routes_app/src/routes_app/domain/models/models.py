@@ -1,7 +1,9 @@
 from __future__ import annotations
+
 from datetime import datetime, timezone
-from pydantic import BaseModel, Field, field_validator, model_validator
 from uuid import UUID, uuid4
+
+from pydantic import BaseModel, Field, field_validator, model_validator
 
 
 class Trayecto(BaseModel):

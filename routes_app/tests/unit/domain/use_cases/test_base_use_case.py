@@ -1,4 +1,5 @@
 import pytest
+
 from routes_app.domain.use_cases.base_use_case import BaseUseCase
 
 

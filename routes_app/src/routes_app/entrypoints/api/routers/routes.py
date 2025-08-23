@@ -2,23 +2,23 @@ from datetime import datetime
 from typing import List, Optional
 from uuid import UUID
 
-from fastapi import APIRouter, HTTPException, Query, Depends
-from fastapi.responses import PlainTextResponse
+from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi.responses import JSONResponse, PlainTextResponse
 from pydantic import BaseModel, Field, ValidationError
-from fastapi.responses import JSONResponse
 
-# Importamos los Casos de Uso
-from routes_app.domain.use_cases.base_use_case import BaseUseCase
 from routes_app.assembly import (
+    build_count_trayectos_use_case,
     build_create_trayecto_use_case,
-    build_get_trayecto_use_case,
-    build_list_trayectos_use_case,
     build_delete_trayecto_use_case,
     build_get_trayecto_by_flight_id_use_case,
-    build_count_trayectos_use_case,
+    build_get_trayecto_use_case,
+    build_list_trayectos_use_case,
     build_reset_trayectos_use_case,
 )
 from routes_app.domain.models.models import Trayecto
+
+# Importamos los Casos de Uso
+from routes_app.domain.use_cases.base_use_case import BaseUseCase
 
 router = APIRouter(tags=["Trayectos"])
 

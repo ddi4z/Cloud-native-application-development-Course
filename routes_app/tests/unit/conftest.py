@@ -1,11 +1,12 @@
-import pytest
 from datetime import datetime, timedelta, timezone
 from uuid import uuid4
 
-from routes_app.domain.models.models import Trayecto
+import pytest
+
 from routes_app.adapters.memory.routes_repository_adapter import (
     InMemoryRoutesRepositoryAdapter,
 )
+from routes_app.domain.models.models import Trayecto
 
 
 @pytest.fixture

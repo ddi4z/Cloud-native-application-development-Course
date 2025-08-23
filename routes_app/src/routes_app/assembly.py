@@ -1,22 +1,21 @@
 # Importamos la clase base y cada caso de uso
-from routes_app.domain.use_cases.base_use_case import BaseUseCase
-from routes_app.domain.use_cases.create_trayecto_use_case import CreateTrayectoUseCase
-from routes_app.domain.use_cases.get_trayecto_use_case import GetTrayectoUseCase
-from routes_app.domain.use_cases.list_trayectos_use_case import ListTrayectosUseCase
-from routes_app.domain.use_cases.delete_trayecto_use_case import DeleteTrayectoUseCase
-from routes_app.domain.use_cases.get_trayecto_by_flight_id_use_case import (
-    GetTrayectoByFlightIdUseCase,
-)
-from routes_app.domain.use_cases.count_trayectos_use_case import CountTrayectosUseCase
-from routes_app.domain.use_cases.reset_trayectos_use_case import ResetTrayectosUseCase
-
-# Importamos ports
-from routes_app.domain.ports.routes_repository_port import RoutesRepositoryPort
-
 # Importamos la implementación InMemory y Postgres
 from routes_app.adapters.memory.routes_repository_adapter import (
     InMemoryRoutesRepositoryAdapter,
 )
+
+# Importamos ports
+from routes_app.domain.ports.routes_repository_port import RoutesRepositoryPort
+from routes_app.domain.use_cases.base_use_case import BaseUseCase
+from routes_app.domain.use_cases.count_trayectos_use_case import CountTrayectosUseCase
+from routes_app.domain.use_cases.create_trayecto_use_case import CreateTrayectoUseCase
+from routes_app.domain.use_cases.delete_trayecto_use_case import DeleteTrayectoUseCase
+from routes_app.domain.use_cases.get_trayecto_by_flight_id_use_case import (
+    GetTrayectoByFlightIdUseCase,
+)
+from routes_app.domain.use_cases.get_trayecto_use_case import GetTrayectoUseCase
+from routes_app.domain.use_cases.list_trayectos_use_case import ListTrayectosUseCase
+from routes_app.domain.use_cases.reset_trayectos_use_case import ResetTrayectosUseCase
 
 # Instanciación del Repositorio
 

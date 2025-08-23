@@ -1,4 +1,5 @@
 from uuid import uuid4
+
 from routes_app.domain.models.models import Trayecto
 from routes_app.domain.use_cases.list_trayectos_use_case import ListTrayectosUseCase
 

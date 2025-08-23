@@ -1,14 +1,15 @@
-import pytest
+from datetime import datetime, timedelta, timezone
 from unittest.mock import MagicMock, patch
 from uuid import uuid4
-from datetime import datetime, timedelta, timezone
 
-from routes_app.domain.models.models import Trayecto
+import pytest
+from sqlalchemy.exc import IntegrityError
+
 from routes_app.adapters.postgres.routes_repository_adapter import (
     PostgresRoutesRepositoryAdapter,
 )
-from routes_app.errors import TrayectoNotFoundError, FlightIdAlreadyExistsError
-from sqlalchemy.exc import IntegrityError
+from routes_app.domain.models.models import Trayecto
+from routes_app.errors import FlightIdAlreadyExistsError, TrayectoNotFoundError
 
 
 @pytest.fixture
