@@ -1,0 +1,1279 @@
+{
+	"info": {
+		"_postman_id": "ee81440e-5952-4aec-be44-9c823fa04fec",
+		"name": "[MISO] Entrega 1 - Posts",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "213032",
+		"_collection_link": "https://dann33.postman.co/workspace/8d59fc5a-160d-46bf-8d08-66ac887e9ddf/collection/213032-ee81440e-5952-4aec-be44-9c823fa04fec?action=share&source=collection_link&creator=213032"
+	},
+	"item": [
+		{
+			"name": "Reset",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"console.log(pm.response.text())",
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{POSTS_PATH}}/posts/reset",
+					"host": [
+						"{{POSTS_PATH}}"
+					],
+					"path": [
+						"posts",
+						"reset"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Creación de publicación",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"console.log(pm.response.text())",
+							"let jsonData = JSON.parse(responseBody);",
+							"",
+							"pm.test(\"Status code is 201\", function () {",
+							"    pm.response.to.have.status(201);",
+							"});",
+							"tests[\"Response has id\"] = jsonData.id !== undefined;",
+							"tests[\"Response has userId\"] = jsonData.userId !== undefined;",
+							"tests[\"Response has createdAt\"] = jsonData.createdAt !== undefined;",
+							"",
+							"if(jsonData.id) {",
+							"    pm.collectionVariables.set('POST_ID', jsonData.id);",
+							"}",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"let expireAt = new Date();",
+							"(expireAt.setDate(expireAt.getDate() + 7));",
+							"expireAt = expireAt.toISOString();",
+							"",
+							"const routeId = pm.variables.replaceIn('{{$guid}}');",
+							"pm.collectionVariables.set(\"ROUTE_ID\", routeId)",
+							"",
+							"const userId = pm.variables.replaceIn('{{$guid}}');",
+							"pm.collectionVariables.set(\"USER_ID\", userId)",
+							"",
+							"pm.collectionVariables.set('POST_ROUTEID', routeId);",
+							"pm.collectionVariables.set('POST_EXPIREAT', expireAt);"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"routeId\": \"{{POST_ROUTEID}}\",\n    \"expireAt\": \"{{POST_EXPIREAT}}\",\n    \"userId\": \"{{USER_ID}}\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{POSTS_PATH}}/posts",
+					"host": [
+						"{{POSTS_PATH}}"
+					],
+					"path": [
+						"posts"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Creación de publicación campos faltantes",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"console.log(pm.response.text())",
+							"pm.test(\"Status code is 400\", function () {",
+							"    pm.response.to.have.status(400);",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"expireAt\": \"{{POST_EXPIREAT}}\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{POSTS_PATH}}/posts",
+					"host": [
+						"{{POSTS_PATH}}"
+					],
+					"path": [
+						"posts"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Creación de publicación campos userId invalido",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"console.log(pm.response.text())",
+							"pm.test(\"Status code is 400\", function () {",
+							"    pm.response.to.have.status(400);",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"routeId\": \"{{POST_ROUTEID}}\",\n    \"expireAt\": \"{{POST_EXPIREAT}}\",\n    \"userId\": \"invalidId\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{POSTS_PATH}}/posts",
+					"host": [
+						"{{POSTS_PATH}}"
+					],
+					"path": [
+						"posts"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Creación de publicación campos routeId invalido",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"console.log(pm.response.text())",
+							"pm.test(\"Status code is 400\", function () {",
+							"    pm.response.to.have.status(400);",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"routeId\": \"invalidId\",\n    \"expireAt\": \"{{POST_EXPIREAT}}\",\n    \"userId\": \"{{USER_ID}}\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{POSTS_PATH}}/posts",
+					"host": [
+						"{{POSTS_PATH}}"
+					],
+					"path": [
+						"posts"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Creación de publicación expireAt invalido",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"console.log(pm.response.text())",
+							"let jsonData = JSON.parse(responseBody);",
+							"",
+							"pm.test(\"Status code is 412\", function () {",
+							"    pm.response.to.have.status(412);",
+							"});",
+							"tests[\"Response has msg\"] = jsonData.msg === 'La fecha expiración no es válida';"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"routeId\": \"{{POST_ROUTEID}}\",\n    \"expireAt\": \"2022-08-01T21:20:53.214Z\",\n    \"userId\": \"{{USER_ID}}\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{POSTS_PATH}}/posts",
+					"host": [
+						"{{POSTS_PATH}}"
+					],
+					"path": [
+						"posts"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Consultar cantidad publicaciones",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"console.log(pm.response.text())",
+							"let jsonData = JSON.parse(responseBody);",
+							"",
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"tests[\"Should exist 1 post\"] = jsonData.count === 1"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{POSTS_PATH}}/posts/count",
+					"host": [
+						"{{POSTS_PATH}}"
+					],
+					"path": [
+						"posts",
+						"count"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Buscar publicaciones sin filtros",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"console.log(pm.response.text())",
+							"let jsonData = JSON.parse(responseBody);",
+							"",
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"tests[\"One post should be present\"] = jsonData.length > 0;",
+							"",
+							"let post = jsonData[0];",
+							"tests[\"Post should match id\"] = post.id === pm.collectionVariables.get(\"POST_ID\");",
+							"tests[\"Post should have routeId\"] = post.routeId !== undefined;",
+							"tests[\"Post should have userId\"] = post.userId !== undefined;",
+							"tests[\"Post should have expireAt\"] = post.expireAt !== undefined;",
+							"tests[\"Post should have createdAt\"] = post.createdAt !== undefined;",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{POSTS_PATH}}/posts",
+					"host": [
+						"{{POSTS_PATH}}"
+					],
+					"path": [
+						"posts"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Buscar publicaciones sin expirar",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"console.log(pm.response.text())",
+							"let jsonData = JSON.parse(responseBody);",
+							"",
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"tests[\"One post should be present\"] = jsonData.length === 1;",
+							"",
+							"let post = jsonData[0];",
+							"tests[\"Post should match id\"] = post.id === pm.collectionVariables.get(\"POST_ID\");",
+							"tests[\"Post should have routeId\"] = post.routeId !== undefined;",
+							"tests[\"Post should have userId\"] = post.userId !== undefined;",
+							"tests[\"Post should have expireAt\"] = post.expireAt !== undefined;",
+							"tests[\"Post should have createdAt\"] = post.createdAt !== undefined;",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{POSTS_PATH}}/posts?expire=false",
+					"host": [
+						"{{POSTS_PATH}}"
+					],
+					"path": [
+						"posts"
+					],
+					"query": [
+						{
+							"key": "expire",
+							"value": "false"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Buscar publicaciones expiracion invalida",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"console.log(pm.response.text())",
+							"pm.test(\"Status code is 400\", function () {",
+							"    pm.response.to.have.status(400);",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{POSTS_PATH}}/posts?expire=invalid",
+					"host": [
+						"{{POSTS_PATH}}"
+					],
+					"path": [
+						"posts"
+					],
+					"query": [
+						{
+							"key": "expire",
+							"value": "invalid"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Buscar publicaciones con route id",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"console.log(pm.response.text())",
+							"let jsonData = JSON.parse(responseBody);",
+							"",
+							" pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"tests[\"One post should be present\"] = jsonData.length === 1;",
+							"",
+							"let post = jsonData[0];",
+							"tests[\"Post should match id\"] = post.id === pm.collectionVariables.get(\"POST_ID\");",
+							"tests[\"Post should match routeId\"] = post.routeId === pm.collectionVariables.get(\"ROUTE_ID\");",
+							"tests[\"Post should have userId\"] = post.userId !== undefined;",
+							"tests[\"Post should have expireAt\"] = post.expireAt !== undefined;",
+							"tests[\"Post should have createdAt\"] = post.createdAt !== undefined;"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{POSTS_PATH}}/posts?route={{ROUTE_ID}}",
+					"host": [
+						"{{POSTS_PATH}}"
+					],
+					"path": [
+						"posts"
+					],
+					"query": [
+						{
+							"key": "route",
+							"value": "{{ROUTE_ID}}"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Buscar publicaciones usuario",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"console.log(pm.response.text())",
+							"let jsonData = JSON.parse(responseBody);",
+							"",
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"tests[\"One post should be present\"] = jsonData.length === 1;",
+							"",
+							"let post = jsonData[0];",
+							"tests[\"Post should match id\"] = post.id === pm.collectionVariables.get(\"POST_ID\");",
+							"tests[\"Post should have routeId\"] = post.routeId !== undefined;",
+							"tests[\"Post should have userId\"] = post.userId !== undefined;",
+							"tests[\"Post should have expireAt\"] = post.expireAt !== undefined;",
+							"tests[\"Post should have createdAt\"] = post.createdAt !== undefined;"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{POSTS_PATH}}/posts?owner={{USER_ID}}",
+					"host": [
+						"{{POSTS_PATH}}"
+					],
+					"path": [
+						"posts"
+					],
+					"query": [
+						{
+							"key": "owner",
+							"value": "{{USER_ID}}"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Buscar publicaciones de otro usuario",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"console.log(pm.response.text())",
+							"let jsonData = JSON.parse(responseBody);",
+							"",
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"tests[\"No post should be present\"] = jsonData.length === 0;"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{POSTS_PATH}}/posts?owner=bf8792d2-3097-11ee-be56-0242ac120002",
+					"host": [
+						"{{POSTS_PATH}}"
+					],
+					"path": [
+						"posts"
+					],
+					"query": [
+						{
+							"key": "owner",
+							"value": "bf8792d2-3097-11ee-be56-0242ac120002"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Buscar publicaciones con todos los filtros",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"console.log(pm.response.text())",
+							"let jsonData = JSON.parse(responseBody);",
+							"",
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"tests[\"One post should be present\"] = jsonData.length === 1;",
+							"",
+							"let post = jsonData[0];",
+							"tests[\"Post should match id\"] = post.id === pm.collectionVariables.get(\"POST_ID\");",
+							"tests[\"Post should have routeId\"] = post.routeId !== undefined;",
+							"tests[\"Post should have userId\"] = post.userId !== undefined;",
+							"tests[\"Post should have expireAt\"] = post.expireAt !== undefined;",
+							"tests[\"Post should have createdAt\"] = post.createdAt !== undefined;"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{POSTS_PATH}}/posts?expire=false&route={{ROUTE_ID}}&owner={{USER_ID}}",
+					"host": [
+						"{{POSTS_PATH}}"
+					],
+					"path": [
+						"posts"
+					],
+					"query": [
+						{
+							"key": "expire",
+							"value": "false"
+						},
+						{
+							"key": "route",
+							"value": "{{ROUTE_ID}}"
+						},
+						{
+							"key": "owner",
+							"value": "{{USER_ID}}"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Consultar publicacion",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"console.log(pm.response.text())",
+							"let jsonData = JSON.parse(responseBody);",
+							"",
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"tests[\"Post should match id\"] = jsonData.id === pm.collectionVariables.get(\"POST_ID\");",
+							"tests[\"Post should have routeId\"] = jsonData.routeId !== undefined;",
+							"tests[\"Post should have userId\"] = jsonData.userId !== undefined;",
+							"tests[\"Post should have expireAt\"] = jsonData.expireAt !== undefined;",
+							"tests[\"Post should have createdAt\"] = jsonData.createdAt !== undefined;"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{POSTS_PATH}}/posts/{{POST_ID}}",
+					"host": [
+						"{{POSTS_PATH}}"
+					],
+					"path": [
+						"posts",
+						"{{POST_ID}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Consultar publicacion con id que no es UUID",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"console.log(pm.response.text())",
+							"pm.test(\"Status code is 400\", function () {",
+							"    pm.response.to.have.status(400);",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{POSTS_PATH}}/posts/1",
+					"host": [
+						"{{POSTS_PATH}}"
+					],
+					"path": [
+						"posts",
+						"1"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Consultar publicacion que no existe",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"console.log(pm.response.text())",
+							"pm.test(\"Status code is 404\", function () {",
+							"    pm.response.to.have.status(404);",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{POSTS_PATH}}/posts/bf8792d2-3097-11ee-be56-0242ac120002",
+					"host": [
+						"{{POSTS_PATH}}"
+					],
+					"path": [
+						"posts",
+						"bf8792d2-3097-11ee-be56-0242ac120002"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Eliminar publicacion con id que no es UUID",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"console.log(pm.response.text())",
+							"pm.test(\"Status code is 400\", function () {",
+							"    pm.response.to.have.status(400);",
+							"});",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "DELETE",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{POSTS_PATH}}/posts/1",
+					"host": [
+						"{{POSTS_PATH}}"
+					],
+					"path": [
+						"posts",
+						"1"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Eliminar publicacion",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"console.log(pm.response.text())",
+							"let jsonData = JSON.parse(responseBody);",
+							"",
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"tests[\"Should have msg\"] = jsonData.msg === \"la publicación fue eliminada\";",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "DELETE",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{POSTS_PATH}}/posts/{{POST_ID}}",
+					"host": [
+						"{{POSTS_PATH}}"
+					],
+					"path": [
+						"posts",
+						"{{POST_ID}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Eliminar publicación que no existe",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"console.log(pm.response.text())",
+							"pm.test(\"Status code is 404\", function () {",
+							"    pm.response.to.have.status(404);",
+							"});",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "DELETE",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{POSTS_PATH}}/posts/bf8792d2-3097-11ee-be56-0242ac120002",
+					"host": [
+						"{{POSTS_PATH}}"
+					],
+					"path": [
+						"posts",
+						"bf8792d2-3097-11ee-be56-0242ac120002"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Consultar cantidad publicaciones",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"console.log(pm.response.text())",
+							"let jsonData = JSON.parse(responseBody);",
+							"",
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"tests[\"Should exist 0 posts\"] = jsonData.count === 0"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{POSTS_PATH}}/posts/count",
+					"host": [
+						"{{POSTS_PATH}}"
+					],
+					"path": [
+						"posts",
+						"count"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Consulta de salud del servicio",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"console.log(pm.response.text())",
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{POSTS_PATH}}/posts/ping",
+					"host": [
+						"{{POSTS_PATH}}"
+					],
+					"path": [
+						"posts",
+						"ping"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "POSTS_PATH",
+			"value": "http://localhost:3001",
+			"type": "string"
+		},
+		{
+			"key": "ROUTE_ID",
+			"value": ""
+		},
+		{
+			"key": "USER_ID",
+			"value": ""
+		},
+		{
+			"key": "POST_ROUTEID",
+			"value": ""
+		},
+		{
+			"key": "POST_EXPIREAT",
+			"value": ""
+		},
+		{
+			"key": "POST_ID",
+			"value": ""
+		}
+	]
+}
