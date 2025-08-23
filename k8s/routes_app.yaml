@@ -34,7 +34,6 @@ spec:
         - name: db-storage
           emptyDir: {}
 
-
 ---
 # Servicio para la DB
 apiVersion: v1
@@ -48,7 +47,6 @@ spec:
     - protocol: TCP
       port: 5432
       targetPort: 5432
-
 
 ---
 # Despliegue de la Aplicación de Rutas
@@ -71,9 +69,9 @@ spec:
       containers:
         - name: routes-app
           image: routes-app:latest
-          imagePullPolicy: Never
-          command: ["/bin/sh", "-c"]
-          args: ["sleep 1d"]
+          imagePullPolicy: Never # Correcto para imágenes locales en Minikube
+          # --- SECCIÓN CORREGIDA ---
+          # Se eliminaron las líneas 'command' y 'args' para usar el CMD del Dockerfile.
           ports:
             - containerPort: 8000
           env:
@@ -83,17 +81,16 @@ spec:
             httpGet:
               path: /routes/ping
               port: 8000
-            initialDelaySeconds: 60
-            periodSeconds: 30
-            failureThreshold: 5
+            initialDelaySeconds: 20 # Reducido para un arranque más rápido
+            periodSeconds: 15
+            failureThreshold: 3
           livenessProbe:
             httpGet:
               path: /routes/ping
               port: 8000
-            initialDelaySeconds: 90
-            periodSeconds: 30
-            failureThreshold: 5
-
+            initialDelaySeconds: 45 # Reducido para un arranque más rápido
+            periodSeconds: 20
+            failureThreshold: 3
 
 ---
 # Servicio para la Aplicación
@@ -102,14 +99,13 @@ kind: Service
 metadata:
   name: routes-app-service
 spec:
-  type: NodePort
+  type: NodePort # Permite acceder a la app desde fuera del clúster
   selector:
     app: routes-app
   ports:
     - protocol: TCP
       port: 8000
       targetPort: 8000
-
 
 ---
 # Política de Red para Aislar DB
