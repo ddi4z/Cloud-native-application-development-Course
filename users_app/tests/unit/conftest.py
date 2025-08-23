@@ -5,6 +5,7 @@ import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
+from src.adapters.memory.user_repository_adapter import InMemoryUserRepositoryAdapter
 from src.adapters.postgres.user_repository_adapter import PostgresUserRepositoryAdapter
 from src.domain.models.user import User, UserStatus
 from src.domain.models.user_creation_request import UserCreationRequest
@@ -76,6 +77,13 @@ def repo(db_session, monkeypatch):
     Base.metadata.create_all(repo_adapter.engine)
 
     return repo_adapter
+
+
+@pytest.fixture
+def memory_repo():
+    memory_repo = InMemoryUserRepositoryAdapter()
+    memory_repo.reset()
+    return memory_repo
 
 
 @pytest.fixture
