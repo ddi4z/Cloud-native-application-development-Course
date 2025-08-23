@@ -47,7 +47,7 @@ class PostgresRoutesRepositoryAdapter(RoutesRepositoryPort):
         self.SessionLocal = sessionmaker(
             autocommit=False, autoflush=False, bind=self.engine
         )
-        # Base.metadata.create_all(bind=self.engine)
+        Base.metadata.create_all(bind=self.engine)
 
     def _get_session(self) -> Session:
         return self.SessionLocal()
