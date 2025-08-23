@@ -1,5 +1,6 @@
- 
-from posts_app.src.adapters.postgres.post_repository_adapter import PostgresPostRepositoryAdapter
+from posts_app.src.adapters.postgres.post_repository_adapter import (
+    PostgresPostRepositoryAdapter,
+)
 from src.domain.ports.post_repository_port import PostRepositoryPort
 from src.domain.use_cases.base_use_case import BaseUseCase
 from src.domain.use_cases.count_post_use_case import CountPostUseCase
@@ -14,7 +15,6 @@ from src.domain.use_cases.reset_post_use_case import ResetPostUseCase
 # Shared in-memory repository instance for all post use cases
 # repository: PostRepositoryPort = InMemoryPostRepositoryAdapter()
 repository: PostRepositoryPort = PostgresPostRepositoryAdapter()
-
 
 
 def build_create_post_use_case() -> BaseUseCase:
