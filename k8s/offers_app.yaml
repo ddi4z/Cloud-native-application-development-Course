@@ -22,7 +22,7 @@ spec:
 
 ---
 # Define the deployment for the offers-app
-apiVersion: v1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: offers-app-deployment
@@ -99,7 +99,7 @@ spec:
 
 ---
 # Define the deployment for the offers-db
-apiVersion: v1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: offers-db-deployment
