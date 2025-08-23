@@ -17,6 +17,7 @@ from routes_app.assembly import (
 )
 from routes_app.domain.models.models import Trayecto
 from routes_app.domain.use_cases.base_use_case import BaseUseCase
+
 # Importamos la excepción para poder manejarla
 from routes_app.errors import TrayectoNotFoundError
 
@@ -108,7 +109,7 @@ def list_trayectos(
             trayecto = get_by_flight_id_uc.execute(flightId)
             return [TrayectoOut.model_validate(trayecto.model_dump())]
         except TrayectoNotFoundError:
-            return []  
+            return []
     items = list_uc.execute()
     return [TrayectoOut.model_validate(t.model_dump()) for t in items]
 

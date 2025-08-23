@@ -57,5 +57,6 @@ python_files = "test_*.py"
 testpaths = ["tests"]
 pythonpath = ["src"] 
 env = [
-    "LOG_LEVEL=INFO"
+    "LOG_LEVEL=INFO",
+    "DATABASE_URL=sqlite:///./test.db"
 ]

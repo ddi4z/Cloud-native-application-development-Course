@@ -39,9 +39,20 @@ class Trayecto(BaseModel):
     @field_validator("plannedStartDate")
     @classmethod
     def validate_start_date_in_future(cls, v: datetime) -> datetime:
-        """Valida que la fecha de inicio no esté en el pasado."""
+        """Valida que la fecha de inicio no esté en el pasado y la hace 'aware'."""
+        if v.tzinfo is None:
+            v = v.replace(tzinfo=timezone.utc)
+
         if v < datetime.now(timezone.utc):
             raise ValueError("La fecha de inicio no puede estar en el pasado.")
+        return v
+
+    @field_validator("plannedEndDate")
+    @classmethod
+    def ensure_end_date_is_aware(cls, v: datetime) -> datetime:
+        """Asegura que la fecha de fin tenga zona horaria UTC si es 'naive'."""
+        if v.tzinfo is None:
+            v = v.replace(tzinfo=timezone.utc)
         return v
 
     @model_validator(mode="after")  # Para validar las fechas con los datos "limpios"
