@@ -4,7 +4,7 @@ from uuid import uuid4
 from datetime import datetime, timedelta, timezone
 
 from routes_app.domain.models.models import Trayecto
-from routes_app.adapters.postgres.routes_repository_adapter import PostgresRoutesRepositoryAdapter, TrayectoDB
+from routes_app.adapters.postgres.routes_repository_adapter import PostgresRoutesRepositoryAdapter
 from routes_app.errors import TrayectoNotFoundError, FlightIdAlreadyExistsError
 from sqlalchemy.exc import IntegrityError
 
@@ -30,13 +30,17 @@ def mock_session():
     return MagicMock()
 
 @patch('routes_app.adapters.postgres.routes_repository_adapter.create_engine')
-def test_create_trayecto_success(mock_create_engine, mock_session, trayecto_domain_model):
+def test_create_trayecto_success(mock_create_engine, mock_session, trayecto_domain_model, mocker):
     """
     Prueba la creación exitosa de un trayecto en el adaptador de PostgreSQL.
     """
+    # Simula la variable de entorno ANTES de crear el adaptador
+    mocker.patch.dict('os.environ', {'DATABASE_URL': 'postgresql://test:test@localhost/testdb'})
+    
     adapter = PostgresRoutesRepositoryAdapter()
     adapter._get_session = MagicMock(return_value=mock_session)
     mock_session.__enter__.return_value = mock_session
+    
     result = adapter.create(trayecto_domain_model)
 
     mock_session.add.assert_called_once()
@@ -45,28 +49,29 @@ def test_create_trayecto_success(mock_create_engine, mock_session, trayecto_doma
     assert result.flightId == trayecto_domain_model.flightId
 
 @patch('routes_app.adapters.postgres.routes_repository_adapter.create_engine')
-def test_create_trayecto_with_existing_flightid_fails(mock_create_engine, mock_session, trayecto_domain_model):
+def test_create_trayecto_with_existing_flightid_fails(mock_create_engine, mock_session, trayecto_domain_model, mocker): # <-- AÑADIDO mocker
     """
     Prueba que la creación de un trayecto falle si el flightId ya existe,
     lanzando la excepción correcta.
     """
-    # Configuración del mock para simular un error de integridad
+    mocker.patch.dict('os.environ', {'DATABASE_URL': 'postgresql://test:test@localhost/testdb'})
     adapter = PostgresRoutesRepositoryAdapter()
     adapter._get_session = MagicMock(return_value=mock_session)
     mock_session.__enter__.return_value = mock_session
     mock_session.commit.side_effect = IntegrityError("mocked error", params=None, orig=None)
 
-    # Ejecución / Verificación
     with pytest.raises(FlightIdAlreadyExistsError):
         adapter.create(trayecto_domain_model)
     
     mock_session.rollback.assert_called_once()
 
 @patch('routes_app.adapters.postgres.routes_repository_adapter.create_engine')
-def test_get_trayecto_not_found(mock_create_engine, mock_session):
+def test_get_trayecto_not_found(mock_create_engine, mock_session, mocker): # <-- AÑADIDO mocker
     """
     Prueba que se lance TrayectoNotFoundError cuando se busca un trayecto que no existe.
     """
+    # Simula la variable de entorno ANTES de crear el adaptador
+    mocker.patch.dict('os.environ', {'DATABASE_URL': 'postgresql://test:test@localhost/testdb'})
     adapter = PostgresRoutesRepositoryAdapter()
     adapter._get_session = MagicMock(return_value=mock_session)
     mock_session.__enter__.return_value = mock_session
