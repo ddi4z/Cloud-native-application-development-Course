@@ -1,4 +1,78 @@
+################################
+# Deployment for offers-app    #
+################################
+
+# Service to expose the offers-app pod
+apiVersion: v1
+kind: Service 
+metadata:
+  name: offers-app-service
+  labels:
+    app: offers-app
+spec:
+  # nodePort exposes the service on each Node's IP at a static port (the NodePort).
+  type: NodePort
+  selector:
+    app: offers-app
+  ports:
+  - protocol: TCP
+    port: 8080        # Port exposed by the service
+    targetPort: 3003  # Port on the pod to which traffic is directed
+    nodePort: 30080   # Port on each node to expose the service
+
 ---
+# Define the deployment for the offers-app
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: offers-app-deployment
+  labels:
+    app: offers-app
+spec: 
+  replicas: 1
+  selector:
+    matchLabels:
+      app: offers-app
+  template:
+    metadata:
+      labels:
+        app: offers-app
+    spec:
+      containers:
+      - name: offers-app
+        image: offers-app:1.0.0
+        ports:
+        - containerPort: 3003 # this port is exposed by the container
+        livenessProbe:
+          httpGet:
+            path: /ping
+            port: 3003
+          initialDelaySeconds: 5
+          periodSeconds: 10
+          failureThreshold: 3
+        env:
+        - name: CONNECTION_STRING
+          value: "postgresql://User:Password@offers-db-service:5432/offers_db"
+
+---
+#########################
+# DATABASE offers-db    #
+#########################
+
+# ConfigMap for PostgreSQL environment variables
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgres-config
+  labels:
+    app: offers-db
+data:
+  POSTGRES_DB: offers_db
+  POSTGRES_USER: User
+  POSTGRES_PASSWORD: Password
+
+---
+# Define the PersistentVolume for the offers-db
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
@@ -10,12 +84,14 @@ spec:
     - ReadWriteOnce
   resources:
     requests:
-      storage: 1Gi
+      storage: 250Mi
+
 ---
+# Define the deployment for the offers-db
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: offers-db
+  name: offers-db-deployment
   labels:
     app: offers-db
 spec:
@@ -29,25 +105,24 @@ spec:
         app: offers-db
     spec:
       containers:
-        - name: offers-db
-          image: postgres:15-alpine
-          ports:
-            - containerPort: 5432
-          env:
-            - name: POSTGRES_USER
-              value: user
-            - name: POSTGRES_PASSWORD
-              value: password
-            - name: POSTGRES_DB
-              value: offersdb
-          volumeMounts:
-            - mountPath: /var/lib/postgresql/data
-              name: offers-db-storage
+      - name: postgres
+        image: postgres:16-alpine
+        ports: 
+        - containerPort: 5432
+        envFrom:
+        - configMapRef:
+            name: postgres-config
+        volumeMounts:
+        - name: offers-db-storage
+          mountPath: /var/lib/postgresql/data
+
       volumes:
         - name: offers-db-storage
           persistentVolumeClaim:
             claimName: offers-db-pvc
+
 ---
+# Service to expose the offers-db pod for internal communication
 apiVersion: v1
 kind: Service
 metadata:
@@ -55,66 +130,18 @@ metadata:
   labels:
     app: offers-db
 spec:
+  # This service is only accessible within the cluster
   type: ClusterIP
   selector:
     app: offers-db
   ports:
-    - protocol: TCP
-      port: 5432
-      targetPort: 5432
+  - protocol: TCP
+    port: 5432        # Port exposed by the service
+    targetPort: 5432  # Port on the pod to which traffic is directed
+
 ---
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: offers-app
-  labels:
-    app: offers-app
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: offers-app
-  template:
-    metadata:
-      labels:
-        app: offers-app
-    spec:
-      initContainers:
-      - name: wait-for-db
-        image: busybox:1.36.1
-        command: ['sh', '-c', 'until nc -z offers-db-service 5432; do echo waiting for db; sleep 2; done;']
-      containers:
-        - name: offers-app
-          image: offers-app:v1.0.0
-          ports:
-            - containerPort: 9000
-          env:
-            - name: DATABASE_URL
-              value: postgresql://user:password@offers-db-service:5432/offersdb
-          livenessProbe:
-            httpGet:
-              path: /ping
-              port: 9000
-            initialDelaySeconds: 5 
-            periodSeconds: 30
-            failureThreshold: 3
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: offers-app-service
-  labels:
-    app: offers-app
-spec:
-  type: NodePort
-  selector:
-    app: offers-app
-  ports:
-    - protocol: TCP
-      port: 80
-      targetPort: 9000
-      nodePort: 30003
----
+# NetworkPolicy to restrict access to the offers-db pod
+# The offers-db pod will only accept traffic from the offers-app pod
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:

@@ -1,0 +1,1239 @@
+{
+	"info": {
+		"_postman_id": "71ff562f-fed9-437f-9a1d-ce0fa3f0550b",
+		"name": "[MISO] Entrega 1 - Offers",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "213032",
+		"_collection_link": "https://dann33.postman.co/workspace/8d59fc5a-160d-46bf-8d08-66ac887e9ddf/collection/213032-71ff562f-fed9-437f-9a1d-ce0fa3f0550b?action=share&source=collection_link&creator=213032"
+	},
+	"item": [
+		{
+			"name": "Reset",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"console.log(pm.response.text())",
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{OFFERS_PATH}}/offers/reset",
+					"host": [
+						"{{OFFERS_PATH}}"
+					],
+					"path": [
+						"offers",
+						"reset"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Creación de oferta",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"console.log(pm.response.text())",
+							"let jsonData = JSON.parse(responseBody);",
+							"",
+							"pm.test(\"Status code is 201\", function () {",
+							"    pm.response.to.have.status(201);",
+							"});",
+							"tests[\"Response has id\"] = jsonData.id !== undefined;",
+							"tests[\"Response has userId\"] = jsonData.userId !== undefined;",
+							"tests[\"Response has createdAt\"] = jsonData.createdAt !== undefined;",
+							"",
+							"if(jsonData.id) {",
+							"    pm.collectionVariables.set('OFFER_ID', jsonData.id);",
+							"}",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"const SIZES = [\"LARGE\", \"MEDIUM\", \"SMALL\"];",
+							"const FRAGILE_TYPES = [true, false]",
+							"",
+							"const postId = pm.variables.replaceIn('{{$guid}}');",
+							"pm.collectionVariables.set(\"POST_ID\", postId)",
+							"",
+							"const userId = pm.variables.replaceIn('{{$guid}}');",
+							"pm.collectionVariables.set(\"USER_ID\", userId)",
+							"",
+							"const description = pm.variables.replaceIn(\"{{$randomLoremWords}}\").toLowerCase();",
+							"const size = SIZES[Math.floor(Math.random() * SIZES.length)];",
+							"const fragile = FRAGILE_TYPES[Math.floor(Math.random() * FRAGILE_TYPES.length)];",
+							"const offer = pm.variables.replaceIn(\"{{$randomInt}}\");",
+							"",
+							"pm.collectionVariables.set('OFFER_POSTID', postId);",
+							"pm.collectionVariables.set('OFFER_DESCRIPTION', description);",
+							"pm.collectionVariables.set('OFFER_SIZE', size);",
+							"pm.collectionVariables.set('OFFER_FRAGILE', fragile);",
+							"pm.collectionVariables.set('OFFER_OFFER', offer);"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"postId\": \"{{OFFER_POSTID}}\",\n    \"userId\": \"{{USER_ID}}\",\n    \"description\": \"{{OFFER_DESCRIPTION}}\",\n    \"size\": \"{{OFFER_SIZE}}\",\n    \"fragile\": {{OFFER_FRAGILE}},\n    \"offer\": {{OFFER_OFFER}}\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{OFFERS_PATH}}/offers",
+					"host": [
+						"{{OFFERS_PATH}}"
+					],
+					"path": [
+						"offers"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Creación de oferta campos faltantes",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"console.log(pm.response.text())",
+							"pm.test(\"Status code is 400\", function () {",
+							"    pm.response.to.have.status(400);",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"offer\": {{OFFER_OFFER}}\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{OFFERS_PATH}}/offers",
+					"host": [
+						"{{OFFERS_PATH}}"
+					],
+					"path": [
+						"offers"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Creación de oferta postId invalido",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"console.log(pm.response.text())",
+							"pm.test(\"Status code is 400\", function () {",
+							"    pm.response.to.have.status(400);",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"postId\": \"invalidToken\",\n    \"userId\": \"{{USER_ID}}\",\n    \"description\": \"{{OFFER_DESCRIPTION}}\",\n    \"size\": \"{{OFFER_SIZE}}\",\n    \"fragile\": {{OFFER_FRAGILE}},\n    \"offer\": {{OFFER_OFFER}}\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{OFFERS_PATH}}/offers",
+					"host": [
+						"{{OFFERS_PATH}}"
+					],
+					"path": [
+						"offers"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Creación de oferta userId invalido",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"console.log(pm.response.text())",
+							"pm.test(\"Status code is 400\", function () {",
+							"    pm.response.to.have.status(400);",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"postId\": \"{{OFFER_POSTID}}\",\n    \"userId\": \"invalidToken\",\n    \"description\": \"{{OFFER_DESCRIPTION}}\",\n    \"size\": \"{{OFFER_SIZE}}\",\n    \"fragile\": {{OFFER_FRAGILE}},\n    \"offer\": {{OFFER_OFFER}}\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{OFFERS_PATH}}/offers",
+					"host": [
+						"{{OFFERS_PATH}}"
+					],
+					"path": [
+						"offers"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Creación de oferta size invalido",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"console.log(pm.response.text())",
+							"pm.test(\"Status code is 412\", function () {",
+							"    pm.response.to.have.status(412);",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"postId\": \"{{OFFER_POSTID}}\",\n    \"userId\": \"{{USER_ID}}\",\n    \"description\": \"{{OFFER_DESCRIPTION}}\",\n    \"size\": \"invalid\",\n    \"fragile\": {{OFFER_FRAGILE}},\n    \"offer\": {{OFFER_OFFER}}\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{OFFERS_PATH}}/offers",
+					"host": [
+						"{{OFFERS_PATH}}"
+					],
+					"path": [
+						"offers"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Creación de oferta negativa",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"console.log(pm.response.text())",
+							"pm.test(\"Status code is 412\", function () {",
+							"    pm.response.to.have.status(412);",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"postId\": \"{{OFFER_POSTID}}\",\n    \"userId\": \"{{USER_ID}}\",\n    \"description\": \"{{OFFER_DESCRIPTION}}\",\n    \"size\": \"{{OFFER_SIZE}}\",\n    \"fragile\": {{OFFER_FRAGILE}},\n    \"offer\": -100\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{OFFERS_PATH}}/offers",
+					"host": [
+						"{{OFFERS_PATH}}"
+					],
+					"path": [
+						"offers"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Consultar cantidad ofertas",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"console.log(pm.response.text())",
+							"let jsonData = JSON.parse(responseBody);",
+							"",
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"tests[\"Should exist 1 offer\"] = jsonData.count === 1"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"packages": {},
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{OFFERS_PATH}}/offers/count",
+					"host": [
+						"{{OFFERS_PATH}}"
+					],
+					"path": [
+						"offers",
+						"count"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Listar ofertas sin filtros",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"console.log(pm.response.text())",
+							"let jsonData = JSON.parse(responseBody);",
+							"",
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"tests[\"One offer should be present\"] = jsonData.length === 1;",
+							"",
+							"let offer = jsonData[0];",
+							"tests[\"Offer should match id\"] = offer.id === pm.collectionVariables.get(\"OFFER_ID\");",
+							"tests[\"Offer should have postId\"] = offer.postId !== undefined;",
+							"tests[\"Offer should have description\"] = offer.description !== undefined;",
+							"tests[\"Offer should have size\"] = offer.size !== undefined;",
+							"tests[\"Offer should have fragile\"] = offer.fragile !== undefined;",
+							"tests[\"Offer should have offer\"] = offer.offer !== undefined;",
+							"tests[\"Offer should have createdAt\"] = offer.createdAt !== undefined;",
+							"tests[\"Offer should have userId\"] = offer.userId !== undefined;",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{OFFERS_PATH}}/offers",
+					"host": [
+						"{{OFFERS_PATH}}"
+					],
+					"path": [
+						"offers"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Listar ofertas por publicacion",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"console.log(pm.response.text())",
+							"let jsonData = JSON.parse(responseBody);",
+							"",
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"tests[\"One offer should be present\"] = jsonData.length === 1;",
+							"",
+							"let offer = jsonData[0];",
+							"tests[\"Offer should match id\"] = offer.id === pm.collectionVariables.get(\"OFFER_ID\");",
+							"tests[\"Offer should match postId\"] = offer.postId === pm.collectionVariables.get(\"POST_ID\");",
+							"tests[\"Offer should have description\"] = offer.description !== undefined;",
+							"tests[\"Offer should have size\"] = offer.size !== undefined;",
+							"tests[\"Offer should have fragile\"] = offer.fragile !== undefined;",
+							"tests[\"Offer should have offer\"] = offer.offer !== undefined;",
+							"tests[\"Offer should have createdAt\"] = offer.createdAt !== undefined;",
+							"tests[\"Offer should have userId\"] = offer.userId !== undefined;"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{OFFERS_PATH}}/offers?post={{POST_ID}}",
+					"host": [
+						"{{OFFERS_PATH}}"
+					],
+					"path": [
+						"offers"
+					],
+					"query": [
+						{
+							"key": "post",
+							"value": "{{POST_ID}}"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Listar ofertas usuario",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"console.log(pm.response.text())",
+							"let jsonData = JSON.parse(responseBody);",
+							"",
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"tests[\"One offer should be present\"] = jsonData.length > 0;",
+							"",
+							"let offer = jsonData[0];",
+							"tests[\"Offer should match id\"] = offer.id === pm.collectionVariables.get(\"OFFER_ID\");",
+							"tests[\"Offer should have postId\"] = offer.postId !== undefined;",
+							"tests[\"Offer should have description\"] = offer.description !== undefined;",
+							"tests[\"Offer should have size\"] = offer.size !== undefined;",
+							"tests[\"Offer should have fragile\"] = offer.fragile !== undefined;",
+							"tests[\"Offer should have offer\"] = offer.offer !== undefined;",
+							"tests[\"Offer should have createdAt\"] = offer.createdAt !== undefined;",
+							"tests[\"Offer should have userId\"] = offer.userId !== undefined;"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{OFFERS_PATH}}/offers?owner={{USER_ID}}",
+					"host": [
+						"{{OFFERS_PATH}}"
+					],
+					"path": [
+						"offers"
+					],
+					"query": [
+						{
+							"key": "owner",
+							"value": "{{USER_ID}}"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Listar ofertas de otro usuario",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"console.log(pm.response.text())",
+							"let jsonData = JSON.parse(responseBody);",
+							"",
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"tests[\"No offer should be present\"] = jsonData.length === 0;"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{OFFERS_PATH}}/offers?owner=bf8792d2-3097-11ee-be56-0242ac120002",
+					"host": [
+						"{{OFFERS_PATH}}"
+					],
+					"path": [
+						"offers"
+					],
+					"query": [
+						{
+							"key": "owner",
+							"value": "bf8792d2-3097-11ee-be56-0242ac120002"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Listar ofertas con todos los filtros",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"console.log(pm.response.text())",
+							"let jsonData = JSON.parse(responseBody);",
+							"",
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"tests[\"One offer should be present\"] = jsonData.length === 1;",
+							"",
+							"let offer = jsonData[0];",
+							"tests[\"Offer should match id\"] = offer.id === pm.collectionVariables.get(\"OFFER_ID\");",
+							"tests[\"Offer should have postId\"] = offer.postId !== undefined;",
+							"tests[\"Offer should have description\"] = offer.description !== undefined;",
+							"tests[\"Offer should have size\"] = offer.size !== undefined;",
+							"tests[\"Offer should have fragile\"] = offer.fragile !== undefined;",
+							"tests[\"Offer should have offer\"] = offer.offer !== undefined;",
+							"tests[\"Offer should have createdAt\"] = offer.createdAt !== undefined;",
+							"tests[\"Offer should have userId\"] = offer.userId !== undefined;"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{OFFERS_PATH}}/offers?post={{POST_ID}}&owner={{USER_ID}}",
+					"host": [
+						"{{OFFERS_PATH}}"
+					],
+					"path": [
+						"offers"
+					],
+					"query": [
+						{
+							"key": "post",
+							"value": "{{POST_ID}}"
+						},
+						{
+							"key": "owner",
+							"value": "{{USER_ID}}"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Consultar oferta",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"console.log(pm.response.text())",
+							"let jsonData = JSON.parse(responseBody);",
+							"",
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"tests[\"Offer should match id\"] = jsonData.id === pm.collectionVariables.get(\"OFFER_ID\");",
+							"tests[\"Offer should have postId\"] = jsonData.postId !== undefined;",
+							"tests[\"Offer should have description\"] = jsonData.description !== undefined;",
+							"tests[\"Offer should have size\"] = jsonData.size !== undefined;",
+							"tests[\"Offer should have fragile\"] = jsonData.fragile !== undefined;",
+							"tests[\"Offer should have offer\"] = jsonData.offer !== undefined;",
+							"tests[\"Offer should have createdAt\"] = jsonData.createdAt !== undefined;",
+							"tests[\"Offer should have userId\"] = jsonData.userId !== undefined;"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{OFFERS_PATH}}/offers/{{OFFER_ID}}",
+					"host": [
+						"{{OFFERS_PATH}}"
+					],
+					"path": [
+						"offers",
+						"{{OFFER_ID}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Consultar oferta con id que no es UUID",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"console.log(pm.response.text())",
+							"pm.test(\"Status code is 400\", function () {",
+							"    pm.response.to.have.status(400);",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{OFFERS_PATH}}/offers/1",
+					"host": [
+						"{{OFFERS_PATH}}"
+					],
+					"path": [
+						"offers",
+						"1"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Consultar oferta que no existe",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"console.log(pm.response.text())",
+							"pm.test(\"Status code is 404\", function () {",
+							"    pm.response.to.have.status(404);",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{OFFERS_PATH}}/offers/bf8792d2-3097-11ee-be56-0242ac120002",
+					"host": [
+						"{{OFFERS_PATH}}"
+					],
+					"path": [
+						"offers",
+						"bf8792d2-3097-11ee-be56-0242ac120002"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Eliminar oferta con id que no es UUID",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"console.log(pm.response.text())",
+							"pm.test(\"Status code is 400\", function () {",
+							"    pm.response.to.have.status(400);",
+							"});",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "DELETE",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{OFFERS_PATH}}/offers/1",
+					"host": [
+						"{{OFFERS_PATH}}"
+					],
+					"path": [
+						"offers",
+						"1"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Eliminar oferta",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"console.log(pm.response.text())",
+							"let jsonData = JSON.parse(responseBody);",
+							"",
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"tests[\"Should have msg\"] = jsonData.msg === \"la oferta fue eliminada\";",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "DELETE",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{OFFERS_PATH}}/offers/{{OFFER_ID}}",
+					"host": [
+						"{{OFFERS_PATH}}"
+					],
+					"path": [
+						"offers",
+						"{{OFFER_ID}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Eliminar oferta que no existe",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"console.log(pm.response.text())",
+							"pm.test(\"Status code is 404\", function () {",
+							"    pm.response.to.have.status(404);",
+							"});",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "DELETE",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{OFFERS_PATH}}/offers/bf8792d2-3097-11ee-be56-0242ac120002",
+					"host": [
+						"{{OFFERS_PATH}}"
+					],
+					"path": [
+						"offers",
+						"bf8792d2-3097-11ee-be56-0242ac120002"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Consultar cantidad ofertas",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"console.log(pm.response.text())",
+							"let jsonData = JSON.parse(responseBody);",
+							"",
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"tests[\"Should exist 0 offers\"] = jsonData.count === 0"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{OFFERS_PATH}}/offers/count",
+					"host": [
+						"{{OFFERS_PATH}}"
+					],
+					"path": [
+						"offers",
+						"count"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Consulta de salud del servicio",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"console.log(pm.response.text())",
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{OFFERS_PATH}}/offers/ping",
+					"host": [
+						"{{OFFERS_PATH}}"
+					],
+					"path": [
+						"offers",
+						"ping"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "OFFERS_PATH",
+			"value": "http://localhost:3003",
+			"type": "string"
+		},
+		{
+			"key": "POST_ID",
+			"value": ""
+		},
+		{
+			"key": "USER_ID",
+			"value": ""
+		},
+		{
+			"key": "OFFER_POSTID",
+			"value": ""
+		},
+		{
+			"key": "OFFER_DESCRIPTION",
+			"value": ""
+		},
+		{
+			"key": "OFFER_SIZE",
+			"value": ""
+		},
+		{
+			"key": "OFFER_FRAGILE",
+			"value": ""
+		},
+		{
+			"key": "OFFER_OFFER",
+			"value": ""
+		},
+		{
+			"key": "OFFER_ID",
+			"value": ""
+		}
+	]
+}
