@@ -67,9 +67,9 @@ spec:
         app: routes-app
     spec:
       initContainers:
-      - name: wait-for-db
-        image: busybox:1.36.1
-        command: ['sh', '-c', 'until nc -z routes-db-service 5432; do echo "Esperando a la base de datos de rutas..."; sleep 2; done;']
+        - name: wait-for-db
+          image: busybox:1.36.1
+          command: ['sh', '-c', 'until nc -z routes-db-service 5432; do echo "Esperando a la base de datos de rutas..."; sleep 2; done;']
       containers:
         - name: routes-app
           image: routes-app:v1.0.0
@@ -105,9 +105,11 @@ spec:
   selector:
     app: routes-app
   ports:
-    - protocol: TCP
+    - name: http
+      protocol: TCP
       port: 8000
       targetPort: 8000
+      nodePort: 30002  # <- Puerto externo fijo
 
 ---
 # Política de Red para Aislar DB

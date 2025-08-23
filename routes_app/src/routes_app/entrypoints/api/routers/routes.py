@@ -16,9 +16,9 @@ from routes_app.assembly import (
     build_reset_trayectos_use_case,
 )
 from routes_app.domain.models.models import Trayecto
-
-# Importamos los Casos de Uso
 from routes_app.domain.use_cases.base_use_case import BaseUseCase
+# Importamos la excepción para poder manejarla
+from routes_app.errors import TrayectoNotFoundError
 
 router = APIRouter(tags=["Trayectos"])
 
@@ -72,18 +72,20 @@ def create_trayecto(
     ),
 ):
     """Crea un nuevo trayecto."""
-    if get_by_flight_id_uc.execute(payload.flightId):
-        return JSONResponse(status_code=412, content={"msg": "flightId ya existe"})
-
     try:
-        trayecto_a_crear = Trayecto(**payload.model_dump())
-        nuevo_trayecto = use_case.execute(trayecto_a_crear)
-        return TrayectoOut.model_validate(nuevo_trayecto.model_dump())
-    except ValidationError:
-        return JSONResponse(
-            status_code=412,
-            content={"msg": "Las fechas del trayecto no son válidas"},
-        )
+        # Si get_by_flight_id encuentra algo, significa que el flightId ya existe.
+        get_by_flight_id_uc.execute(payload.flightId)
+        return JSONResponse(status_code=412, content={"msg": "flightId ya existe"})
+    except TrayectoNotFoundError:
+        try:
+            trayecto_a_crear = Trayecto(**payload.model_dump())
+            nuevo_trayecto = use_case.execute(trayecto_a_crear)
+            return TrayectoOut.model_validate(nuevo_trayecto.model_dump())
+        except ValidationError:
+            return JSONResponse(
+                status_code=412,
+                content={"msg": "Las fechas del trayecto no son válidas"},
+            )
 
 
 @router.get("/count", response_model=dict)
@@ -102,9 +104,11 @@ def list_trayectos(
 ):
     """Lista todos los trayectos o filtra por flightId."""
     if flightId:
-        trayecto = get_by_flight_id_uc.execute(flightId)
-        return [TrayectoOut.model_validate(trayecto.model_dump())] if trayecto else []
-
+        try:
+            trayecto = get_by_flight_id_uc.execute(flightId)
+            return [TrayectoOut.model_validate(trayecto.model_dump())]
+        except TrayectoNotFoundError:
+            return []  
     items = list_uc.execute()
     return [TrayectoOut.model_validate(t.model_dump()) for t in items]
 
@@ -114,10 +118,11 @@ def get_trayecto(
     trayecto_id: UUID, use_case: BaseUseCase = Depends(build_get_trayecto_use_case)
 ):
     """Obtiene un trayecto por su ID."""
-    trayecto = use_case.execute(trayecto_id)
-    if not trayecto:
+    try:
+        trayecto = use_case.execute(trayecto_id)
+        return TrayectoOut.model_validate(trayecto.model_dump())
+    except TrayectoNotFoundError:
         raise HTTPException(status_code=404, detail="Trayecto no encontrado")
-    return TrayectoOut.model_validate(trayecto.model_dump())
 
 
 @router.delete("/{trayecto_id}", status_code=200)
@@ -125,8 +130,8 @@ def delete_trayecto(
     trayecto_id: UUID, use_case: BaseUseCase = Depends(build_delete_trayecto_use_case)
 ):
     """Elimina un trayecto por su ID."""
-    if not use_case.execute(trayecto_id):
+    try:
+        use_case.execute(trayecto_id)
+        return {"msg": "el trayecto fue eliminado"}
+    except TrayectoNotFoundError:
         raise HTTPException(status_code=404, detail="Trayecto no encontrado")
-
-    # Añade una respuesta explícita para el caso de éxito
-    return {"msg": "el trayecto fue eliminado"}
