@@ -14,7 +14,7 @@ from src.domain.use_cases.reset_post_use_case import ResetPostUseCase
 # from src.adapters.memory.post_repository_adapter import InMemoryPostRepositoryAdapter
 
 # Shared in-memory repository instance for all post use cases
-#repository: PostRepositoryPort = InMemoryPostRepositoryAdapter()
+# repository: PostRepositoryPort = InMemoryPostRepositoryAdapter()
 repository: PostRepositoryPort = PostgresPostRepositoryAdapter()
 
 

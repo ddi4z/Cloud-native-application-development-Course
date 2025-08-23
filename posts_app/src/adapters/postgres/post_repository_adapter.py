@@ -10,7 +10,6 @@ from sqlalchemy.orm import sessionmaker
 from src.domain.models.post_creation_request import PostCreationRequest
 from src.domain.models.post_db import Base, PostDB
 from src.domain.models.posts import Post
-
 from src.errors import (
     InvalidCredentialsError,
     InvalidExpirationDate,
