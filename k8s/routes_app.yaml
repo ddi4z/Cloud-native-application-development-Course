@@ -68,7 +68,7 @@ spec:
     spec:
       containers:
         - name: routes-app
-          image: routes-app:latest
+          image: routes-app:v1.0.0
           imagePullPolicy: Never
           ports:
             - containerPort: 8000
