@@ -40,6 +40,9 @@ class Trayecto(BaseModel):
     @classmethod
     def validate_start_date_in_future(cls, v: datetime) -> datetime:
         """Valida que la fecha de inicio no esté en el pasado."""
+        if v.tzinfo is None:
+            v = v.replace(tzinfo=timezone.utc)
+
         if v < datetime.now(timezone.utc):
             raise ValueError("La fecha de inicio no puede estar en el pasado.")
         return v
