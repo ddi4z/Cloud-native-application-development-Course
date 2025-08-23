@@ -1,1 +1,223 @@
-title Vista de 
+@startuml
+!theme plain
+
+skinparam title {
+    FontSize 20
+    FontColor #333333
+}
+skinparam cloud {
+    BackgroundColor #f0f0f0
+    BorderColor gray
+}
+skinparam frame {
+    BorderColor #000000
+    BackgroundColor #ffffff
+    TitleFontColor #000000
+}
+skinparam package {
+    BackgroundColor #e6ffed
+    BorderColor #4CAF50
+    BorderThickness 2
+    FontColor #333333
+}
+skinparam component {
+    BackgroundColor #b1f2bc
+    BorderColor #4CAF50
+    FontColor #000000
+}
+skinparam component<<Service>> {
+    BackgroundColor #63a1d6
+    BorderColor #0000FF
+    FontColor white
+}
+skinparam component<<Database>> {
+    BackgroundColor #238be6
+    BorderColor black
+    FontColor white
+}
+skinparam interface {
+    BackgroundColor #82b3e8
+    BorderColor #0000FF
+    FontColor black
+}
+
+title "Vista de Despliegue en Kubernetes (Alineado)"
+
+cloud Internet
+
+frame "K8s" {
+    frame "Node" {
+        ' --- NodePorts ---
+        interface "NodePort 30000" as NP30000
+        interface "NodePort 30001" as NP30001
+        interface "NodePort 30002" as NP30002
+        interface "NodePort 30003" as NP30003
+
+        package "users-network" as users_network {
+            component "users-app-service" as users_app_service <<Service>>
+            note right of users_app_service
+              Port: 80
+            end note
+
+            frame "users-app" as users_app_frame {
+                frame "pod" as users_app_pod {
+                    component "users_app" as users_app
+                    note right of users_app
+                      Port: xxxx
+                    end note
+                }
+            }
+
+            component "users-db-service" as users_db_service <<Service>>
+            note right of users_db_service
+              Port: 5432
+            end note
+
+            frame "users-db" as users_db_frame {
+                frame "pod" as users_db_pod {
+                    component "users_db" as users_db <<Database>>
+                    note right of users_db
+                      Port: 5432
+                    end note
+                }
+            }
+        }
+
+        package "posts-network" as posts_network {
+            component "posts-app-service" as posts_app_service <<Service>>
+            note right of posts_app_service
+              Port: 80
+            end note
+
+            frame "posts-app" as posts_app_frame {
+                frame "pod" as posts_app_pod {
+                    component "posts_app" as posts_app
+                    note right of posts_app
+                      Port: xxxx
+                    end note
+                }
+            }
+
+            component "posts-db-service" as posts_db_service <<Service>>
+            note right of posts_db_service
+              Port: 5432
+            end note
+
+            frame "posts-db" as posts_db_frame {
+                frame "pod" as posts_db_pod {
+                    component "posts_db" as posts_db <<Database>>
+                    note right of posts_db
+                      Port: 5432
+                    end note
+                }
+            }
+        }
+
+        package "routes-network" as routes_network {
+            component "routes-app-service" as routes_app_service <<Service>>
+            note right of routes_app_service
+              Port: 80
+            end note
+
+            frame "routes-app" as routes_app_frame {
+                frame "pod" as routes_app_pod {
+                    component "routes_app" as routes_app
+                    note right of routes_app
+                      Port: xxxx
+                    end note
+                }
+            }
+
+            component "routes-db-service" as routes_db_service <<Service>>
+            note right of routes_db_service
+              Port: 5432
+            end note
+
+            frame "routes-db" as routes_db_frame {
+                frame "pod" as routes_db_pod {
+                    component "routes_db" as routes_db <<Database>>
+                    note right of routes_db
+                      Port: 5432
+                    end note
+                }
+            }
+        }
+
+        package "offers-network" as offers_network {
+            component "offers-app-service" as offers_app_service <<Service>>
+            note right of offers_app_service
+              Port: 80
+            end note
+
+            frame "offers-app" as offers_app_frame {
+                frame "pod" as offers_app_pod {
+                    component "offers_app" as offers_app
+                    note right of offers_app
+                      Port: xxxx
+                    end note
+                }
+            }
+
+            component "offers-db-service" as offers_db_service <<Service>>
+            note right of offers_db_service
+              Port: 5432
+            end note
+
+            frame "offers-db" as offers_db_frame {
+                frame "pod" as offers_db_pod {
+                    component "offers_db" as offers_db <<Database>>
+                    note right of offers_db
+                      Port: 5432
+                    end note
+                }
+            }
+        }
+    }
+}
+
+' --- Layout Hints ---
+NP30000 -[hidden]right- NP30001
+NP30001 -[hidden]right- NP30002
+NP30002 -[hidden]right- NP30003
+
+users_network -[hidden]right- posts_network
+routes_network -[hidden]right- offers_network
+
+users_network -[hidden]down- routes_network
+posts_network -[hidden]down- offers_network
+
+users_network -[hidden]up- routes_network
+posts_network -[hidden]up- offers_network
+
+NP30000 -[hidden]down- users_network
+NP30001 -[hidden]down- posts_network
+NP30002 -[hidden]down- routes_network
+NP30003 -[hidden]down- offers_network
+
+' --- Relationships ---
+Internet ..> NP30000
+Internet ..> NP30001
+Internet ..> NP30002
+Internet ..> NP30003
+
+NP30000 --> users_app_service
+users_app_service --> users_app_pod
+users_app --> users_db_service
+users_db_service --> users_db_pod
+
+NP30001 --> posts_app_service
+posts_app_service --> posts_app_pod
+posts_app --> posts_db_service
+posts_db_service --> posts_db_pod
+
+NP30002 --> routes_app_service
+routes_app_service --> routes_app_pod
+routes_app --> routes_db_service
+routes_db_service --> routes_db_pod
+
+NP30003 --> offers_app_service
+offers_app_service --> offers_app_pod
+offers_app --> offers_db_service
+offers_db_service --> offers_db_pod
+
+@enduml
