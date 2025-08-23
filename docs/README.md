@@ -84,9 +84,9 @@
 
 * Vista de redes
 
-![Vista de redes](./diagrams/network.png "Vista de redes")
+![Vista de redes](./diagrams/networks.png "Vista de redes")
 
 * Vista de información
 
-![Vista de información](./diagrams/data.png "Vista de información")
+![Vista de información](./diagrams/entities.png "Vista de información")
 
