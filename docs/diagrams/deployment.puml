@@ -35,7 +35,7 @@ frame "k8s" as "KubernetesCluster" {
   component "users-db-service" as users_db_service <<Service>>
   frame "users-db" as PodDbUsers {
     frame "docker" as DockerDbUsers {
-      database "\nusers_db\n" as users_db
+      database "users_db" as users_db
     }
   }
   artifact "users-db-volumen" as users_db_volumen
@@ -55,10 +55,10 @@ frame "k8s" as "KubernetesCluster" {
   }
 
   component "posts-db-service" as posts_db_service <<Service>>
-  
+
   frame "posts-db" as PodDbPosts {
     frame "docker" as DockerDbPosts {
-      database "\nposts_db\n" as posts_db
+      database "posts_db" as posts_db
     }
   }
   artifact "posts-db-volumen" as posts_db_volumen
@@ -81,7 +81,7 @@ frame "k8s" as "KubernetesCluster" {
 
   frame "routes-db" as PodDbRoutes {
     frame "docker" as DockerDbRoutes {
-      database "\nroutes_db\n" as routes_db
+      database "routes_db" as routes_db
     }
   }
   artifact "routes-db-volumen" as routes_db_volumen
@@ -103,7 +103,7 @@ frame "k8s" as "KubernetesCluster" {
 
   frame "offers-db" as PodDbOffers {
     frame "docker" as DockerDbOffers {
-      database "\noffers_db\n" as offers_db
+      database "offers_db" as offers_db
     }
   }
   artifact "offers-db-volumen" as offers_db_volumen 
