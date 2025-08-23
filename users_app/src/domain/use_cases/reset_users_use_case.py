@@ -2,6 +2,7 @@ from src.domain.models.user import User
 from src.domain.ports.user_repository_port import UserRepositoryPort
 from src.domain.use_cases.base_use_case import BaseUseCase
 
+
 class ResetUsersUseCase(BaseUseCase):
     """Use case for deleting all users."""
 

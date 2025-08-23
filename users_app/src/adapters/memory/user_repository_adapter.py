@@ -1,15 +1,22 @@
+import hashlib
 import os
+from datetime import datetime, timedelta
 from typing import Dict, Optional
 from uuid import uuid4
 
 from src.domain.models.user import User, UserStatus
-from src.domain.ports.user_repository_port import UserRepositoryPort
-from src.errors import InvalidCredentialsError, InvalidTokenError, MissingTokenError, MissingUserInformationError, UserAlreadyExistsError, UserNotFoundError
 from src.domain.models.user_creation_request import UserCreationRequest
-from datetime import datetime, timedelta
-import hashlib
-
 from src.domain.models.user_update_request import UserUpdateRequest
+from src.domain.ports.user_repository_port import UserRepositoryPort
+from src.errors import (
+    InvalidCredentialsError,
+    InvalidTokenError,
+    MissingTokenError,
+    MissingUserInformationError,
+    UserAlreadyExistsError,
+    UserNotFoundError,
+)
+
 
 class InMemoryUserRepositoryAdapter(UserRepositoryPort):
     """In-memory implementation of UserRepository."""
@@ -22,13 +29,17 @@ class InMemoryUserRepositoryAdapter(UserRepositoryPort):
         return str(len(self.memory_store) + 1)
 
     def generate_expiration_time(self, time_now: str) -> str:
-        return (datetime.fromisoformat(time_now) + timedelta(hours=1)).isoformat(timespec="seconds")
+        return (datetime.fromisoformat(time_now) + timedelta(hours=1)).isoformat(
+            timespec="seconds"
+        )
 
     def create(self, user_dto: UserCreationRequest) -> User:
         """Create a new user."""
 
         if not all([user_dto.username, user_dto.password, user_dto.email]):
-            raise MissingUserInformationError("Username, password, and email are required.")
+            raise MissingUserInformationError(
+                "Username, password, and email are required."
+            )
 
         for user in self.memory_store.values():
             if user.username == user_dto.username or user.email == user_dto.email:
@@ -53,7 +64,7 @@ class InMemoryUserRepositoryAdapter(UserRepositoryPort):
             status=UserStatus.NOT_VERIFIED,
             expireAt=time_in_1_hour,
             createdAt=time_now,
-            updatedAt=time_now
+            updatedAt=time_now,
         )
 
         self.memory_store[user.id] = user
@@ -65,8 +76,17 @@ class InMemoryUserRepositoryAdapter(UserRepositoryPort):
         """Update an existing user by ID."""
         if user_id not in self.memory_store:
             raise UserNotFoundError(f"User with id {user_id} not found.")
-        if not any([update_data.status, update_data.dni, update_data.fullName, update_data.phoneNumber]):
-            raise MissingUserInformationError("At least one field must be provided for update.")
+        if not any(
+            [
+                update_data.status,
+                update_data.dni,
+                update_data.fullName,
+                update_data.phoneNumber,
+            ]
+        ):
+            raise MissingUserInformationError(
+                "At least one field must be provided for update."
+            )
         user = self.memory_store[user_id]
         for key, value in update_data.dict(exclude_none=True).items():
             setattr(user, key, value)
@@ -78,9 +98,11 @@ class InMemoryUserRepositoryAdapter(UserRepositoryPort):
         if not all([username, password]):
             raise MissingUserInformationError("Username and password are required.")
         for user in self.memory_store.values():
-            salted_password = hashlib.sha256((password + user.salt).encode()).hexdigest()
+            salted_password = hashlib.sha256(
+                (password + user.salt).encode()
+            ).hexdigest()
             if user.username == username and user.password == salted_password:
-                token=str(uuid4())
+                token = str(uuid4())
                 time_now = datetime.now().isoformat(timespec="seconds")
                 expire_at = self.generate_expiration_time(time_now)
 
@@ -90,7 +112,7 @@ class InMemoryUserRepositoryAdapter(UserRepositoryPort):
                 user.token = token
                 user.expireAt = expire_at
                 user.updatedAt = time_now
-                
+
                 self.tokens_store[token] = user.id
                 return user
         raise InvalidCredentialsError("Invalid username or password.")
@@ -116,4 +138,3 @@ class InMemoryUserRepositoryAdapter(UserRepositoryPort):
         """Delete all users."""
         self.memory_store.clear()
         self.tokens_store.clear()
-

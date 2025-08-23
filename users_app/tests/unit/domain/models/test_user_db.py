@@ -1,6 +1,8 @@
 from datetime import datetime, timedelta, timezone
-from src.domain.models.user_db import UserDB
+
 from src.domain.models.user import UserStatus
+from src.domain.models.user_db import UserDB
+
 
 def test_create_user_db_with_valid_data(db_session):
     user_data = UserDB(
@@ -32,6 +34,7 @@ def test_create_user_db_with_valid_data(db_session):
     assert retrieved_user.createdAt is not None
     assert retrieved_user.updatedAt is not None
 
+
 def test_default_values(db_session):
     user = UserDB(
         username="default_user",
@@ -49,4 +52,3 @@ def test_default_values(db_session):
     assert user.createdAt is not None
     assert user.updatedAt is not None
     assert user.createdAt == user.updatedAt
-

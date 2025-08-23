@@ -1,7 +1,10 @@
-import pytest
 from datetime import datetime, timedelta, timezone
+
+import pytest
 from pydantic import ValidationError
+
 from src.domain.models.user import User, UserStatus
+
 
 def test_create_user_with_valid_data():
     valid_data = {
@@ -33,6 +36,7 @@ def test_create_user_with_valid_data():
     assert user.expireAt == valid_data["expireAt"]
     assert user.createdAt == valid_data["createdAt"]
     assert user.updatedAt == valid_data["updatedAt"]
+
 
 def test_create_user_with_invalid_id():
     invalid_data = {

@@ -1,9 +1,14 @@
-from sqlalchemy import Column, String, DateTime, Enum as SQLEnum, orm
-from src.domain.models.user import UserStatus
-from sqlalchemy.sql import func
 import uuid
 
+from sqlalchemy import Column, DateTime
+from sqlalchemy import Enum as SQLEnum
+from sqlalchemy import String, orm
+from sqlalchemy.sql import func
+
+from src.domain.models.user import UserStatus
+
 Base = orm.declarative_base()
+
 
 class UserDB(Base):
     __tablename__ = "users"
@@ -19,5 +24,12 @@ class UserDB(Base):
     token = Column(String, nullable=False)
     status = Column(SQLEnum(UserStatus), nullable=False)
     expireAt = Column(DateTime(timezone=True), nullable=False)
-    createdAt = Column(DateTime(timezone=True), nullable=False, server_default=func.now())
-    updatedAt = Column(DateTime(timezone=True), nullable=False, server_default=func.now(), onupdate=func.now())
+    createdAt = Column(
+        DateTime(timezone=True), nullable=False, server_default=func.now()
+    )
+    updatedAt = Column(
+        DateTime(timezone=True),
+        nullable=False,
+        server_default=func.now(),
+        onupdate=func.now(),
+    )

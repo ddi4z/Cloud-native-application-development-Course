@@ -1,26 +1,28 @@
+import hashlib
+import os
+from datetime import datetime, timedelta, timezone
 from typing import Optional
 from uuid import uuid4
-from datetime import datetime, timedelta, timezone
-import os
-import hashlib
 
+from dotenv import load_dotenv
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from dotenv import load_dotenv
 
 from src.domain.models.user import User, UserStatus
 from src.domain.models.user_creation_request import UserCreationRequest
-from src.domain.models.user_update_request import UserUpdateRequest
 from src.domain.models.user_db import Base, UserDB
+from src.domain.models.user_update_request import UserUpdateRequest
 from src.errors import (
     InvalidCredentialsError,
     InvalidTokenError,
     MissingTokenError,
     MissingUserInformationError,
     UserAlreadyExistsError,
-    UserNotFoundError
+    UserNotFoundError,
 )
+
 load_dotenv()
+
 
 class PostgresUserRepositoryAdapter:
     """Postgres implementation of UserRepository using SQLAlchemy."""
@@ -30,7 +32,9 @@ class PostgresUserRepositoryAdapter:
         if not db_url:
             raise ValueError("DATABASE_URL not set in environment variables")
         self.engine = create_engine(db_url)
-        self.SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=self.engine)
+        self.SessionLocal = sessionmaker(
+            autocommit=False, autoflush=False, bind=self.engine
+        )
         Base.metadata.create_all(bind=self.engine)
 
     def _get_session(self):
@@ -60,16 +64,25 @@ class PostgresUserRepositoryAdapter:
     def create(self, user_dto: UserCreationRequest) -> User:
         with self._get_session() as db:
             if not all([user_dto.username, user_dto.password, user_dto.email]):
-                raise MissingUserInformationError("Username, password, and email are required.")
+                raise MissingUserInformationError(
+                    "Username, password, and email are required."
+                )
 
-            existing = db.query(UserDB).filter(
-                (UserDB.username == user_dto.username) | (UserDB.email == user_dto.email)
-            ).first()
+            existing = (
+                db.query(UserDB)
+                .filter(
+                    (UserDB.username == user_dto.username)
+                    | (UserDB.email == user_dto.email)
+                )
+                .first()
+            )
             if existing:
                 raise UserAlreadyExistsError("Username or email already exists.")
 
             salt = os.urandom(16).hex()
-            password_hash = hashlib.sha256((user_dto.password + salt).encode()).hexdigest()
+            password_hash = hashlib.sha256(
+                (user_dto.password + salt).encode()
+            ).hexdigest()
             time_now = datetime.now(timezone.utc)
 
             orm_user = UserDB(
@@ -84,7 +97,7 @@ class PostgresUserRepositoryAdapter:
                 status=UserStatus.NOT_VERIFIED,
                 expireAt=self.generate_expiration_time(time_now),
                 createdAt=time_now,
-                updatedAt=time_now
+                updatedAt=time_now,
             )
 
             db.add(orm_user)
@@ -98,8 +111,17 @@ class PostgresUserRepositoryAdapter:
             if not user:
                 raise UserNotFoundError(f"User with id {user_id} not found.")
 
-            if not any([update_data.status, update_data.dni, update_data.fullName, update_data.phoneNumber]):
-                raise MissingUserInformationError("At least one field must be provided for update.")
+            if not any(
+                [
+                    update_data.status,
+                    update_data.dni,
+                    update_data.fullName,
+                    update_data.phoneNumber,
+                ]
+            ):
+                raise MissingUserInformationError(
+                    "At least one field must be provided for update."
+                )
 
             for key, value in update_data.model_dump(exclude_none=True).items():
                 setattr(user, key, value)
@@ -118,7 +140,9 @@ class PostgresUserRepositoryAdapter:
             if not user:
                 raise InvalidCredentialsError("Invalid username or password.")
 
-            salted_password = hashlib.sha256((password + user.salt).encode()).hexdigest()
+            salted_password = hashlib.sha256(
+                (password + user.salt).encode()
+            ).hexdigest()
             if user.password != salted_password:
                 raise InvalidCredentialsError("Invalid username or password.")
 

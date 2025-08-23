@@ -1,15 +1,13 @@
-
+from src.adapters.memory.user_repository_adapter import InMemoryUserRepositoryAdapter
+from src.adapters.postgres.user_repository_adapter import PostgresUserRepositoryAdapter
+from src.domain.ports.user_repository_port import UserRepositoryPort
+from src.domain.use_cases.authenticate_user_use_case import AuthenticateUserUseCase
 from src.domain.use_cases.base_use_case import BaseUseCase
 from src.domain.use_cases.create_user_use_case import CreateUserUseCase
-from src.domain.use_cases.update_user_use_case import UpdateUserUseCase
-from src.domain.use_cases.authenticate_user_use_case import AuthenticateUserUseCase
 from src.domain.use_cases.get_current_user_use_case import GetCurrentUserUseCase
 from src.domain.use_cases.get_users_count_use_case import GetUsersCountUseCase
 from src.domain.use_cases.reset_users_use_case import ResetUsersUseCase
-from src.domain.ports.user_repository_port import UserRepositoryPort
-
-from src.adapters.postgres.user_repository_adapter import PostgresUserRepositoryAdapter
-from src.adapters.memory.user_repository_adapter import InMemoryUserRepositoryAdapter
+from src.domain.use_cases.update_user_use_case import UpdateUserUseCase
 
 # Shared in-memory repository instance for all user use cases
 # repository: UserRepositoryPort = InMemoryUserRepositoryAdapter()

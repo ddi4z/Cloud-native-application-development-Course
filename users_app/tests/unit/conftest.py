@@ -1,14 +1,14 @@
 import datetime
 from unittest.mock import MagicMock
-import pytest
 
-from src.domain.models.user import User, UserStatus
 import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from src.domain.models.user_db import Base, UserDB
+
 from src.adapters.postgres.user_repository_adapter import PostgresUserRepositoryAdapter
+from src.domain.models.user import User, UserStatus
 from src.domain.models.user_creation_request import UserCreationRequest
+from src.domain.models.user_db import Base, UserDB
 from src.domain.ports.user_repository_port import UserRepositoryPort
 from src.domain.use_cases.authenticate_user_use_case import AuthenticateUserUseCase
 from src.domain.use_cases.create_user_use_case import CreateUserUseCase
@@ -16,6 +16,7 @@ from src.domain.use_cases.get_current_user_use_case import GetCurrentUserUseCase
 from src.domain.use_cases.get_users_count_use_case import GetUsersCountUseCase
 from src.domain.use_cases.reset_users_use_case import ResetUsersUseCase
 from src.domain.use_cases.update_user_use_case import UpdateUserUseCase
+
 
 @pytest.fixture
 def valid_user_data():
@@ -28,6 +29,7 @@ def valid_user_data():
         "is_active": True,
     }
 
+
 @pytest.fixture
 def user_with_id():
     return User(
@@ -38,15 +40,19 @@ def user_with_id():
         full_name="John Doe",
         is_active=True,
     )
+
+
 @pytest.fixture(scope="session")
 def engine():
     return create_engine("sqlite:///:memory:")
+
 
 @pytest.fixture(scope="session")
 def tables(engine):
     Base.metadata.create_all(engine)
     yield
     Base.metadata.drop_all(engine)
+
 
 @pytest.fixture
 def db_session(engine, tables):
@@ -58,17 +64,19 @@ def db_session(engine, tables):
     transaction.rollback()
     connection.close()
 
+
 @pytest.fixture
 def repo(db_session, monkeypatch):
     monkeypatch.setenv("DATABASE_URL", "sqlite:///:memory:")
-    
+
     repo_adapter = PostgresUserRepositoryAdapter()
     repo_adapter._get_session = MagicMock(return_value=db_session)
-    
+
     repo_adapter.engine = db_session.bind
     Base.metadata.create_all(repo_adapter.engine)
-    
+
     return repo_adapter
+
 
 @pytest.fixture
 def create_user_db(db_session):
@@ -80,23 +88,31 @@ def create_user_db(db_session):
             salt=salt,
             token=token,
             status=UserStatus.VERIFIED,
-            expireAt=expire_at or (datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(hours=1)),
+            expireAt=expire_at
+            or (
+                datetime.datetime.now(datetime.timezone.utc)
+                + datetime.timedelta(hours=1)
+            ),
             createdAt=datetime.datetime.now(datetime.timezone.utc),
-            updatedAt=datetime.datetime.now(datetime.timezone.utc)
+            updatedAt=datetime.datetime.now(datetime.timezone.utc),
         )
         db_session.add(user)
         db_session.commit()
         db_session.refresh(user)
         return user
+
     return _create
+
 
 @pytest.fixture
 def mock_user_repository():
     return MagicMock(spec=UserRepositoryPort)
 
+
 @pytest.fixture
 def update_user_use_case(mock_user_repository):
     return UpdateUserUseCase(user_repository=mock_user_repository)
+
 
 @pytest.fixture
 def existing_user():
@@ -113,8 +129,9 @@ def existing_user():
         dni="12345678A",
         expireAt="2025-01-01T00:00:00",
         createdAt="2024-01-01T00:00:00",
-        updatedAt="2024-01-01T00:00:00"
+        updatedAt="2024-01-01T00:00:00",
     )
+
 
 @pytest.fixture
 def update_data():
@@ -131,20 +148,24 @@ def update_data():
         dni="87654321B",
         expireAt="2025-01-01T00:00:00",
         createdAt="2024-01-01T00:00:00",
-        updatedAt="2024-01-01T00:00:00"
+        updatedAt="2024-01-01T00:00:00",
     )
+
 
 @pytest.fixture
 def reset_users_use_case(mock_user_repository):
     return ResetUsersUseCase(user_repository=mock_user_repository)
 
+
 @pytest.fixture
 def get_users_count_use_case(mock_user_repository):
     return GetUsersCountUseCase(user_repository=mock_user_repository)
 
+
 @pytest.fixture
 def get_current_user_use_case(mock_user_repository):
     return GetCurrentUserUseCase(user_repository=mock_user_repository)
+
 
 @pytest.fixture
 def current_user():
@@ -161,12 +182,14 @@ def current_user():
         dni="12345678A",
         expireAt="2025-01-01T00:00:00",
         createdAt="2024-01-01T00:00:00",
-        updatedAt="2024-01-01T00:00:00"
+        updatedAt="2024-01-01T00:00:00",
     )
+
 
 @pytest.fixture
 def create_user_use_case(mock_user_repository):
     return CreateUserUseCase(user_repository=mock_user_repository)
+
 
 @pytest.fixture
 def valid_user_creation_request():
@@ -176,12 +199,14 @@ def valid_user_creation_request():
         password="secure_password",
         phoneNumber="1234567890",
         dni="12345678A",
-        fullName="Test User"
+        fullName="Test User",
     )
+
 
 @pytest.fixture
 def authenticate_user_use_case(mock_user_repository):
     return AuthenticateUserUseCase(user_repository=mock_user_repository)
+
 
 @pytest.fixture
 def authenticated_user():
@@ -198,5 +223,5 @@ def authenticated_user():
         dni="12345678A",
         expireAt="2025-01-01T00:00:00",
         createdAt="2024-01-01T00:00:00",
-        updatedAt="2024-01-01T00:00:00"
+        updatedAt="2024-01-01T00:00:00",
     )
