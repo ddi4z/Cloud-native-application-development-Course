@@ -39,3 +39,4 @@ frame "env" {
   offers_app --> offers_db
   routes_app --> routes_db
 }
+@enduml

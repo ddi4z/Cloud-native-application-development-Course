@@ -1,3 +1,4 @@
+@startuml
 title Vista de información
 
 entity "users" as users
@@ -10,3 +11,4 @@ posts -- "1" users
 posts -- "1" routes
 offers "*" -- "1" posts
 offers -- "1" scores
+@enduml
