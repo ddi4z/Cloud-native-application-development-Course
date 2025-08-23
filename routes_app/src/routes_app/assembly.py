@@ -5,7 +5,7 @@
 # )
 
 from routes_app.adapters.postgres.routes_repository_adapter import (
-    PostgresRoutesRepositoryAdapter
+    PostgresRoutesRepositoryAdapter,
 )
 
 # Importamos ports
