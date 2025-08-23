@@ -21,7 +21,7 @@ from src.errors import (
 
 load_dotenv()
 
-class PostgresUserRepositoryAdapter:
+class PostgresPostRepositoryAdapter:
     """Postgres implementation of UserRepository using SQLAlchemy."""
 
     def __init__(self):
