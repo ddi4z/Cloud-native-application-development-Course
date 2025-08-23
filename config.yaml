@@ -3,7 +3,7 @@ team:
    members:
       - user: me.estevez-breton10
         percentage: 25
-      - user: j.paterninam@uniandes.edu.co
+      - user: j.paterninam
         percentage: 25
       - user: d.diazm
         percentage: 25
@@ -34,4 +34,4 @@ routes_app:
   image_name: "routes-app"
   image_tag: "v1.0.0"
   authors:
-    - j.paterninam@uniandes.edu.co 
+    - j.paterninam
