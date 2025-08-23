@@ -1,6 +1,7 @@
 from __future__ import annotations
 from abc import ABC, abstractmethod
 
+
 class BaseUseCase(ABC):
     """
     Clase base abstracta para los casos de uso.

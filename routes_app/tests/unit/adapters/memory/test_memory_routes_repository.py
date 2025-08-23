@@ -43,7 +43,9 @@ class InMemoryRoutesRepositoryAdapter(RoutesRepositoryPort):
         # --- LÓGICA MODIFICADA ---
         trayecto = self._items.get(trayecto_id)
         if not trayecto:
-            raise TrayectoNotFoundError(f"Trayecto con id '{trayecto_id}' no encontrado.")
+            raise TrayectoNotFoundError(
+                f"Trayecto con id '{trayecto_id}' no encontrado."
+            )
         return trayecto
         # --- FIN DE LA LÓGICA MODIFICADA ---
 

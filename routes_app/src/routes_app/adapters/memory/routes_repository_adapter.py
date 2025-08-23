@@ -8,6 +8,7 @@ class InMemoryRoutesRepositoryAdapter(RoutesRepositoryPort):
     """
     Implementación en memoria del puerto del repositorio de trayectos.
     """
+
     def __init__(self) -> None:
         """Inicializa el repositorio en memoria."""
         self._items: Dict[UUID, Trayecto] = {}

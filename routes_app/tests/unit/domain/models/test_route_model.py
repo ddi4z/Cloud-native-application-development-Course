@@ -4,6 +4,7 @@ from uuid import uuid4
 from pydantic import ValidationError
 from routes_app.domain.models.models import Trayecto
 
+
 @pytest.fixture
 def valid_trayecto_data():
     """Genera datos para un trayecto válido."""
@@ -19,12 +20,14 @@ def valid_trayecto_data():
         "plannedEndDate": now + timedelta(days=2),
     }
 
+
 @pytest.fixture
 def trayecto(valid_trayecto_data):
     """Instancia válida de Trayecto a partir del fixture de datos."""
     return Trayecto(**valid_trayecto_data)
 
-# Tests 
+
+# Tests
 def test_trayecto_valido(trayecto):
     assert trayecto.flightId == "AV123"
     assert trayecto.sourceAirportCode == "BOG"
@@ -88,4 +91,6 @@ def test_end_date_before_start_date_fails(valid_trayecto_data):
     data["plannedEndDate"] = data["plannedStartDate"] - timedelta(hours=1)
     with pytest.raises(ValidationError) as excinfo:
         Trayecto(**data)
-    assert "La fecha de fin debe ser posterior a la fecha de inicio" in str(excinfo.value)
+    assert "La fecha de fin debe ser posterior a la fecha de inicio" in str(
+        excinfo.value
+    )

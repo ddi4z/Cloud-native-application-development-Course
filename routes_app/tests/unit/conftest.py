@@ -3,7 +3,10 @@ from datetime import datetime, timedelta, timezone
 from uuid import uuid4
 
 from routes_app.domain.models.models import Trayecto
-from routes_app.adapters.memory.routes_repository_adapter import InMemoryRoutesRepositoryAdapter
+from routes_app.adapters.memory.routes_repository_adapter import (
+    InMemoryRoutesRepositoryAdapter,
+)
+
 
 @pytest.fixture
 def future_window():
@@ -14,6 +17,7 @@ def future_window():
     start = datetime.now(timezone.utc) + timedelta(hours=24)
     end = start + timedelta(hours=24)
     return start, end
+
 
 @pytest.fixture
 def valid_trayecto_data(future_window):
@@ -34,6 +38,7 @@ def valid_trayecto_data(future_window):
         "plannedEndDate": end,
     }
 
+
 @pytest.fixture
 def trayecto(valid_trayecto_data):
     """
@@ -41,6 +46,7 @@ def trayecto(valid_trayecto_data):
     Depende de la fixture 'valid_trayecto_data'.
     """
     return Trayecto(**valid_trayecto_data)
+
 
 @pytest.fixture
 def memory_repo():

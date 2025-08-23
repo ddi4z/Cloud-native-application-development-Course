@@ -1,15 +1,16 @@
-import pytest
 from fastapi.testclient import TestClient
-from routes_app.entrypoints.api.main import app  
+from routes_app.entrypoints.api.main import app
 from datetime import datetime, timedelta, timezone
 
 client = TestClient(app)
+
 
 def test_ping_endpoint():
     """Prueba que el endpoint de salud /ping funcione correctamente."""
     response = client.get("/routes/ping")
     assert response.status_code == 200
     assert response.text == "pong"
+
 
 def test_create_and_get_trayecto():
     """
@@ -30,7 +31,7 @@ def test_create_and_get_trayecto():
         "destinyCountry": "USA",
         "bagCost": 100,
         "plannedStartDate": start_date.isoformat(),
-        "plannedEndDate": end_date.isoformat()
+        "plannedEndDate": end_date.isoformat(),
     }
 
     response_create = client.post("/routes/", json=trayecto_data)
@@ -53,6 +54,7 @@ def test_create_and_get_trayecto():
     assert response_count.status_code == 200
     assert response_count.json()["count"] == 1
 
+
 def test_create_trayecto_with_invalid_start_date():
     """
     Traducción de la prueba de Postman: "Creación de trayecto plannedStartDate invalido".
@@ -69,9 +71,9 @@ def test_create_trayecto_with_invalid_start_date():
         "destinyCountry": "USA",
         "bagCost": 100,
         "plannedStartDate": past_date.isoformat(),
-        "plannedEndDate": future_date.isoformat()
+        "plannedEndDate": future_date.isoformat(),
     }
-    
+
     response = client.post("/routes/", json=invalid_trayecto_data)
 
     assert response.status_code == 412

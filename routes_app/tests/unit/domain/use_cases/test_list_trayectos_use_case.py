@@ -1,6 +1,7 @@
-from uuid import uuid4 
+from uuid import uuid4
 from routes_app.domain.models.models import Trayecto
 from routes_app.domain.use_cases.list_trayectos_use_case import ListTrayectosUseCase
+
 
 def test_list_returns_all(memory_repo, trayecto):
     uc = ListTrayectosUseCase(repository=memory_repo)
