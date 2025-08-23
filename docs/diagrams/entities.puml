@@ -1,14 +1,62 @@
 @startuml
 title Vista de información
 
-entity "users" as users
-entity "routes" as routes
-entity "posts" as posts
-entity "offers" as offers
-entity "scores" as scores
+entity "users" as users {
+  id : string
+  username : string
+  email : string
+  phoneNumber : optional[string]
+  dni : optional[string]
+  fullName : optional[string]
+  password : string
+  salt : string
+  token : string
+  status : string
+  expireAt : datetime
+  createdAt : datetime
+  updatedAt : datetime
+}
+
+entity "routes" as routes {
+  id : string
+  flightId : string
+  sourceAirportCode : string
+  sourceCountry : string
+  destinyAirportCode : string
+  destinyCountry : string
+  bagCost : int
+  plannedStartDate : datetime
+  plannedEndDate : datetime
+  createdAt : datetime
+  updatedAt : datetime
+}
+
+entity "posts" as posts {
+  id : string
+  routeId : string
+  userId : string
+  expireAt : datetime
+  createdAt : datetime
+}
+
+entity "offers" as offers {
+  id : string
+  postId : string
+  userId : string
+  description : string
+  size : string
+  fragile : boolean
+  offer : number
+  createdAt : datetime
+}
+
+entity "scores" as scores {
+}
+
 
 posts -- "1" users
 posts -- "1" routes
 offers "*" -- "1" posts
 offers -- "1" scores
+
 @enduml
