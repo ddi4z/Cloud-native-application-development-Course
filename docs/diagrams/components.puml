@@ -2,7 +2,7 @@
 
 skinparam actorStyle awesome
 
-skinparam hexagon {
+skinparam component {
   BackgroundColor #FF000022
   BorderColor red
   FontColor black
@@ -19,10 +19,10 @@ title "Vista Funcional Componentes"
 actor User
 
 frame "env" {
-  hexagon "\nusers_app\n" as users_app
-  hexagon "\nposts_app\n" as posts_app
-  hexagon "\noffers_app\n" as offers_app
-  hexagon "\nroutes_app\n" as routes_app
+  component "users_app" as users_app
+  component "posts_app" as posts_app
+  component "offers_app" as offers_app
+  component "routes_app" as routes_app
 
   database "\nusers_db\n" as users_db
   database "\nposts_db\n" as posts_db
