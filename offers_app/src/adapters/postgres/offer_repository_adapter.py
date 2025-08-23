@@ -58,12 +58,12 @@ class PostgresOfferRepositoryAdapter(OfferRepositoryPort):
         """Get offer by ID."""
 
         try:
-            identifier = uuid.UUID(offer_id)
+            uuid.UUID(offer_id)
         except ValueError:
             raise InvalidFieldInOfferError("offer_id must be a valid UUID string")
 
         with self._session_factory() as db_session:
-            orm = db_session.query(OfferORM).filter(OfferORM.id == identifier).first()
+            orm = db_session.query(OfferORM).filter(OfferORM.id == offer_id).first()
             if orm is None:
                 raise OfferNotFoundError(f"offer with id {offer_id} not found")
             return orm.to_domain()
@@ -106,12 +106,12 @@ class PostgresOfferRepositoryAdapter(OfferRepositoryPort):
     def delete(self, offer_id: str) -> Offer:
         """Delete an offer."""
         try:
-            identifier = uuid.UUID(offer_id)
+            uuid.UUID(offer_id)
         except ValueError:
             raise InvalidFieldInOfferError("offer_id must be a valid UUID string")
 
         with self._session_factory() as db_session:
-            orm = db_session.query(OfferORM).filter(OfferORM.id == identifier).first()
+            orm = db_session.query(OfferORM).filter(OfferORM.id == offer_id).first()
             if orm is None:
                 raise OfferNotFoundError(f"offer with id {offer_id} not found")
             db_session.delete(orm)
