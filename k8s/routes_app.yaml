@@ -22,7 +22,7 @@ spec:
             - containerPort: 5432
           env:
             - name: POSTGRES_DB
-              value: "routes_db"
+              value: "routes_db" 
             - name: POSTGRES_USER
               value: "user"
             - name: POSTGRES_PASSWORD
@@ -49,7 +49,7 @@ spec:
       targetPort: 5432
 
 ---
-# Despliegue de la Aplicación de Rutas
+# Despliegue de app de rutas
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -69,9 +69,7 @@ spec:
       containers:
         - name: routes-app
           image: routes-app:latest
-          imagePullPolicy: Never # Correcto para imágenes locales en Minikube
-          # --- SECCIÓN CORREGIDA ---
-          # Se eliminaron las líneas 'command' y 'args' para usar el CMD del Dockerfile.
+          imagePullPolicy: Never
           ports:
             - containerPort: 8000
           env:
@@ -81,25 +79,25 @@ spec:
             httpGet:
               path: /routes/ping
               port: 8000
-            initialDelaySeconds: 20 # Reducido para un arranque más rápido
+            initialDelaySeconds: 20 
             periodSeconds: 15
             failureThreshold: 3
           livenessProbe:
             httpGet:
               path: /routes/ping
               port: 8000
-            initialDelaySeconds: 45 # Reducido para un arranque más rápido
+            initialDelaySeconds: 45 
             periodSeconds: 20
             failureThreshold: 3
 
 ---
-# Servicio para la Aplicación
+# Servicio para la app
 apiVersion: v1
 kind: Service
 metadata:
   name: routes-app-service
 spec:
-  type: NodePort # Permite acceder a la app desde fuera del clúster
+  type: NodePort
   selector:
     app: routes-app
   ports:
@@ -108,7 +106,7 @@ spec:
       targetPort: 8000
 
 ---
-# Política de Red para Aislar DB
+# Política de Red
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
