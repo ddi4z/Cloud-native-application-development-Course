@@ -26,16 +26,16 @@ frame "k8s" as "KubernetesCluster" {
   ' Users app
   component "users-app-service" as users_app_service <<Service>>
 
-  frame "pod" {
+  frame "users-app" as users-app {
     frame "docker" {
       component "users_app" as users_app
     }
   }
 
   component "users-db-service" as users_db_service <<Service>>
-  frame "pod" as PodDbUsers {
+  frame "users-db" as PodDbUsers {
     frame "docker" as DockerDbUsers {
-      database "\nusers_db\n" as users_db
+      database "users_db" as users_db
     }
   }
   artifact "users-db-volumen" as users_db_volumen
@@ -48,16 +48,17 @@ frame "k8s" as "KubernetesCluster" {
   ' Posts app
   component "posts-app-service" as posts_app_service <<Service>>
 
-  frame "pod" as PodPosts {
+  frame "posts-app" as posts-app {
     frame "docker" as DockerPosts {
       component "posts_app" as posts_app
     }
   }
 
   component "posts-db-service" as posts_db_service <<Service>>
-  frame "pod" as PodDbPosts {
+
+  frame "posts-db" as PodDbPosts {
     frame "docker" as DockerDbPosts {
-      database "\nposts_db\n" as posts_db
+      database "posts_db" as posts_db
     }
   }
   artifact "posts-db-volumen" as posts_db_volumen
@@ -70,7 +71,7 @@ frame "k8s" as "KubernetesCluster" {
   ' Routes app
   component "routes-app-service" as routes_app_service <<Service>>
 
-  frame "pod" as PodRoutes {
+  frame "routes-app" as routes-app {
     frame "docker" as DockerRoutes {
       component "routes_app" as routes_app
     }
@@ -78,9 +79,9 @@ frame "k8s" as "KubernetesCluster" {
 
   component "routes-db-service" as routes_db_service <<Service>>
 
-  frame "pod" as PodDbRoutes {
+  frame "routes-db" as PodDbRoutes {
     frame "docker" as DockerDbRoutes {
-      database "\nroutes_db\n" as routes_db
+      database "routes_db" as routes_db
     }
   }
   artifact "routes-db-volumen" as routes_db_volumen
@@ -93,16 +94,16 @@ frame "k8s" as "KubernetesCluster" {
   ' Offers app
   component "offers-app-service" as offers_app_service <<Service>>
 
-  frame "pod" as PodOffers {
+  frame "offers-app" as offers-app {
     frame "docker" as DockerOffers {
       component "offers_app" as offers_app
     }
   }
   component "offers-db-service" as offers_db_service <<Service>>
 
-  frame "pod" as PodDbOffers {
+  frame "offers-db" as PodDbOffers {
     frame "docker" as DockerDbOffers {
-      database "\noffers_db\n" as offers_db
+      database "offers_db" as offers_db
     }
   }
   artifact "offers-db-volumen" as offers_db_volumen 
