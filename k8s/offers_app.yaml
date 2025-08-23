@@ -18,7 +18,7 @@ spec:
   - protocol: TCP
     port: 8080        # Port exposed by the service
     targetPort: 3003  # Port on the pod to which traffic is directed
-    nodePort: 30080   # Port on each node to expose the service
+    nodePort: 30003   # Port on each node to expose the service
 
 ---
 # Define the deployment for the offers-app
@@ -180,3 +180,4 @@ spec:
       ports:
         - protocol: TCP
           port: 5432
+
