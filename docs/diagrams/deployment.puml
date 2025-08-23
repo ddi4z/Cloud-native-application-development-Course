@@ -26,14 +26,14 @@ frame "k8s" as "KubernetesCluster" {
   ' Users app
   component "users-app-service" as users_app_service <<Service>>
 
-  frame "pod" as users-app {
+  frame "users-app" as users-app {
     frame "docker" {
       component "users_app" as users_app
     }
   }
 
   component "users-db-service" as users_db_service <<Service>>
-  frame "pod" as PodDbUsers {
+  frame "users-db" as PodDbUsers {
     frame "docker" as DockerDbUsers {
       database "\nusers_db\n" as users_db
     }
@@ -48,14 +48,15 @@ frame "k8s" as "KubernetesCluster" {
   ' Posts app
   component "posts-app-service" as posts_app_service <<Service>>
 
-  frame "pod" as posts-app {
+  frame "posts-app" as posts-app {
     frame "docker" as DockerPosts {
       component "posts_app" as posts_app
     }
   }
 
   component "posts-db-service" as posts_db_service <<Service>>
-  frame "pod" as PodDbPosts {
+  
+  frame "posts-db" as PodDbPosts {
     frame "docker" as DockerDbPosts {
       database "\nposts_db\n" as posts_db
     }
@@ -70,7 +71,7 @@ frame "k8s" as "KubernetesCluster" {
   ' Routes app
   component "routes-app-service" as routes_app_service <<Service>>
 
-  frame "pod" as routes-app {
+  frame "routes-app" as routes-app {
     frame "docker" as DockerRoutes {
       component "routes_app" as routes_app
     }
@@ -78,7 +79,7 @@ frame "k8s" as "KubernetesCluster" {
 
   component "routes-db-service" as routes_db_service <<Service>>
 
-  frame "pod" as PodDbRoutes {
+  frame "routes-db" as PodDbRoutes {
     frame "docker" as DockerDbRoutes {
       database "\nroutes_db\n" as routes_db
     }
@@ -93,14 +94,14 @@ frame "k8s" as "KubernetesCluster" {
   ' Offers app
   component "offers-app-service" as offers_app_service <<Service>>
 
-  frame "pod" as offers-app {
+  frame "offers-app" as offers-app {
     frame "docker" as DockerOffers {
       component "offers_app" as offers_app
     }
   }
   component "offers-db-service" as offers_db_service <<Service>>
 
-  frame "pod" as PodDbOffers {
+  frame "offers-db" as PodDbOffers {
     frame "docker" as DockerDbOffers {
       database "\noffers_db\n" as offers_db
     }
