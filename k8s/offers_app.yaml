@@ -16,7 +16,7 @@ spec:
     app: offers-app
   ports:
   - protocol: TCP
-    port: 8080        # Port exposed by the service
+    port: 80        # Port exposed by the service
     targetPort: 3003  # Port on the pod to which traffic is directed
     nodePort: 30003   # Port on each node to expose the service
 
@@ -59,7 +59,7 @@ spec:
             path: /ping
             port: 3003
           initialDelaySeconds: 5
-          periodSeconds: 10
+          periodSeconds: 30
           failureThreshold: 3
         env:
         - name: CONNECTION_STRING
