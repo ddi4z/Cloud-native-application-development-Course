@@ -201,7 +201,7 @@ app.include_router(post_router)
 
 ```python
 # src/assembly.py
-_repo: PostRepositoryPort = PostgresUserRepositoryAdapter()
+_repo: PostRepositoryPort = PostgresPostRepositoryAdapter()
 
 def build_filter_post_use_case() -> BaseUseCase:
     return FilterPostsUseCase(_repo)
