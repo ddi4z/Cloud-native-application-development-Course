@@ -378,7 +378,30 @@ Un **Post** expone, al menos, los siguientes campos:
 
 ## Pruebas
 
-El proyecto contempla **pruebas unitarias** y **pruebas de API (integración)**.
+Este proyecto utiliza [pytest](https://docs.pytest.org/) como framework de pruebas para asegurar el correcto funcionamiento de los modelos de dominio, casos de uso y adaptadores.
+
+### 📦 Estructura de pruebas
+
+Las pruebas están organizadas en módulos que reflejan la arquitectura hexagonal del sistema:
+
+- `tests/unit/domain/models`: Pruebas de validación de modelos (`Post`, `PostCreationRequest`, etc.).
+- `tests/unit/adapters`: Pruebas de integración con adaptadores (como el repositorio en PostgreSQL).
+- `tests/unit/domain/use_cases`: Pruebas de lógica de negocio (crear, contar, eliminar posts, etc.).
+
+Además, se utiliza `conftest.py` para definir *fixtures* reutilizables (repositorios, sesiones de base de datos, datos válidos, etc.).
+
+### ▶️ Ejecutar pruebas
+
+Para ejecutar todas las pruebas:
+
+```bash
+pytest
+```
+
+Para ejecutar una prueba específica:
+```bash
+pytest tests/unit/domain/models/test_post.py
+```
 
 ### Unitarias
 
