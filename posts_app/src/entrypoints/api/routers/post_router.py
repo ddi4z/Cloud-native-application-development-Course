@@ -1,30 +1,39 @@
+from datetime import datetime
 from typing import Optional
 from uuid import UUID
-from fastapi import APIRouter, Depends, Response, Query, Path, HTTPException
-from fastapi.responses import JSONResponse, PlainTextResponse
+
+from fastapi import APIRouter, Depends, HTTPException, Path, Query, Response
 from fastapi.encoders import jsonable_encoder
-from datetime import datetime
+from fastapi.responses import JSONResponse, PlainTextResponse
 
 from src.assembly import (
-    build_create_post_use_case,
     build_count_post_use_case,
+    build_create_post_use_case,
     build_delete_post_use_case,
     build_filter_post_use_case,
     build_query_post_use_case,
-    build_reset_post_use_case
+    build_reset_post_use_case,
 )
 from src.domain.models.post_creation_request import PostCreationRequest
 from src.domain.models.posts import Post
 from src.domain.use_cases.base_use_case import BaseUseCase
-from src.errors import MissingIdError, PostNotFoundError, InvalidCredentialsError, MissingPostInformationError, InvalidExpirationDate
+from src.errors import (
+    InvalidCredentialsError,
+    InvalidExpirationDate,
+    MissingIdError,
+    MissingPostInformationError,
+    PostNotFoundError,
+)
 
 router = APIRouter(prefix="/posts")
+
 
 # 6. Consulta de salud del servicio
 @router.get("/ping", response_class=PlainTextResponse)
 def health_check():
     """Healthcheck endpoint."""
     return "pong"
+
 
 # 5. Consultar cantidad de entidades
 @router.get("/count")
@@ -33,12 +42,15 @@ def get_posts_count(use_case: BaseUseCase = Depends(build_count_post_use_case)):
     Retrieve the total number of post entities stored in the database.
     All attributes in the response are required.
     """
-    return JSONResponse(content={"count": use_case.execute()},status_code=200)
+    return JSONResponse(content={"count": use_case.execute()}, status_code=200)
 
 
 # 1. Creación de posts
 @router.post("", status_code=201)
-def create_post(post_dto: PostCreationRequest, use_case: BaseUseCase = Depends(build_create_post_use_case)):
+def create_post(
+    post_dto: PostCreationRequest,
+    use_case: BaseUseCase = Depends(build_create_post_use_case),
+):
     """
     Create a new Post.
 
@@ -54,10 +66,12 @@ def create_post(post_dto: PostCreationRequest, use_case: BaseUseCase = Depends(b
         return {
             "id": created_post.id,
             "userId": created_post.userId,
-            "createdAt": created_post.createdAt.isoformat(timespec="seconds")
+            "createdAt": created_post.createdAt.isoformat(timespec="seconds"),
         }
     except InvalidExpirationDate:
-        return JSONResponse(content={"msg": 'La fecha expiración no es válida'}, status_code=412)
+        return JSONResponse(
+            content={"msg": "La fecha expiración no es válida"}, status_code=412
+        )
     except InvalidCredentialsError:
         return Response(status_code=400)
     except MissingPostInformationError:
@@ -75,14 +89,14 @@ def filter_post(
     """
     Filters all posts matching certain criteria.
     Accepts:
-        expires: Bool; if post if expired (True) or not (False) 
+        expires: Bool; if post if expired (True) or not (False)
         routeid: UUID; id of route needed
         owner: UUID; id of user who owns post
     Returns:
         PostList: List; list of posts matching certain criteria. If no parameter is given, will return all posts
     """
     posts = use_case.execute(expire=expire, route=route, owner=owner)
-        
+
     result = [
         {
             "id": str(post.id),
@@ -90,11 +104,13 @@ def filter_post(
             "userId": str(post.userId) if getattr(post, "userId", None) else None,
             "expireAt": (
                 post.expireAt.isoformat(timespec="seconds")
-                if isinstance(post.expireAt, datetime) else post.expireAt
+                if isinstance(post.expireAt, datetime)
+                else post.expireAt
             ),
             "createdAt": (
                 post.createdAt.isoformat(timespec="seconds")
-                if isinstance(post.createdAt, datetime) else post.createdAt
+                if isinstance(post.createdAt, datetime)
+                else post.createdAt
             ),
         }
         for post in posts
@@ -110,36 +126,38 @@ def query_post(
     use_case: BaseUseCase = Depends(build_query_post_use_case),
 ):
     """
-    Get information from a specific post, using its id
-    Accepts:
-        id: UUID
-    Returns: 
-        JSON with all the information on the post:
-          {
-          "id": id de la publicación,
-          "routeId": id del trayecto,
-          "userId": id del usuario dueño de la publicación,
-          "expireAt": fecha y hora máxima en que se recibirán ofertas en formato ISO,
-          "createdAt": fecha y hora de creación de la publicación en formato ISO
-  }
+      Get information from a specific post, using its id
+      Accepts:
+          id: UUID
+      Returns:
+          JSON with all the information on the post:
+            {
+            "id": id de la publicación,
+            "routeId": id del trayecto,
+            "userId": id del usuario dueño de la publicación,
+            "expireAt": fecha y hora máxima en que se recibirán ofertas en formato ISO,
+            "createdAt": fecha y hora de creación de la publicación en formato ISO
+    }
     """
     try:
         post = use_case.execute(id)
         return JSONResponse(
-            content=jsonable_encoder({
-                "id": post.id,
-                "routeId": post.routeId,
-                "userId": post.userId,
-                "expireAt": post.expireAt,
-                "createdAt": post.createdAt
-            }),
-            status_code=200
+            content=jsonable_encoder(
+                {
+                    "id": post.id,
+                    "routeId": post.routeId,
+                    "userId": post.userId,
+                    "expireAt": post.expireAt,
+                    "createdAt": post.createdAt,
+                }
+            ),
+            status_code=200,
         )
-    
+
     except InvalidCredentialsError:
-        return Response(status_code=400, content='InvalidCredentials')
+        return Response(status_code=400, content="InvalidCredentials")
     except PostNotFoundError:
-        return Response(status_code=404, content='PostNotFound')
+        return Response(status_code=404, content="PostNotFound")
 
 
 # 4. Consultar información del usuario
@@ -160,16 +178,12 @@ def delete_post(
     try:
         use_case.execute(id)
         return JSONResponse(
-            content={
-                "msg": "la publicación fue eliminada"
-            },
-            status_code=200
+            content={"msg": "la publicación fue eliminada"}, status_code=200
         )
     except PostNotFoundError as err:
         return Response(status_code=404)
     except InvalidCredentialsError as err:
         return Response(status_code=400)
-
 
 
 # 7. Restablecer base de datos
@@ -181,8 +195,5 @@ def reset_users_database(use_case: BaseUseCase = Depends(build_reset_post_use_ca
     """
     use_case.execute()
     return JSONResponse(
-        content={
-            "msg": "Todos los datos fueron eliminados"
-        },
-        status_code=200
+        content={"msg": "Todos los datos fueron eliminados"}, status_code=200
     )

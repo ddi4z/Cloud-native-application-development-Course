@@ -1,14 +1,19 @@
-import os
-from typing import Dict, Optional, List
-from uuid import uuid4, UUID
-from datetime import datetime, timedelta, timezone
 import hashlib
-
-from src.domain.models.posts import Post
-from src.domain.ports.post_repository_port import PostRepositoryPort
-from src.errors import InvalidCredentialsError, MissingIdError, MissingPostInformationError, InvalidExpirationDate, PostNotFoundError
+import os
+from datetime import datetime, timedelta, timezone
+from typing import Dict, List, Optional
+from uuid import UUID, uuid4
 
 from src.domain.models.post_creation_request import PostCreationRequest
+from src.domain.models.posts import Post
+from src.domain.ports.post_repository_port import PostRepositoryPort
+from src.errors import (
+    InvalidCredentialsError,
+    InvalidExpirationDate,
+    MissingIdError,
+    MissingPostInformationError,
+    PostNotFoundError,
+)
 
 
 class InMemoryPostRepositoryAdapter(PostRepositoryPort):
@@ -20,13 +25,14 @@ class InMemoryPostRepositoryAdapter(PostRepositoryPort):
         """Generate a new unique ID."""
         return uuid4()
 
-
     def create(self, post_dto: PostCreationRequest) -> Post:
         """Create a new post."""
 
         if not all([post_dto.routeId, post_dto.expireAt, post_dto.userId]):
-            raise MissingPostInformationError("Route Id, Expiration date, and User id are all required.")
-        
+            raise MissingPostInformationError(
+                "Route Id, Expiration date, and User id are all required."
+            )
+
         if post_dto.expireAt <= datetime.now(timezone.utc):
             raise InvalidExpirationDate("Expiration date must be in the future.")
 
@@ -36,34 +42,33 @@ class InMemoryPostRepositoryAdapter(PostRepositoryPort):
             id=self.sequence(),
             routeId=post_dto.routeId,
             userId=post_dto.userId,
-            expireAt=post_dto.expireAt.astimezone(timezone.utc).isoformat(timespec="seconds"),
-            createdAt=time_now
-            )
+            expireAt=post_dto.expireAt.astimezone(timezone.utc).isoformat(
+                timespec="seconds"
+            ),
+            createdAt=time_now,
+        )
 
-        self.memory_store[post.id] = post      
+        self.memory_store[post.id] = post
 
         return post
-    
 
-
-    def filter(self, 
-               expire: Optional[bool]= None,
-               route: Optional[UUID] = None,
-               owner: Optional[UUID] = None,
+    def filter(
+        self,
+        expire: Optional[bool] = None,
+        route: Optional[UUID] = None,
+        owner: Optional[UUID] = None,
     ) -> List[Post]:
-        
-        """Get a list of post matching certain criteria """
+        """Get a list of post matching certain criteria"""
         items: List[Post] = list(self.memory_store.values())
 
         if expire is not None and not isinstance(expire, bool):
-            raise InvalidCredentialsError('Expired has to be boolean')
-        
-        if route is not None and not isinstance(route, UUID):
-            raise InvalidCredentialsError('Route has tu be a valid id')
-        
-        if owner is not None and not isinstance(owner, UUID):
-            raise InvalidCredentialsError('Owner has tu be a valid id')
+            raise InvalidCredentialsError("Expired has to be boolean")
 
+        if route is not None and not isinstance(route, UUID):
+            raise InvalidCredentialsError("Route has tu be a valid id")
+
+        if owner is not None and not isinstance(owner, UUID):
+            raise InvalidCredentialsError("Owner has tu be a valid id")
 
         if expire is not None:
             if expire:
@@ -76,14 +81,12 @@ class InMemoryPostRepositoryAdapter(PostRepositoryPort):
 
         if owner is not None:
             items = [p for p in items if p.userId == owner]
-            
+
         return items
-
-
 
     def query(self, id: str) -> Optional[Post]:
         """Get information on a specific post"""
-         # 1) validate input presence
+        # 1) validate input presence
         if not isinstance(id, (str, UUID)) or (isinstance(id, str) and not id.strip()):
             raise InvalidCredentialsError("Id is required and must be a UUID string.")
 
@@ -91,15 +94,15 @@ class InMemoryPostRepositoryAdapter(PostRepositoryPort):
         try:
             post_id = id if isinstance(id, UUID) else UUID(id)
         except (ValueError, TypeError):
-            raise InvalidCredentialsError("Id doesn't have the correct format. Expected UUID.")
-        
+            raise InvalidCredentialsError(
+                "Id doesn't have the correct format. Expected UUID."
+            )
+
         post = self.memory_store.get(post_id)
 
         if not post:
             raise PostNotFoundError("The provided id is not in the database")
         return post
-
-
 
     def delete(self, id: UUID) -> None:
         """Delete a post by id."""
@@ -128,12 +131,11 @@ class InMemoryPostRepositoryAdapter(PostRepositoryPort):
     def count(self) -> int:
         """Get total number of users."""
         return len(self.memory_store)
-    
+
     def ping(self) -> str:
         """Check service status."""
-        return 'pong'
+        return "pong"
 
     def reset(self) -> None:
         """Delete all users."""
         self.memory_store.clear()
-

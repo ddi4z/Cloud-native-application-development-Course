@@ -1,9 +1,9 @@
 from abc import ABC, abstractmethod
-from typing import Optional, Protocol, List
+from typing import List, Optional, Protocol
 from uuid import UUID
 
-from src.domain.models.posts import Post
 from src.domain.models.post_creation_request import PostCreationRequest
+from src.domain.models.posts import Post
 
 
 class PostRepositoryPort(ABC):
@@ -15,7 +15,7 @@ class PostRepositoryPort(ABC):
         pass
 
     @abstractmethod
-    def filter(self, expire:bool, route:str, owner:str) -> Post:
+    def filter(self, expire: bool, route: str, owner: str) -> Post:
         """Filter posts matching certain criteria."""
         pass
 
@@ -25,7 +25,7 @@ class PostRepositoryPort(ABC):
         pass
 
     @abstractmethod
-    def delete(self, id:UUID) -> None:
+    def delete(self, id: UUID) -> None:
         """Delete a post from the database."""
         pass
 
@@ -43,5 +43,3 @@ class PostRepositoryPort(ABC):
     def reset(self) -> None:
         """Delete all posts in database."""
         pass
-
-    

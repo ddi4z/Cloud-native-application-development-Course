@@ -1,15 +1,13 @@
-
+from src.adapters.postgres.post_repository_adapter import PostgresUserRepositoryAdapter
+from src.domain.ports.post_repository_port import PostRepositoryPort
 from src.domain.use_cases.base_use_case import BaseUseCase
-from src.domain.use_cases.create_post_use_case import CreatePostUseCase
 from src.domain.use_cases.count_post_use_case import CountPostUseCase
+from src.domain.use_cases.create_post_use_case import CreatePostUseCase
 from src.domain.use_cases.delete_post_use_case import DeletePostUseCase
 from src.domain.use_cases.filter_post_use_case import FilterPostUseCase
 from src.domain.use_cases.query_post_use_case import QueryPostUseCase
 from src.domain.use_cases.reset_post_use_case import ResetPostUseCase
 
-from src.domain.ports.post_repository_port import PostRepositoryPort
-
-from src.adapters.postgres.post_repository_adapter import PostgresUserRepositoryAdapter
 # from src.adapters.memory.post_repository_adapter import InMemoryUserRepositoryAdapter
 
 # Shared in-memory repository instance for all post use cases

@@ -9,15 +9,13 @@ app.include_router(post_router)
 
 # Add custom exception handler here
 from fastapi.exceptions import RequestValidationError
-from fastapi.responses import JSONResponse
 from fastapi.requests import Request
+from fastapi.responses import JSONResponse
+
 
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
     return JSONResponse(
         status_code=400,
-        content={
-            "detail": exc.errors(),
-            "body": exc.body
-        },
+        content={"detail": exc.errors(), "body": exc.body},
     )
