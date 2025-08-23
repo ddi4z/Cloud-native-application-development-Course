@@ -26,7 +26,7 @@ frame "k8s" as "KubernetesCluster" {
   ' Users app
   component "users-app-service" as users_app_service <<Service>>
 
-  frame "pod" {
+  frame "pod" as users-app {
     frame "docker" {
       component "users_app" as users_app
     }
@@ -48,7 +48,7 @@ frame "k8s" as "KubernetesCluster" {
   ' Posts app
   component "posts-app-service" as posts_app_service <<Service>>
 
-  frame "pod" as PodPosts {
+  frame "pod" as posts-app {
     frame "docker" as DockerPosts {
       component "posts_app" as posts_app
     }
@@ -70,7 +70,7 @@ frame "k8s" as "KubernetesCluster" {
   ' Routes app
   component "routes-app-service" as routes_app_service <<Service>>
 
-  frame "pod" as PodRoutes {
+  frame "pod" as routes-app {
     frame "docker" as DockerRoutes {
       component "routes_app" as routes_app
     }
@@ -93,7 +93,7 @@ frame "k8s" as "KubernetesCluster" {
   ' Offers app
   component "offers-app-service" as offers_app_service <<Service>>
 
-  frame "pod" as PodOffers {
+  frame "pod" as offers-app {
     frame "docker" as DockerOffers {
       component "offers_app" as offers_app
     }
