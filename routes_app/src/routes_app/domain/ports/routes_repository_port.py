@@ -42,7 +42,7 @@ class RoutesRepositoryPort(ABC):
     def get_by_flight_id(self, flight_id: str) -> Optional[Trayecto]:
         """Busca un trayecto por su flightId. Retorna None si no se encuentra."""
         raise NotImplementedError
-        
+
     @abstractmethod
     def count(self) -> int:
         """Retorna la cantidad total de trayectos en el repositorio."""
