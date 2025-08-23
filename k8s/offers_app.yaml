@@ -22,7 +22,7 @@ spec:
 
 ---
 # Define the deployment for the offers-app
-apiVersion: apps/v1
+apiVersion: v1
 kind: Deployment
 metadata:
   name: offers-app-deployment
@@ -51,7 +51,7 @@ spec:
           done
       containers:
       - name: offers-app
-        image: offers-app:1.0.0
+        image: offers-app:v1.0.0
         ports:
         - containerPort: 3003 # this port is exposed by the container
         livenessProbe:
@@ -99,7 +99,7 @@ spec:
 
 ---
 # Define the deployment for the offers-db
-apiVersion: apps/v1
+apiVersion: v1
 kind: Deployment
 metadata:
   name: offers-db-deployment
