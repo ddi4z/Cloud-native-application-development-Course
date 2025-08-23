@@ -22,7 +22,7 @@ spec:
             - containerPort: 5432
           env:
             - name: POSTGRES_DB
-              value: "routes_db" 
+              value: "routes_db"
             - name: POSTGRES_USER
               value: "user"
             - name: POSTGRES_PASSWORD
@@ -39,7 +39,7 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: routes-db
+  name: routes-db-service
 spec:
   selector:
     app: routes-db
@@ -49,7 +49,7 @@ spec:
       targetPort: 5432
 
 ---
-# Despliegue de app de rutas
+# Despliegue de la Aplicación de Rutas
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -73,25 +73,26 @@ spec:
           ports:
             - containerPort: 8000
           env:
+            # La URL de conexión ahora debe apuntar al nuevo nombre del servicio
             - name: DATABASE_URL
-              value: "postgresql://user:password@routes-db:5432/routes_db"
+              value: "postgresql://user:password@routes-db-service:5432/routes_db"
           readinessProbe:
             httpGet:
               path: /routes/ping
               port: 8000
-            initialDelaySeconds: 20 
+            initialDelaySeconds: 20
             periodSeconds: 15
             failureThreshold: 3
           livenessProbe:
             httpGet:
               path: /routes/ping
               port: 8000
-            initialDelaySeconds: 45 
+            initialDelaySeconds: 45
             periodSeconds: 20
             failureThreshold: 3
 
 ---
-# Servicio para la app
+# Servicio para la Aplicación
 apiVersion: v1
 kind: Service
 metadata:
@@ -106,11 +107,11 @@ spec:
       targetPort: 8000
 
 ---
-# Política de Red
+# Política de Red para Aislar DB
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
-  name: routes-db-policy
+  name: routes-network
 spec:
   podSelector:
     matchLabels:
