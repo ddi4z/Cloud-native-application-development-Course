@@ -66,6 +66,10 @@ spec:
       labels:
         app: routes-app
     spec:
+      initContainers:
+      - name: wait-for-db
+        image: busybox:1.36.1
+        command: ['sh', '-c', 'until nc -z routes-db-service 5432; do echo "Esperando a la base de datos..."; sleep 2; done;']
       containers:
         - name: routes-app
           image: routes-app:v1.0.0
@@ -73,7 +77,6 @@ spec:
           ports:
             - containerPort: 8000
           env:
-            # La URL de conexión ahora debe apuntar al nuevo nombre del servicio
             - name: DATABASE_URL
               value: "postgresql://user:password@routes-db-service:5432/routes_db"
           readinessProbe:
