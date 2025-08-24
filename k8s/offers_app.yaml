@@ -56,7 +56,7 @@ spec:
         - containerPort: 3003 # this port is exposed by the container
         livenessProbe:
           httpGet:
-            path: /ping
+            path: /offers/ping
             port: 3003
           initialDelaySeconds: 5
           periodSeconds: 30
