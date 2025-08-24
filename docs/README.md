@@ -42,6 +42,9 @@
 ## Nota
 > No se anexa toda la información en esta página, solo enlaces. Esto lo hacemos para que este despliegue sirva a modo de punto central para los diferentes contenidos.
 
+## Tecnologías usadas
+Python, Poetry, FastAPI, Pytest y Docker. Estas mismas se detallan en la vista de desarrollo en la documentación técnica.
+
 ## Reglas del equipo
 
 Estas reglas las puede encontrar en [Reglas de equipo](./reglas_equipo.md). 
