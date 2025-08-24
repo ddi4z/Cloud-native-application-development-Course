@@ -40,7 +40,6 @@
 ---
 
 ## Nota
->[!IMPORTANT]
 > No se anexa toda la información en esta página, solo enlaces. Esto lo hacemos para que este despliegue sirva a modo de punto central para los diferentes contenidos.
 
 ## Reglas del equipo
