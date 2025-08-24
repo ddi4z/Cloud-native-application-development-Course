@@ -27,4 +27,5 @@ Las reglas que se definieron en cuanto al trabajo en grupo, tecnologias, conflic
 - Si es entre tres o más personas, se realizará una reunión para escuchar todas las perspectivas y definir alternativas.
 
 ## 6. Tecnologías a usar
-- Python, Poetry, FastAPI, Pytest y Docker.
+
+- Python, Poetry, FastAPI, Pytest y Docker. Estas mismas se detallan mas en la vista de desarrollo
