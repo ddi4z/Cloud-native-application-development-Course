@@ -39,29 +39,15 @@
 
 ---
 
+## Nota
+>[!IMPORTANT]
+> No se anexa toda la información en esta página, solo enlaces. Esto lo hacemos para que este despliegue sirva a modo de punto central para los diferentes contenidos.
+
 ## Reglas del equipo
 
-Estas reglas las puede encontrar en [Reglas de equipo](./reglas_equipo.md). Esto lo hacemos para que esta página sirva de punto central a los demás puntos de información. 
+Estas reglas las puede encontrar en [Reglas de equipo](./reglas_equipo.md). 
 
 
-# Documentación técnica del proyecto
+## Documentación técnica del proyecto
 
-
-## Vistas de arquitectura
-
-* Vista de componentes
-  
-![Vista de componentes](./diagrams/components.png "Vista de componentes")
-
-* Vista de despliegue
-
-![Vista de despliegue](./diagrams/deployment.png "Vista de despliegue")
-
-* Vista de redes
-
-![Vista de redes](./diagrams/networks.png "Vista de redes")
-
-* Vista de información
-
-![Vista de información](./diagrams/entities.png "Vista de información")
-
+La documentación completa para cada una de las diferentes vistas del sistema se encuentra en la página [Vistas de arquitectura](./vistas_arquitectura.md). 
