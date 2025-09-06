@@ -18,7 +18,7 @@ jobs:
       - name: Create evaluator folder
         run: mkdir -p .evaluator
       - name: Download validate scripts
-        run: curl -sSL -o .evaluator/entrega3.json https://raw.githubusercontent.com/MISW-4301-Desarrollo-Apps-en-la-Nube/proyecto-monitor/main/entrega3/entrega3.json
+        run: curl -sSL -o .evaluator/entrega3.json https://raw.githubusercontent.com/MISW-4301-Desarrollo-Apps-en-la-Nube/proyecto-monitor/main/entrega3/entrega3_monitor.json
       - name: Set up yq
         uses: mikefarah/yq@v4.30.8
       - name: Save host path to env variable
