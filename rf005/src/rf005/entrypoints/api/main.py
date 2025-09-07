@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from .routers import router as rf005_router
+from .routers.routers import router as rf005_router
 
 # Creación de la app FastAPI
 # Se crea una instancia principal de la app.

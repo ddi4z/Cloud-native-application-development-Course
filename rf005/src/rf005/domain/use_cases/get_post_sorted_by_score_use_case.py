@@ -1,10 +1,16 @@
 from typing import List
-from ...errors import AuthorizationError, ServiceCommunicationError, EntityNotFoundError, InvalidTokenError
-from ..models import (
+
+from ..models.models import (
     PublicationResponse, PublicationResponseData, RouteDetails,
-    OfferDetails, RouteOrigin, RouteDestiny, Offer, Route, OfferWithScore
+    OfferDetails, RouteOrigin, RouteDestiny, Offer, Route, OfferWithScore, Post
 )
-from ..ports import (
+from ...errors import (
+    AuthorizationError,
+    ServiceCommunicationError,
+    EntityNotFoundError,
+    InvalidTokenError,
+)
+from ..ports.ports import (
     UsersClientPort,
     PostsClientPort,
     RoutesClientPort,
@@ -50,19 +56,35 @@ class GetPostSortedByScoreUseCase:
         route = await self.routes_client.get_route_by_id(post.routeId)
         offers = await self.offers_client.get_offers_by_post_id(post.id)
 
-        # Calcular score para cada oferta. Si falla, el score es None.
-        offers_with_score: List[OfferWithScore] = []
-        for offer in offers:
-            try:
-                score = self.score_client.calculate_score(offer, route)
-                offer_with_score = OfferWithScore(**offer.model_dump(), score=score)
-            except Exception:
-                # Como lo requiere el enunciado, si el cálculo del score falla, se asigna None (null en JSON)
-                offer_with_score = OfferWithScore(**offer.model_dump(), score=None)
-            offers_with_score.append(offer_with_score)
+        offers_details: List[OfferDetails] = []
+        for o in offers:
+            # Si size llega como "OfferSize.LARGE", normaliza a "LARGE"
+            size_value = o.size.split(".")[-1] if isinstance(o.size, str) else o.size
 
-        # Ordenar ofertas por score (descendente), manejando los valores nulos.
-        offers_with_score.sort(key=lambda o: (o.score is not None, o.score), reverse=True)
+            offers_details.append(OfferDetails(
+                id=o.id,
+                userId=o.userId,
+                description=o.description,
+                size=size_value,
+                fragile=o.fragile,
+                offer=o.offer,
+                score=None,             
+                createdAt=o.createdAt,
+            ))
+
+        # # Calcular score para cada oferta. Si falla, el score es None.
+        # offers_with_score: List[OfferWithScore] = []
+        # for offer in offers:
+        #     try:
+        #         score = self.score_client.calculate_score(offer, route)
+        #         offer_with_score = OfferWithScore(**offer.model_dump(), score=score)
+        #     except Exception:
+        #         # Como lo requiere el enunciado, si el cálculo del score falla, se asigna None (null en JSON)
+        #         offer_with_score = OfferWithScore(**offer.model_dump(), score=None)
+        #     offers_with_score.append(offer_with_score)
+
+        # # Ordenar ofertas por score (descendente), manejando los valores nulos.
+        # offers_with_score.sort(key=lambda o: (o.score is not None, o.score), reverse=True)
 
         # Respuesta final usando los modelos de Pydantic
         response_data = PublicationResponseData(
@@ -78,7 +100,8 @@ class GetPostSortedByScoreUseCase:
             plannedStartDate=route.plannedStartDate,
             plannedEndDate=route.plannedEndDate,
             createdAt=post.createdAt,
-            offers=[OfferDetails(**o.model_dump()) for o in offers_with_score]
+            # offers=[OfferDetails(**o.model_dump()) for o in offers_with_score]
+            offers=offers_details,
         )
 
         return PublicationResponse(data=response_data)

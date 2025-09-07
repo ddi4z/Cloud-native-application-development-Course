@@ -1,0 +1,46 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: api-gateway-ingress
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  ingressClassName: nginx
+  rules:
+  - http:
+      paths:
+      - path: /users
+        pathType: Prefix
+        backend:
+          service:
+            name: users-app-service
+            port:
+              number: 80
+      - path: /routes
+        pathType: Prefix
+        backend:
+          service:
+            name: routes-app-service
+            port:
+              number: 80
+      - path: /posts
+        pathType: Prefix
+        backend:
+          service:
+            name: posts-app-service
+            port:
+              number: 80
+      - path: /offers
+        pathType: Prefix
+        backend:
+          service:
+            name: offers-app-service
+            port:
+              number: 80
+      - path: /rf005
+        pathType: Prefix
+        backend:
+          service:
+            name: rf005-app-service
+            port:
+              number: 80

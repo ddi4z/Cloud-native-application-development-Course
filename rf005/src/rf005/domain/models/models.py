@@ -70,7 +70,7 @@ class OfferDetails(BaseModel):
     size: str
     fragile: bool
     offer: int
-    score: Optional[float]
+    score: Optional[float] = None
     createdAt: str
 
 class PublicationResponseData(BaseModel):

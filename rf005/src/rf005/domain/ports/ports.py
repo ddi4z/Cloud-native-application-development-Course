@@ -1,9 +1,9 @@
 from abc import ABC, abstractmethod
 from typing import List
-from ..models import User, Post, Route, Offer
+from ..models.models import User, Post, Route, Offer
 
 class APIClientPort(ABC):
-    """Base port for external service clients."""
+    """Puerto base para los clientes de API"""
     pass
 
 class UsersClientPort(APIClientPort):

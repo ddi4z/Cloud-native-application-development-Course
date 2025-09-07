@@ -1,6 +1,6 @@
 from typing import List, Dict
-from ...domain.models import User, Post, Route, Offer
-from ...domain.ports import (
+from ...domain.models.models import User, Post, Route, Offer
+from ...domain.ports.ports import (
     UsersClientPort,
     PostsClientPort,
     RoutesClientPort,

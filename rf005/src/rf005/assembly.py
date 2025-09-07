@@ -1,46 +1,26 @@
 import os
 from .domain.use_cases.get_post_sorted_by_score_use_case import GetPostSortedByScoreUseCase
+from .adapters.http.http_clients import (
+    HTTPUsersClientAdapter,
+    HTTPPostsClientAdapter,
+    HTTPRoutesClientAdapter,
+    HTTPOffersClientAdapter,
+)
+from .adapters.memory.mock_clients import MockScoreClientAdapter
 
-# Revisa una variable de entorno para decidir qué adaptadores usar.
-# Para producción/staging, el valor sería "production".
-# Para pruebas locales con mocks, podría ser "test".
-ENVIRONMENT = os.getenv("ENVIRONMENT", "production")
+# Instanciación de los clientes HTTP reales para comunicarse con los otros microservicios.
+users_client = HTTPUsersClientAdapter(base_url=os.getenv("USERS_SERVICE_URL"))
+posts_client = HTTPPostsClientAdapter(base_url=os.getenv("POSTS_SERVICE_URL"))
+routes_client = HTTPRoutesClientAdapter(base_url=os.getenv("ROUTES_SERVICE_URL"))
+offers_client = HTTPOffersClientAdapter(base_url=os.getenv("OFFERS_SERVICE_URL"))
 
-if ENVIRONMENT == "test":
-    # En el entorno de prueba, usamos los clientes mock que están en memoria y no hacen llamadas HTTP reales.
-    from .adapters.memory.mock_clients import (
-        InMemoryUsersClientAdapter,
-        InMemoryPostsClientAdapter,
-        InMemoryRoutesClientAdapter,
-        InMemoryOffersClientAdapter,
-        MockScoreClientAdapter,
-    )
-    users_client = InMemoryUsersClientAdapter()
-    posts_client = InMemoryPostsClientAdapter()
-    routes_client = InMemoryRoutesClientAdapter()
-    offers_client = InMemoryOffersClientAdapter()
-    score_client = MockScoreClientAdapter()
-else:
-    # En un entorno de producción, usamos los clientes HTTP reales.
-    from .adapters.http.http_clients import (
-        HTTPUsersClientAdapter,
-        HTTPPostsClientAdapter,
-        HTTPRoutesClientAdapter,
-        HTTPOffersClientAdapter,
-    )
-    # El servicio de Score siempre es un mock por ahora. 
-    from .adapters.memory.mock_clients import MockScoreClientAdapter
-    
-    users_client = HTTPUsersClientAdapter()
-    posts_client = HTTPPostsClientAdapter()
-    routes_client = HTTPRoutesClientAdapter()
-    offers_client = HTTPOffersClientAdapter()
-    score_client = MockScoreClientAdapter()
+# Instanciación del cliente mock para el servicio de score, ya que aún no está desarrollado.
+score_client = MockScoreClientAdapter()
 
 def build_get_post_sorted_by_score_use_case() -> GetPostSortedByScoreUseCase:
     """
-    Construye el caso de uso con sus dependencias concretas.
-    Las dependencias cambian según la variable de entorno ENVIRONMENT.
+    Construye el caso de uso para obtener una publicación completa,
+    inyectando todas las dependencias (clientes).
     """
     return GetPostSortedByScoreUseCase(
         users_client=users_client,

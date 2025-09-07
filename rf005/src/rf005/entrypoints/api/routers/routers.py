@@ -2,17 +2,12 @@ from fastapi import APIRouter, Depends, Header, HTTPException, Response
 from fastapi.responses import JSONResponse
 from typing import Annotated
 
-from ....assembly import build_get_full_publication_use_case
+from ....assembly import build_get_post_sorted_by_score_use_case
 from ....domain.use_cases.get_post_sorted_by_score_use_case import GetPostSortedByScoreUseCase
-from ....domain.models import PublicationResponse
+from ....domain.models.models import PublicationResponse
 from ....errors import AuthorizationError, ServiceCommunicationError, EntityNotFoundError, InvalidTokenError
 
 router = APIRouter(prefix="/rf005")
-
-@router.get("/ping")
-def ping():
-    """Endpoint para verificar que el servicio está activo."""
-    return Response(content="pong", status_code=200)
 
 @router.get(
     "/posts/{post_id}",
@@ -28,7 +23,7 @@ def ping():
 async def get_publication_details(
     post_id: str,
     authorization: Annotated[str | None, Header()] = None,
-    use_case: GetPostSortedByScoreUseCase = Depends(build_get_full_publication_use_case),
+    use_case: GetPostSortedByScoreUseCase = Depends(build_get_post_sorted_by_score_use_case),
 ):
     """
     Endpoint para obtener los detalles completos de una publicación,
@@ -58,3 +53,10 @@ async def get_publication_details(
             status_code=503,
             content={"msg": "El servicio está temporalmente fuera de servicio."}
         )
+    
+@router.get("/ping", status_code=200, tags=["Health Check"])
+def health_check():
+    """
+    Verifica que el servicio esté activo y responde un 'pong'.
+    """
+    return {"status": "pong"}

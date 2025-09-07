@@ -32,20 +32,23 @@ spec:
     spec:
       containers:
         - name: rf005-app
-          image: rf005-app:v1.0.0 
-          imagePullPolicy: IfNotPresent 
+          # La imagen y etiqueta deben coincidir exactamente con el comando 'docker build'
+          image: rf005-app:v1.0.0
+          # 'IfNotPresent' es ideal para desarrollo local con Minikube
+          imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8005
           env:
-            - name: USERS_APP_URL
+            # Nombres de variables correctos que el código espera encontrar
+            - name: USERS_SERVICE_URL
               value: "http://users-app-service"
-            - name: POSTS_APP_URL
+            - name: POSTS_SERVICE_URL
               value: "http://posts-app-service"
-            - name: OFFERS_APP_URL
-              value: "http://offers-app-service"
-            - name: ROUTES_APP_URL #Declarado aunque no utilizado en para la entrega 2
+            - name: ROUTES_SERVICE_URL
               value: "http://routes-app-service"
-            # Score app de momento no se usa porque se hará mock mientras se desarrolla
+            - name: OFFERS_SERVICE_URL
+              value: "http://offers-app-service"
+          # Sondas de salud para asegurar que el pod está funcionando correctamente
           livenessProbe:
             httpGet:
               path: /rf005/ping
