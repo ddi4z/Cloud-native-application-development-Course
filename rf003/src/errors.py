@@ -1,15 +1,26 @@
-class UnauthorizedError(Exception):
-    """401: Missing/invalid auth."""
+class ValidationError(Exception):
+    """400: Alguno de los campos no está  presente en la solicitud, o no tiene el formato esperado."""
     pass
 
-class ValidationError(Exception):
-    """400: Bad input that violates business rules."""
+class InvalidTokenError(Exception):
+    """401: El token no es válido o está vencido."""
+    pass
+
+class NoTokenError(Exception):
+    """403: El Token no está en la solicitud."""
+
+class InvalidRouteDatesError(Exception):
+    "412: Las fechas del trayecto no son validas."
+    pass
+
+class InvalidExpiredAtError(Exception):
+    "412: La fecha de expiración no es válida."
     pass
 
 class ConflictError(Exception):
-    """409: Uniqueness / duplicate conflict."""
+    "412: El usuario ya tiene una publicación para la misma fecha ."
     pass
 
-class DependencyError(Exception):
-    """502: Downstream service or adapter failure."""
+class ServiceCommunicationError(Exception):
+    """503: El servicio está temporalmente fuera de servicio."""
     pass
