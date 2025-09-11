@@ -2,7 +2,7 @@ from datetime import datetime
 
 from src.domain.use_cases.base_use_case import BaseUseCase
 
-from src.domain.models.models import (UserInput, User, Route, Post, PublicationResponseData, CreatePost)
+from src.domain.models.models import (UserInput, PublicationResponseData, CreatePost)
 
 from errors import ValidationError, InvalidTokenError, NoTokenError, InvalidRouteDatesError, InvalidExpiredAtError, ConflictError, ServiceCommunicationError
 
@@ -29,19 +29,20 @@ class CreatePostUseCase(BaseUseCase):
         self.routes_client = routes_client  
 
 
-    def _validate_post_creation(self, user_id: str, input_dto: UserInput):
+    def _validate_post_creation(self, input_dto: UserInput):
         """Validates the post data against business rules."""
         current_date = datetime.now().date()
         try: 
-            date_user_input = datetime.fromisoformat(input_dto.plannedStartDate)
+            start_date_user_input = datetime.fromisoformat(input_dto.plannedStartDate)
+            expire_date_user_input = datetime.fromisoformat(input_dto.expireAt)
         
         except ValidationError as e:
             raise e('La fecha debe estar en el formato correcto')
         
-        if date_user_input <= current_date:
+        if start_date_user_input <= current_date:
             raise InvalidRouteDatesError('la fecha de inicio debe estar en el futuro.')
         
-        if current_date < input_dto.expireAt <= input_dto.plannedStartDate:
+        if not (current_date < expire_date_user_input < start_date_user_input):
             raise InvalidExpiredAtError('La fecha de expiración debe ser posterior a fecha actual y anterior a comienzo viaje.')
         
 
@@ -71,20 +72,22 @@ class CreatePostUseCase(BaseUseCase):
 
             # Validar input data
             self._validate_post_creation(input_dto)
-            await self._validate_existing_post(current_user.id)
+            await self._validate_existing_post(current_user, input_dto)
 
-            # Obtener o crear la ruta
-            
-            route = await self.routes_client.get_or_create_route(
-                flightId=input_dto.flightId,
-                sourceAirportCode = input_dto.origin.airportCode,
-                sourceCountry = input_dto.origin.country,
-                destinyAirportCode = input_dto.destiny.airportCode,
-                destinyCountry = input_dto.destiny.country,
-                bagCost = input_dto.bagCost,
-                plannedStartDate = input_dto.plannedStartDate,
-                plannedEndDate = input_dto.plannedEndDate
-            )
+            # Obtener la ruta
+            route = await self.routes_client.find_route_by_flightid(UserInput.flightId)
+
+            if not route:
+                route = await self.routes_client.create_route(
+                    flightId=input_dto.flightId,
+                    sourceAirportCode = input_dto.origin.airportCode,
+                    sourceCountry = input_dto.origin.country,
+                    destinyAirportCode = input_dto.destiny.airportCode,
+                    destinyCountry = input_dto.destiny.country,
+                    bagCost = input_dto.bagCost,
+                    plannedStartDate = input_dto.plannedStartDate,
+                    plannedEndDate = input_dto.plannedEndDate
+                )
 
             # crear post
             new_post_creation_request = CreatePost(
