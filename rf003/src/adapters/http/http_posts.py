@@ -94,4 +94,23 @@ class HTTPPostsClientAdapter(HTTPClientBase, PostsPort):
             raise ValidationError("Invalid query parameters.")
         
         else:
-            raise ServiceCommunicationError("Servicio temporalmente fuera servicio.") 
+            raise ServiceCommunicationError("Servicio temporalmente fuera servicio.")
+        
+
+    async def create_post(self, create_post_dto: CreatePost) -> CreatePostResponse:
+        try:
+            json_data = create_post_dto.model_dump_json()
+            resp = await self._request("POST", "/posts", data=json_data, headers={"Content-Type": "application/json"})
+
+            if resp.status_code == 201:  # 201 Created is the standard for successful creation
+                return CreatePostResponse(**resp.json())
+            
+            # Handle specific error cases from the service
+            elif resp.status_code == 400:
+                raise ValidationError("Los datos de entrada no son válidos.")
+            
+            elif resp.status_code == 412:
+                raise ConflictError("Trayecto ya existe o fechas son incorrectas.")
+            
+        except Exception:
+            raise ServiceCommunicationError(f"routes. Status code: {resp.status_code}")
