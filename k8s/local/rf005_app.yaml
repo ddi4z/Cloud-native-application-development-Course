@@ -11,33 +11,33 @@ spec:
   ports:
     - protocol: TCP
       port: 80
-      targetPort: 8004
-      nodePort: 30013
+      targetPort: 8005
+      nodePort: 30005
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: rf003-app-deployment
+  name: rf005-app-deployment
   labels:
-    app: rf003-app
+    app: rf005-app
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: rf003-app
+      app: rf005-app
   template:
     metadata:
       labels:
-        app: rf003-app
+        app: rf005-app
     spec:
       containers:
-        - name: rf003-app
+        - name: rf005-app
           # La imagen y etiqueta deben coincidir exactamente con el comando 'docker build'
-          image: rf003-app:v1.0.0
+          image: rf005-app:v1.0.0
           # 'IfNotPresent' es ideal para desarrollo local con Minikube
           imagePullPolicy: IfNotPresent
           ports:
-            - containerPort: 8004
+            - containerPort: 8005
           env:
             # Nombres de variables correctos que el código espera encontrar
             - name: USERS_SERVICE_URL
@@ -51,13 +51,13 @@ spec:
           # Sondas de salud para asegurar que el pod está funcionando correctamente
           livenessProbe:
             httpGet:
-              path: /rf003/ping
-              port: 8004
+              path: /rf005/ping
+              port: 8005
             initialDelaySeconds: 15
             periodSeconds: 20
           readinessProbe:
             httpGet:
-              path: /rf003/ping
-              port: 8004
+              path: /rf005/ping
+              port: 8005
             initialDelaySeconds: 5
             periodSeconds: 10

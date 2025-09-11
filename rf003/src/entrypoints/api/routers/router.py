@@ -2,8 +2,7 @@ from fastapi import APIRouter, Depends, Header, HTTPException, Response
 from fastapi.responses import JSONResponse
 from typing import Annotated
 
-from src.domain.models.models import CreatePost
-from src.domain.models.models import PublicationResponse
+from src.domain.models.models import CreatePost, PublicationResponse
 
 from src.domain.use_cases.base_use_case import BaseUseCase
 
