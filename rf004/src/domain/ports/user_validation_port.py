@@ -1,10 +1,9 @@
-from abc import abstractmethod
+from abc import abstractmethod, ABC
 from typing import Optional
 from src.domain.models.user import User
 
-from .http_request_port import HttpRequestPort
 
-class UserValidationPort(HttpRequestPort):
+class UserValidationPort(ABC):
     """Offer repository interface."""
 
     @abstractmethod

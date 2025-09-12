@@ -1,1 +1,0 @@
-Cambiar las pruebas para que funcione con la nueva app.

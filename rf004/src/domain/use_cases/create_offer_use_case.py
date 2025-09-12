@@ -38,19 +38,6 @@ class CreateOfferUseCase(BaseUseCase):
         """Create a new offer."""
         self.logger.info("[CREATE_OFFER_USE_CASE] Starting CreateOfferUseCase execution")
 
-        self.logger.info("[CREATE_OFFER_USE_CASE] Pinging user_validation service")
-        self.user_validation.ping()
-        self.logger.info("[CREATE_OFFER_USE_CASE] Pinging post_validation service")
-        self.post_validation.ping()
-        self.logger.info("[CREATE_OFFER_USE_CASE] Pinging create_offer service")
-        self.create_offer.ping()
-        self.logger.info("[CREATE_OFFER_USE_CASE] Pinging find_bagcost service")
-        self.find_bagcost.ping()
-        self.logger.info("[CREATE_OFFER_USE_CASE] Pinging score_calculation service")
-        self.score_calculation.ping()
-
-        self.logger.info("[CREATE_OFFER_USE_CASE] all services are up")
-
         if offer.description is None or offer.size is None or offer.fragile is None or offer.offer is None:
             self.logger.error("[CREATE_OFFER_USE_CASE] invalid offer properties")
             raise InvalidOfferInputError("Offer values cannot be None: {description, size, fragile, offer}")
@@ -98,7 +85,7 @@ class CreateOfferUseCase(BaseUseCase):
 
         score = self.score_calculation.calculate_score(Score(
             offer_id=created_offer.id,
-            size=offer.size.value,
+            size=offer.size,
             baggage_value=bagCost if bagCost is not None else 0,
             amount_offered=offer.offer
         ))

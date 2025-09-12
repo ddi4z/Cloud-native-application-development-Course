@@ -1,10 +1,9 @@
-from abc import abstractmethod
+from abc import abstractmethod, ABC
 from typing import Optional
 from src.domain.models.offer import Offer, CreatedOffer
 
-from .http_request_port import HttpRequestPort
 
-class CreateOfferPort(HttpRequestPort):
+class CreateOfferPort(ABC):
     """Offer repository interface."""
 
     @abstractmethod

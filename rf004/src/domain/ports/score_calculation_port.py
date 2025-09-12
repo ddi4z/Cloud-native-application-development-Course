@@ -1,10 +1,9 @@
-from abc import abstractmethod
+from abc import abstractmethod, ABC
 from typing import Optional
 from src.domain.models.score import Score
 
-from .http_request_port import HttpRequestPort
 
-class ScoreCalculationPort(HttpRequestPort):
+class ScoreCalculationPort(ABC):
     """Score calculation port."""
 
     @abstractmethod

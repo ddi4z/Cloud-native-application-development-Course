@@ -8,8 +8,6 @@ import requests
 
 from requests.models import Response
 
-from src.errors import UnavailableService
-
 from .catch_unavailable_service import catch_unavailable_service
 
 class CreateOfferAdapter(CreateOfferPort):
@@ -24,7 +22,7 @@ class CreateOfferAdapter(CreateOfferPort):
     ) -> Optional[CreatedOffer]:
         request_body = {"userId": userId, "postId": postId} | offer.model_dump()
 
-        response = requests.post(
+        response: Response = requests.post(
             f"{self.service_url}",
             json=request_body,
             headers={"Content-Type": "application/json"},
@@ -34,9 +32,3 @@ class CreateOfferAdapter(CreateOfferPort):
             return None
 
         return CreatedOffer(**response.json())
-
-    @catch_unavailable_service("Offer")
-    def ping(self) -> None:
-        response: Response = requests.get(self.service_url + "/ping")
-        if response.status_code != 200:
-            raise UnavailableService("Offer service is not working")

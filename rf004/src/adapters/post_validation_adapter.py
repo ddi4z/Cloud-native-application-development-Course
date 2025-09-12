@@ -3,7 +3,6 @@ from typing import Optional
 from src.domain.models.post import Post
 import requests
 from requests.models import Response
-from src.errors import UnavailableService
 from .catch_unavailable_service import catch_unavailable_service
 
 class PostValidationAdapter(PostValidationPort):
@@ -14,7 +13,7 @@ class PostValidationAdapter(PostValidationPort):
     @catch_unavailable_service("Post")
     def validate_and_get_post(self, postId: str) -> Optional[Post]:
         """Validate the postId and get the post. If the postId is invalid, return None."""
-        response = requests.get(
+        response: Response = requests.get(
             f"{self.post_service_url}/{postId}",
         )
 
@@ -24,9 +23,3 @@ class PostValidationAdapter(PostValidationPort):
         post_response = Post(**response.json())
 
         return post_response
-
-    @catch_unavailable_service("Post")
-    def ping(self) -> None:
-        response: Response = requests.get(self.post_service_url + "/ping")
-        if response.status_code != 200:
-            raise UnavailableService("Post service is not working")
