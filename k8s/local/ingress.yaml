@@ -9,6 +9,7 @@ spec:
   rules:
   - http:
       paths:
+      # Microservices #
       - path: /users
         pathType: Prefix
         backend:
@@ -35,6 +36,28 @@ spec:
         backend:
           service:
             name: offers-app-service
+            port:
+              number: 80
+      - path: /scores
+        pathType: Prefix
+        backend:
+          service:
+            name: scores-app-service
+            port:
+              number: 80
+      #  Aggregators  #
+      #- path: /rf003
+      #  pathType: Prefix
+      #  backend:
+      #    service:
+      #      name: rf003-app-service
+      #      port:
+      #        number: 80
+      - path: /rf004
+        pathType: Prefix
+        backend:
+          service:
+            name: rf004-app-service
             port:
               number: 80
       - path: /rf005
