@@ -22,7 +22,7 @@ from src.assembly import create_post_use_case
 router = APIRouter(prefix='/rf003')
 
 
-@router.get(
+@router.post(
         '/posts',
         response_model=PublicationResponse,
         responses={
