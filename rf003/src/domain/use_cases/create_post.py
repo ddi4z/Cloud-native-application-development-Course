@@ -4,7 +4,7 @@ from src.domain.use_cases.base_use_case import BaseUseCase
 
 from src.domain.models.models import (UserInput, PublicationResponseData, CreatePost)
 
-from errors import ValidationError, InvalidTokenError, NoTokenError, InvalidRouteDatesError, InvalidExpiredAtError, ConflictError, ServiceCommunicationError
+from src.errors import ValidationError, InvalidTokenError, NoTokenError, InvalidRouteDatesError, InvalidExpiredAtError, ConflictError, ServiceCommunicationError
 
 from src.domain.ports.rf003_port import UsersPort, RoutesPort, PostsPort
 

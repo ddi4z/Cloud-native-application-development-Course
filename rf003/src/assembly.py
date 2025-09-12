@@ -13,7 +13,7 @@ posts_client = HTTPPostsClientAdapter(base_url=os.getenv("POSTS_SERVICE_URL"))
 routes_client = HTTPRoutesClientAdapter(base_url=os.getenv("ROUTES_SERVICE_URL"))
 
 
-def build_get_post_sorted_by_score_use_case() -> CreatePostUseCase:
+def create_post_use_case() -> CreatePostUseCase:
     """
     Construye el caso de uso para obtener una publicación completa,
     inyectando todas las dependencias (clientes).

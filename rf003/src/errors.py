@@ -24,3 +24,14 @@ class ConflictError(Exception):
 class ServiceCommunicationError(Exception):
     """503: El servicio está temporalmente fuera de servicio."""
     pass
+
+
+# Errores para los servicios
+
+class AuthorizationError(Exception):
+    """Usuario no está autorizado para ver el contenido."""
+    pass
+
+class EntityNotFoundError(Exception):
+    """Entidad no existe."""
+    pass
