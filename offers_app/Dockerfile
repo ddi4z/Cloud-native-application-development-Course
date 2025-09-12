@@ -1,5 +1,5 @@
 # First stage for building dependencies
-FROM python:3.11-slim AS builder
+FROM python:3.11 AS builder
 LABEL author="js.barrerat1@uniandes.edu.co"
 
 RUN pip install poetry \

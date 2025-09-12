@@ -2,8 +2,7 @@ from fastapi import APIRouter, Depends, Header, HTTPException, Response
 from fastapi.responses import JSONResponse
 from typing import Annotated
 
-from src.domain.models.models import PostCreationRequest
-from src.domain.models.models import PublicationResponse
+from src.domain.models.models import CreatePost, PublicationResponse
 
 from src.domain.use_cases.base_use_case import BaseUseCase
 
@@ -17,11 +16,13 @@ from src.errors import (
     ServiceCommunicationError,
 )
 
+from src.assembly import create_post_use_case
+
 
 router = APIRouter(prefix='/rf003')
 
 
-@router.get(
+@router.post(
         '/posts',
         response_model=PublicationResponse,
         responses={
@@ -38,7 +39,7 @@ router = APIRouter(prefix='/rf003')
 
 async def create_post(
     #variables
-    post_creation_dto: PostCreationRequest,
+    post_creation_dto: CreatePost,
     # Autorización
     authorization: Annotated[str | None, Header()] = None,
     # use case a ejecutar

@@ -1,0 +1,30 @@
+{
+	"info": {
+		"_postman_id": "55f200cf-1d06-4de0-a881-3a2b04fc1567",
+		"name": "Scores",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "47472012"
+	},
+	"item": [
+		{
+			"name": "salud",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:9000/scores/ping",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "9000",
+					"path": [
+						"scores",
+						"ping"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
