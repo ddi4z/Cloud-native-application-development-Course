@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import PlainTextResponse
-from src.errors import UnauthorizedError, PostNotFoundError, OfferOnOwnPostError, InvalidOfferInputError, PostExpiredError
+from src.errors import UnauthorizedError, PostNotFoundError, OfferOnOwnPostError, InvalidOfferInputError, PostExpiredError, UnavailableService
 
 from src.assembly import build_create_offer_use_case
 
@@ -85,6 +85,9 @@ def create_offer(
     # if the postId or token is not a valid UUID
     except ValueError as _:
         raise HTTPException(status_code=400, detail="Remember that IDs are UUIDs")
-
+    # if there's some service down, response with 503
+    except UnavailableService as e:
+        raise HTTPException(status_code=503, detail=str(e))
+    # answer with 503 in any other case
     except Exception as e:
         raise HTTPException(status_code=503, detail=str(e))

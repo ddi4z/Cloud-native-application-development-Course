@@ -2,9 +2,11 @@ from src.domain.ports.score_calculation_port import ScoreCalculationPort
 
 from typing import Optional
 from src.domain.models.score import Score
-from src.domain.models.post import Post
+from requests.models import Response
 
 import requests
+
+from src.errors import UnavailableService
 
 class ScoreCalculationAdapter(ScoreCalculationPort):
     """"""
@@ -12,5 +14,19 @@ class ScoreCalculationAdapter(ScoreCalculationPort):
     def __init__(self, service_url: str):
         self.service_url = service_url
 
-    def calculate_score(self, postId: str, offerSize: str) -> Optional[Score]:
-        return 1000
+    def calculate_score(self, score: Score) -> Optional[int]:
+        response: Response = requests.post(
+            self.service_url,
+            data=score.model_dump()
+        )
+        if response.status_code != 201: # created
+            return None
+
+        return response.content
+
+    # TODO: Test this
+    def ping(self) -> None:
+        response: Response = requests.get(self.service_url + "/ping")
+        if response.status_code != 200:
+            raise UnavailableService("Offer service is not working")
+

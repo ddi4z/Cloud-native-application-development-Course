@@ -3,6 +3,7 @@ import requests
 from src.domain.models.user import User
 from typing import Optional
 from requests.models import Response
+from src.errors import UnavailableService
 
 class UserValidationAdapter(UserValidationPort):
     """Implementation of UserValidationPort to orchestrate the validation of a user."""
@@ -24,3 +25,8 @@ class UserValidationAdapter(UserValidationPort):
 
         return user_response
     
+    # TODO: Test this
+    def ping(self) -> None:
+        response: Response = requests.get(self.user_service_url + "/ping")
+        if response.status_code != 200:
+            raise UnavailableService("Users service is not working")

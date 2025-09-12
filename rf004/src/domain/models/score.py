@@ -4,6 +4,8 @@ from pydantic import BaseModel
 class Score(BaseModel):
     """Score domain model."""
 
-    score: float
+    userId: str
     offerId: str
     postId: str
+    size: str
+    amountOffered: int

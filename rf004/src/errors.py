@@ -17,3 +17,7 @@ class OfferOnOwnPostError(Exception):
 class InvalidOfferInputError(Exception):
     """Exception raised when the offer input is invalid."""
     pass
+
+class UnavailableService(Exception):
+    """Exception raised when some service is unavailable."""
+    pass

@@ -1,8 +1,10 @@
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 from typing import Optional
 from src.domain.models.post import Post
 
-class PostValidationPort(ABC):
+from .http_request_port import HttpRequestPort
+
+class PostValidationPort(HttpRequestPort):
     """Post validation interface."""
 
     @abstractmethod

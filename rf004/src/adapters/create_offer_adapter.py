@@ -6,6 +6,9 @@ from src.domain.models.offer import Offer, CreatedOffer
 
 import requests
 
+from requests.models import Response 
+
+from src.errors import UnavailableService
 
 class CreateOfferAdapter(CreateOfferPort):
     """"""
@@ -28,3 +31,9 @@ class CreateOfferAdapter(CreateOfferPort):
             return None
 
         return CreatedOffer(**response.json())
+
+    # TODO: Test this
+    def ping(self) -> None:
+        response: Response = requests.get(self.service_url + "/ping")
+        if response.status_code != 200:
+            raise UnavailableService("Offer service is not working")

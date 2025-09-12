@@ -7,6 +7,7 @@ from src.domain.ports.score_calculation_port import ScoreCalculationPort
 from src.domain.ports.user_validation_port import UserValidationPort
 
 from src.domain.models.user import User
+from src.domain.models.score import Score
 from src.domain.models.post import Post
 from typing import Optional
 from datetime import datetime, timezone
@@ -32,6 +33,10 @@ class CreateOfferUseCase(BaseUseCase):
     def execute(self, auth_token: str, post_id: str, offer: Offer) -> CreatedOffer:
         """Create a new offer."""
         # TODO: implement error 503 if any of the services are down
+        self.user_validation.ping()
+        self.post_validation.ping()
+        self.score_calculation.ping()
+        self.create_offer.ping()
 
         if offer.description is None or offer.size is None or offer.fragile is None or offer.offer is None:
             raise InvalidOfferInputError("Offer values cannot be None: {description, size, fragile, offer}")
@@ -71,10 +76,14 @@ class CreateOfferUseCase(BaseUseCase):
 
         print(f"[LOG] created offer: {offer}")
 
-        self.score_calculation.calculate_score(
+        score = self.score_calculation.calculate_score(Score(
+            userId=user_id,
+            offerId=created_offer.id,
             postId=post_id,
-            offerSize=offer.size, # convert to string
-        )
+            size=offer.size,
+            amountOffered=offer.offer
+        ))
 
-        print(f"[LOG] score calculated for post {post_id} with size {offer.size}")
+        print(f"[LOG] score calculated for post {post_id} with size {offer.size} is {score}")
+
         return created_offer

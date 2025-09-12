@@ -2,6 +2,8 @@ from src.domain.ports.post_validation_port import PostValidationPort
 from typing import Optional
 from src.domain.models.post import Post
 import requests
+from requests.models import Response
+from src.errors import UnavailableService
 
 class PostValidationAdapter(PostValidationPort):
     """"""
@@ -20,3 +22,10 @@ class PostValidationAdapter(PostValidationPort):
         post_response = Post(**response.json())
 
         return post_response
+
+    # TODO: Test this
+    def ping(self) -> None:
+        response: Response = requests.get(self.post_service_url + "/ping")
+        if response.status_code != 200:
+            raise UnavailableService("Post service is not working")
+
