@@ -88,6 +88,3 @@ def create_offer(
     # if there's some service down, response with 503
     except UnavailableService as e:
         raise HTTPException(status_code=503, detail=str(e))
-    # answer with 503 in any other case
-    except Exception as e:
-        raise HTTPException(status_code=503, detail=str(e))

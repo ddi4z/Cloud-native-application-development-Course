@@ -6,9 +6,11 @@ from src.domain.models.offer import Offer, CreatedOffer
 
 import requests
 
-from requests.models import Response 
+from requests.models import Response
 
 from src.errors import UnavailableService
+
+from .catch_unavailable_service import catch_unavailable_service
 
 class CreateOfferAdapter(CreateOfferPort):
     """"""
@@ -16,6 +18,7 @@ class CreateOfferAdapter(CreateOfferPort):
     def __init__(self, service_url: str):
         self.service_url = service_url
 
+    @catch_unavailable_service("Offer")
     def create_offer(
         self, offer: Offer, userId: str, postId: str
     ) -> Optional[CreatedOffer]:
@@ -32,7 +35,7 @@ class CreateOfferAdapter(CreateOfferPort):
 
         return CreatedOffer(**response.json())
 
-    # TODO: Test this
+    @catch_unavailable_service("Offer")
     def ping(self) -> None:
         response: Response = requests.get(self.service_url + "/ping")
         if response.status_code != 200:
