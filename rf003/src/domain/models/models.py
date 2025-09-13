@@ -26,6 +26,63 @@ class UserInput(BaseModel):
     bagCost: int
     
 
+# User
+class User(BaseModel):
+    """User domain model."""
+
+    id: str
+    username: str
+    email: str
+    fullName: str
+    dni: str
+    phoneNumber: str
+    status: str
+
+# Post
+class Post(BaseModel):
+    """Post domain model."""
+
+    id: str
+    routeId: str
+    userId: str
+    expireAt: str # 2025-09-18T02:04:26.637Z
+    createdAt: str # 2025-09-18T02:04:26.637Z
+
+
+class CreatedPost(BaseModel):
+    """CreatedPost."""
+    id: str
+    userId: str
+    createdAt: str
+
+
+# Route
+class Route(BaseModel):
+    """Route domain model."""
+    id: str
+    flightId: str
+    sourceAirportCode: str
+    sourceCountry: str
+    destinyAirportCode: str
+    destinyCountry: str
+    bagCost: int
+    plannedStartDate: str
+    plannedEndDate: str
+    createdAt: str
+
+
+class CreatedRoute(BaseModel):
+    """CreatedRoute."""
+    id: str
+    createdAt: str
+
+
+
+
+
+
+
+
 
 
 
