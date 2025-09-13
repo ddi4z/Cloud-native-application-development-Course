@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import List
+from typing import List , Dict 
 from ..models.models import User, Post, Route, Offer
 
 class APIClientPort(ABC):
@@ -28,6 +28,10 @@ class OffersClientPort(APIClientPort):
 
 class ScoreClientPort(APIClientPort):
     @abstractmethod
-    def calculate_score(self, offer: Offer, route: Route) -> float:
-        """This is mocked, so it can be synchronous."""
+    async def get_scores_for_offers(
+        self, offers: List[Offer], route: Route
+    ) -> Dict[str, float]:
+        """
+        Define el contrato para obtener los scores de una lista de ofertas.
+        """
         raise NotImplementedError
