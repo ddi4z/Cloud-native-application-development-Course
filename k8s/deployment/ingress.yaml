@@ -1,0 +1,45 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: api-gateway-ingress
+spec:
+  ingressClassName: nginx
+  rules:
+  - http:
+      paths:
+      # Microservices #
+      - path: /users
+        pathType: Prefix
+        backend:
+          service:
+            name: users-app-service
+            port:
+              number: 80
+      - path: /routes
+        pathType: Prefix
+        backend:
+          service:
+            name: routes-app-service
+            port:
+              number: 80
+      - path: /posts
+        pathType: Prefix
+        backend:
+          service:
+            name: posts-app-service
+            port:
+              number: 80
+      - path: /offers
+        pathType: Prefix
+        backend:
+          service:
+            name: offers-app-service
+            port:
+              number: 80
+      - path: /scores
+        pathType: Prefix
+        backend:
+          service:
+            name: scores-app-service
+            port:
+              number: 80

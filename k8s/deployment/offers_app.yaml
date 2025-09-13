@@ -1,0 +1,61 @@
+---
+# Servicio para offers-app
+apiVersion: v1
+kind: Service 
+metadata:
+  name: offers-app-service
+  labels:
+    app: offers-app
+spec:
+  type: ClusterIP   # <-- cambiado a ClusterIP
+  selector:
+    app: offers-app
+  ports:
+  - protocol: TCP
+    port: 80         # puerto dentro del cluster
+    targetPort: 3003 # puerto interno del contenedor
+
+---
+# Deployment de offers-app
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: offers-app-deployment
+  labels:
+    app: offers-app
+spec: 
+  replicas: 1
+  selector:
+    matchLabels:
+      app: offers-app
+  template:
+    metadata:
+      labels:
+        app: offers-app
+    spec:
+      initContainers:
+      - name: wait-for-db
+        image: busybox:1.36.1   # <-- puse versión fija (mejor práctica)
+        command:
+        - sh
+        - -c
+        - |
+          until nc -z postgres-service 5432; do
+            echo "Waiting for central database..."
+            sleep 2
+          done
+      containers:
+      - name: offers-app
+        image: offers-app:v1.0.0
+        ports:
+        - containerPort: 3003
+        livenessProbe:
+          httpGet:
+            path: /offers/ping
+            port: 3003
+          initialDelaySeconds: 5
+          periodSeconds: 30
+          failureThreshold: 3
+        env:
+        - name: CONNECTION_STRING
+          value: "postgresql://user:password@postgres-service:5432/main_db"
