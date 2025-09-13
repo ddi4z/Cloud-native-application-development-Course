@@ -1,14 +1,41 @@
 from abc import ABC, abstractmethod
 from typing import Protocol, Optional, List
-from src.domain.models.models import Post, CreatePost, UserGetResponse, RouteGetResponse, RouteCreateInput, RouteCreateResponse, CreatePostResponse
+from src.domain.models.models import User, Route, Post, CreatedRoute, RouteCreateInput, CreatePost, CreatedPost
+#Post, CreatePost, UserGetResponse, RouteGetResponse, RouteCreateInput, RouteCreateResponse, CreatePostResponse
 
-class UsersPort(Protocol):
-    def get_user_from_token(self, token: str) -> UserGetResponse: ... 
 
-class RoutesPort(Protocol):
-    def find_route_by_flightid(self, flightId: str) -> Optional[RouteGetResponse]: ...
-    def create_route(self, route_dto: RouteCreateInput) -> Optional[RouteCreateResponse]: ...
+class UsersPort(ABC):
+    "User Rep inter"
 
-class PostsPort(Protocol):
-    def get_post_from_userid_route_id(self, user_id: str, route_id: str) -> Optional[List[Post]]: ...
-    def create_post(self, create_post_dto: CreatePost) -> CreatePostResponse: ...
+    @abstractmethod
+    def get_user_from_token(self, token:str) -> Optional[User]:
+        " Get user from token"
+        raise NotImplementedError("This method should be overriden in subclasses")
+
+class RoutesPort(ABC):
+    "User Rep inter"
+
+    @abstractmethod
+    def find_route_by_flight_id(self, flightId:str) -> Optional[Route]:
+        " Get user from token"
+        raise NotImplementedError("This method should be overriden in subclasses")
+    
+    @abstractmethod
+    def create_route(self, route_dto:RouteCreateInput) -> Optional[CreatedRoute]:
+        " Get user from token"
+        raise NotImplementedError("This method should be overriden in subclasses")
+
+class PostsPort(ABC):
+
+    @abstractmethod
+    def get_post_from_userid_route_id(self, user_id: str, route_id: str) -> Optional[List[Post]]:
+        " Get user from token"
+        raise NotImplementedError("This method should be overriden in subclasses")
+    
+    @abstractmethod
+    def create_post(self, create_post_dto: CreatePost) -> Optional[CreatedPost]:
+        " Get user from token"
+        raise NotImplementedError("This method should be overriden in subclasses")
+    
+    
+    
