@@ -1,8 +1,5 @@
-################################
-# Deployment for offers-app    #
-################################
-
-# Service to expose the offers-app pod
+---
+# Servicio para offers-app
 apiVersion: v1
 kind: Service 
 metadata:
@@ -10,18 +7,16 @@ metadata:
   labels:
     app: offers-app
 spec:
-  # nodePort exposes the service on each Node's IP at a static port (the NodePort).
-  type: NodePort
+  type: ClusterIP   # <-- cambiado a ClusterIP
   selector:
     app: offers-app
   ports:
   - protocol: TCP
-    port: 80        # Port exposed by the service
-    targetPort: 3003  # Port on the pod to which traffic is directed
-    nodePort: 30003   # Port on each node to expose the service
+    port: 80         # puerto dentro del cluster
+    targetPort: 3003 # puerto interno del contenedor
 
 ---
-# Define the deployment for the offers-app
+# Deployment de offers-app
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -40,20 +35,20 @@ spec:
     spec:
       initContainers:
       - name: wait-for-db
-        image: busybox
+        image: busybox:1.36.1   # <-- puse versión fija (mejor práctica)
         command:
         - sh
         - -c
         - |
-          until nc -z offers-db-service 5432; do
-            echo "Waiting for postgres database..."
+          until nc -z postgres-service 5432; do
+            echo "Waiting for central database..."
             sleep 2
           done
       containers:
       - name: offers-app
         image: offers-app:v1.0.0
         ports:
-        - containerPort: 3003 # this port is exposed by the container
+        - containerPort: 3003
         livenessProbe:
           httpGet:
             path: /offers/ping
@@ -63,121 +58,4 @@ spec:
           failureThreshold: 3
         env:
         - name: CONNECTION_STRING
-          value: "postgresql://User:Password@offers-db-service:5432/offers_db"
-
----
-#########################
-# DATABASE offers-db    #
-#########################
-
-# ConfigMap for PostgreSQL environment variables
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: postgres-config
-  labels:
-    app: offers-db
-data:
-  POSTGRES_DB: offers_db
-  POSTGRES_USER: User
-  POSTGRES_PASSWORD: Password
-
----
-# Define the PersistentVolume for the offers-db
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: offers-db-pvc
-  labels:
-    app: offers-db
-spec:
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: 250Mi
-
----
-# Define the deployment for the offers-db
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: offers-db-deployment
-  labels:
-    app: offers-db
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: offers-db
-  template:
-    metadata:
-      labels:
-        app: offers-db
-    spec:
-      containers:
-      - name: postgres
-        image: postgres:16.3-alpine
-        ports: 
-        - containerPort: 5432
-        envFrom:
-        - configMapRef:
-            name: postgres-config
-        volumeMounts:
-        - name: offers-db-storage
-          mountPath: /var/lib/postgresql/data
-
-        readinessProbe:
-          exec:
-            command:
-              - pg_isready
-              - -U
-              - $(POSTGRES_USER) # usa variable de entorno definida en ConfigMap
-          initialDelaySeconds: 5
-          periodSeconds: 5
-
-      volumes:
-        - name: offers-db-storage
-          persistentVolumeClaim:
-            claimName: offers-db-pvc
-
----
-# Service to expose the offers-db pod for internal communication
-apiVersion: v1
-kind: Service
-metadata:
-  name: offers-db-service
-  labels:
-    app: offers-db
-spec:
-  # This service is only accessible within the cluster
-  type: ClusterIP
-  selector:
-    app: offers-db
-  ports:
-  - protocol: TCP
-    port: 5432        # Port exposed by the service
-    targetPort: 5432  # Port on the pod to which traffic is directed
-
----
-# NetworkPolicy to restrict access to the offers-db pod
-# The offers-db pod will only accept traffic from the offers-app pod
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-  name: offers-network
-spec:
-  podSelector:
-    matchLabels:
-      app: offers-db
-  policyTypes:
-    - Ingress
-  ingress:
-    - from:
-        - podSelector:
-            matchLabels:
-              app: offers-app
-      ports:
-        - protocol: TCP
-          port: 5432
-
+          value: "postgresql://user:password@postgres-service:5432/main_db"
