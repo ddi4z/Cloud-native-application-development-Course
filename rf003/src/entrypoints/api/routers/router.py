@@ -1,10 +1,17 @@
 from fastapi import APIRouter, Depends, Header, HTTPException, Response
-from fastapi.responses import JSONResponse
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+import uuid
+from fastapi.responses import JSONResponse, PlainTextResponse
 from typing import Annotated
 
-from src.domain.models.models import CreatePost, PublicationResponse
+from src.assembly import build_create_post_use_case
 
 from src.domain.use_cases.base_use_case import BaseUseCase
+
+
+from src.domain.models.models import CreatePost, UserInput, PublicationResponse, PublicationResponseData, RouteDetails
+#CreatePost, PublicationResponse
+
 
 from src.errors import (
     ValidationError,
@@ -16,10 +23,91 @@ from src.errors import (
     ServiceCommunicationError,
 )
 
-from src.assembly import create_post_use_case
-
 
 router = APIRouter(prefix='/rf003')
+
+security = HTTPBearer()
+
+def get_current_token(
+    credentials: HTTPAuthorizationCredentials = Depends(security),
+) -> str:
+    return credentials.credentials
+
+
+@router.get("/ping", response_class=PlainTextResponse)
+def health_check():
+    """
+    Verifica que el servicio esté activo y responde un 'pong'.
+    """
+    return "pong"
+
+
+
+
+@router.post(
+    "/posts", response_model=PublicationResponse, status_code=201
+)
+
+def create_post(
+    input_dto: UserInput,
+    token: str = Depends(get_current_token), 
+    create_post_use_case: BaseUseCase = Depends(build_create_post_use_case),
+):
+    
+    """Create new post"""
+
+    if token == "":
+        raise HTTPException(status_code=403, detail="Token is required")
+    
+    try:
+
+        created_post, expire_at, route_id, route_created_at = create_post_use_case.execute(token=token, input_dto=input_dto)
+
+        route_details = RouteDetails(
+            id = route_id,
+            createdAt= route_created_at
+        )
+
+        publication_response_data = PublicationResponseData(
+            id = created_post.id,
+            userId=create_post.userId,
+            createdAt=created_post.createdAt,
+            expireAt=expire_at,
+            route=route_details
+        )
+
+        api_answer = PublicationResponse(
+            data=publication_response_data
+        )
+
+        return api_answer
+    
+    except ValidationError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    
+    except InvalidTokenError as e:
+        raise HTTPException(status_code=401, detail=str(e))
+    
+    except NoTokenError as e:
+        raise HTTPException(status_code=403, detail=str(e))
+    
+    except InvalidRouteDatesError as e:
+        raise HTTPException(status_code=412, detail=str(e))
+    
+    except InvalidExpiredAtError as e:
+        raise HTTPException(status_code=412, detail=str(e))
+    
+    except ConflictError as e:
+        raise HTTPException(status_code=412, detail=str(e))
+    
+    except ServiceCommunicationError as e:
+        raise HTTPException(status_code=503, detail=str(e))
+    
+
+
+
+
+"""
 
 
 @router.post(
@@ -43,13 +131,13 @@ async def create_post(
     # Autorización
     authorization: Annotated[str | None, Header()] = None,
     # use case a ejecutar
-    use_case: BaseUseCase = Depends(create_post_use_case), # depende del assembly
+    use_case: BaseUseCase = Depends(build_create_post_use_case),
 ):
-    """
-    Endpoint para crear una publicación.
-    Recibe post_creation_dto
-    Ejecuta use case CreatePost
-    """
+    
+    #Endpoint para crear una publicación.
+    #Recibe post_creation_dto
+    #Ejecuta use case CreatePost
+    
 
     if not authorization or not authorization.startswith("Bearer "):
         raise HTTPException(status_code=403, detail="El token no está en la solicitud.")
@@ -85,9 +173,5 @@ async def create_post(
         return JSONResponse(status_code=503, content={"msg":"El servicio está temporalmente fuera de servicio."})
     
 
-@router.get("/ping", status_code=200, tags=["Health Check"])
-def health_check():
-    """
-    Verifica que el servicio esté activo y responde un 'pong'.
-    """
-    return {"status": "pong"}
+
+"""

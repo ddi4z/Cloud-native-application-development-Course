@@ -1,0 +1,90 @@
+from typing import List, Optional
+import httpx
+
+from ...domain.ports.ports import (
+    UsersClientPort,
+    PostsClientPort,
+    RoutesClientPort,
+    OffersClientPort,
+)
+from ...domain.models.models import User, Post, Route, Offer
+from ...errors import (
+    ServiceCommunicationError,
+    InvalidTokenError,
+    AuthorizationError,
+    EntityNotFoundError,
+)
+
+
+class HTTPClientBase:
+    def __init__(self, base_url: str, timeout: float = 10.0):
+        if not base_url:
+            raise ValueError("La URL base del servicio no puede estar vacía.")
+        self.base_url = base_url.rstrip("/")
+        self.timeout = timeout
+
+    async def _request(self, method: str, endpoint: str, **kwargs) -> httpx.Response:
+        url = f"{self.base_url}{endpoint}"
+        try:
+            async with httpx.AsyncClient(timeout=self.timeout) as client:
+                return await client.request(method, url, **kwargs)
+        except httpx.RequestError as exc:
+            raise ServiceCommunicationError(f"Error de comunicación con {url}: {exc}")
+
+
+class HTTPUsersClientAdapter(HTTPClientBase, UsersClientPort):
+    """Adaptador HTTP para el servicio de usuarios."""
+    async def get_user_from_token(self, token: str) -> Optional[User]:
+        bearer = token if token.startswith("Bearer ") else f"Bearer {token}"
+        resp = await self._request("GET", "/users/me", headers={"Authorization": bearer})
+
+        ct = resp.headers.get("content-type", "")
+        body = resp.json() if "application/json" in ct else {}
+
+        if resp.status_code == 200:
+            return User(**body)
+        if resp.status_code == 401:
+            raise InvalidTokenError(body.get("msg", "Token inválido."))
+        if resp.status_code == 403:
+            raise AuthorizationError(body.get("msg", "No autorizado."))
+        if resp.status_code == 404:
+            raise EntityNotFoundError(body.get("msg", "El usuario no existe."))
+        raise ServiceCommunicationError("users")
+
+
+class HTTPPostsClientAdapter(HTTPClientBase, PostsClientPort):
+    """Adaptador HTTP para el servicio de Publicaciones."""
+    async def get_post_by_id(self, post_id: str) -> Optional[Post]:
+        resp = await self._request("GET", f"/posts/{post_id}")
+
+        if resp.status_code == 200:
+            return Post(**resp.json())
+        if resp.status_code == 404:
+            # ← lo que el test "post inexistente" espera
+            raise EntityNotFoundError("La publicación no existe.")
+        raise ServiceCommunicationError("posts")
+
+
+class HTTPRoutesClientAdapter(HTTPClientBase, RoutesClientPort):
+    """Adaptador HTTP para el servicio de Rutas."""
+    async def get_route_by_id(self, route_id: str) -> Optional[Route]:
+        resp = await self._request("GET", f"/routes/{route_id}")
+
+        if resp.status_code == 200:
+            return Route(**resp.json())
+        if resp.status_code == 404:
+            raise EntityNotFoundError("El trayecto no existe.")
+        raise ServiceCommunicationError("routes")
+
+
+class HTTPOffersClientAdapter(HTTPClientBase, OffersClientPort):
+    """Adaptador HTTP para el servicio de Ofertas."""
+    async def get_offers_by_post_id(self, post_id: str) -> List[Offer]:
+        resp = await self._request("GET", "/offers/", params={"post": post_id})
+
+        if resp.status_code == 200:
+            data = resp.json()
+            return [Offer(**item) for item in data]
+        if resp.status_code == 404:
+            return []  
+        raise ServiceCommunicationError("offers")

@@ -1,4 +1,4 @@
-FROM python:3.11 AS base
+FROM python:3.11-slim AS base
 WORKDIR /app
 RUN pip install poetry
 COPY poetry.lock pyproject.toml ./

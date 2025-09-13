@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import List, Optional, Dict
 import httpx
 
 from ...domain.ports.ports import (
@@ -6,6 +6,7 @@ from ...domain.ports.ports import (
     PostsClientPort,
     RoutesClientPort,
     OffersClientPort,
+    ScoreClientPort,
 )
 from ...domain.models.models import User, Post, Route, Offer
 from ...errors import (
@@ -14,7 +15,6 @@ from ...errors import (
     AuthorizationError,
     EntityNotFoundError,
 )
-
 
 class HTTPClientBase:
     def __init__(self, base_url: str, timeout: float = 10.0):
@@ -60,7 +60,6 @@ class HTTPPostsClientAdapter(HTTPClientBase, PostsClientPort):
         if resp.status_code == 200:
             return Post(**resp.json())
         if resp.status_code == 404:
-            # ← lo que el test "post inexistente" espera
             raise EntityNotFoundError("La publicación no existe.")
         raise ServiceCommunicationError("posts")
 
@@ -86,5 +85,38 @@ class HTTPOffersClientAdapter(HTTPClientBase, OffersClientPort):
             data = resp.json()
             return [Offer(**item) for item in data]
         if resp.status_code == 404:
-            return []  
+            return []
         raise ServiceCommunicationError("offers")
+
+
+class HTTPScoreClientAdapter(HTTPClientBase, ScoreClientPort):
+    """Adaptador HTTP para el servicio de Scores."""
+
+    async def get_scores_for_offers(
+        self, offers: List[Offer], route: Route
+    ) -> Dict[str, float]:
+        """
+        Obtiene los scores para una lista de ofertas haciendo una única llamada batch,
+        lo cual es más eficiente que hacer una llamada por cada oferta.
+        """
+        if not offers:
+            return {}
+
+        # Prepara el payload para la solicitud batch al servicio de scores.
+        payload = [
+            {
+                "offer_id": offer.id,
+                "size": offer.size,
+                "baggage_value": route.bagCost,
+                "amount_offered": offer.offer,
+            }
+            for offer in offers
+        ]
+        resp = await self._request("POST", "/scores/", json=payload)
+
+        # El servicio de scores devuelve 201 en caso de éxito.
+        if resp.status_code == 201:
+            results = resp.json()
+            return {item["offer_id"]: item["score"] for item in results}
+
+        raise ServiceCommunicationError("scores")

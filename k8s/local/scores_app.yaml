@@ -1,68 +1,4 @@
 ---
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: scores-db-pvc
-  labels:
-    app: scores-db
-spec:
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: 1Gi
----
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: scores-db
-  labels:
-    app: scores-db
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: scores-db
-  template:
-    metadata:
-      labels:
-        app: scores-db
-    spec:
-      containers:
-        - name: scores-db
-          image: postgres:15-alpine
-          ports:
-            - containerPort: 5432
-          env:
-            - name: POSTGRES_USER
-              value: user
-            - name: POSTGRES_PASSWORD
-              value: password
-            - name: POSTGRES_DB
-              value: scoresdb
-          volumeMounts:
-            - mountPath: /var/lib/postgresql/data
-              name: scores-db-storage
-      volumes:
-        - name: scores-db-storage
-          persistentVolumeClaim:
-            claimName: scores-db-pvc
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: scores-db-service
-  labels:
-    app: scores-db
-spec:
-  type: ClusterIP
-  selector:
-    app: scores-db
-  ports:
-    - protocol: TCP
-      port: 5432
-      targetPort: 5432
----
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -82,7 +18,7 @@ spec:
       initContainers:
       - name: wait-for-db
         image: busybox:1.36.1
-        command: ['sh', '-c', 'until nc -z scores-db-service 5432; do echo waiting for db; sleep 2; done;']
+        command: ['sh', '-c', 'until nc -z postgres-service 5432; do echo waiting for db; sleep 2; done;']
       containers:
         - name: scores-app
           image: scores-app:v1.0.0
@@ -90,14 +26,15 @@ spec:
             - containerPort: 9000
           env:
             - name: DATABASE_URL
-              value: postgresql://user:password@scores-db-service:5432/scoresdb
+              value: postgresql://user:password@postgres-service:5432/main_db
           livenessProbe:
             httpGet:
-              path: scores/ping
+              path: /scores/ping   # añadí "/" delante
               port: 9000
             initialDelaySeconds: 5 
             periodSeconds: 30
             failureThreshold: 3
+
 ---
 apiVersion: v1
 kind: Service
@@ -106,30 +43,10 @@ metadata:
   labels:
     app: scores-app
 spec:
-  type: NodePort
+  type: ClusterIP   # ← cambiado a ClusterIP
   selector:
     app: scores-app
   ports:
     - protocol: TCP
-      port: 80
-      targetPort: 9000
-      nodePort: 30000
----
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-  name: scores-network
-spec:
-  podSelector:
-    matchLabels:
-      app: scores-db
-  policyTypes:
-    - Ingress
-  ingress:
-    - from:
-        - podSelector:
-            matchLabels:
-              app: scores-app
-      ports:
-        - protocol: TCP
-          port: 5432
+      port: 80         # expuesto dentro del cluster
+      targetPort: 9000 # puerto interno del contenedor

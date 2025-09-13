@@ -1,4 +1,4 @@
-FROM python:3.11 AS base
+FROM python:3.11-slim AS base
 LABEL author="me.estevez-breton10@uniandes.edu.co"
 
 RUN pip install poetry

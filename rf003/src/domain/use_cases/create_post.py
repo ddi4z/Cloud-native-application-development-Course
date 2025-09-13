@@ -3,7 +3,7 @@ from src.domain.use_cases.base_use_case import BaseUseCase
 
 from src.domain.ports.rf003_port import UsersPort, RoutesPort, PostsPort
 
-from src.domain.models.models import (UserInput, RouteCreateInput, PublicationResponse,PublicationResponseData, CreatePost, RouteDetails)
+from src.domain.models.models import (UserInput, RouteCreateInput, PublicationResponse,PublicationResponseData, CreatePost, RouteDetails, CreatedPost)
 
 from src.errors import ValidationError, InvalidTokenError, NoTokenError, InvalidRouteDatesError, InvalidExpiredAtError, ConflictError, ServiceCommunicationError
 
@@ -20,8 +20,8 @@ class CreatePostUseCase(BaseUseCase):
     def __init__(
             self,
             users_client: UsersPort,
-            posts_client: PostsPort,
             routes_client: RoutesPort,
+            posts_client: PostsPort
     
     ):
         
@@ -30,7 +30,7 @@ class CreatePostUseCase(BaseUseCase):
         self.routes_client = routes_client 
 
 
-    async def execute(self, token:str, input_dto: UserInput) -> PublicationResponseData:
+    async def execute(self, token:str, input_dto: UserInput):
         """
         Executes the process of creating a post by calling the microservice responsible
         for actually creating the post.
@@ -88,9 +88,11 @@ class CreatePostUseCase(BaseUseCase):
             )
             route_created = await self.routes_client.create_route(route_dto=route_to_create)
             route_id = route_created.id
+            route = route_created
         
         else:
             route_id = route_search.id
+            route = route_search
 
         # Check if already a post for that route_id
         post = await self.posts_client.get_post_from_userid_route_id(user_id=current_user.id, route_id=route_id)
@@ -108,36 +110,4 @@ class CreatePostUseCase(BaseUseCase):
 
         created_post = await self.posts_client.create_post(new_post_creation_request)
 
-
-        # Final answer
-        if route_search is None:
-            final_answer = PublicationResponse(
-                data = PublicationResponseData(
-                    id = created_post.id,
-                    userId=created_post.userId,
-                    createdAt=created_post.createdAt,
-                    expireAt=input_dto.expireAt,
-                    route= RouteDetails(
-                        id=route_created.id,
-                        createdAt=route_created.createdAt
-                    )
-                ),
-                msg='Resumen de la operación *.'
-            )
-        
-        else:
-            final_answer = PublicationResponse(
-                data = PublicationResponseData(
-                    id= created_post.id,
-                    userId=created_post.userId,
-                    createdAt=created_post.createdAt,
-                    expireAt=input_dto.expireAt,
-                    route= RouteDetails(
-                        id=route_search.id,
-                        createdAt=route_search.createdAt
-                    )
-                ),
-                msg='Resumen de la operación *.'
-            )
-
-        return final_answer
+        return created_post, input_dto.expireAt, route.id, route.createdAt
