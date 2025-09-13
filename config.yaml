@@ -10,6 +10,7 @@ team:
       - user: js.barrerat1
         percentage: 25
 board: https://github.com/orgs/MISW-4301-Desarrollo-Apps-en-la-Nube/projects/284
+url: <url del host de la aplicación, ejemplo https://host>
 docs: https://special-broccoli-rwy5pw6.pages.github.io/
 users_app:
   folder: "users_app"
@@ -32,6 +33,30 @@ offers_app:
 routes_app:
   folder: "routes_app"
   image_name: "routes-app"
+  image_tag: "v1.0.0"
+  authors:
+    - j.paterninam
+scores_app:
+  folder: "scores_app"
+  image_name: "scores-app"
+  image_tag: "v1.0.0"
+  authors:
+    - d.diazm
+rf003:
+  folder: "rf003_app"
+  image_name: "rf003-app"
+  image_tag: "v1.0.0"
+  authors:
+    - me.estevez-breton10
+rf004:
+  folder: "rf004_app"
+  image_name: "rf004-app"
+  image_tag: "v1.0.0"
+  authors:
+    - js.barrerat1
+rf005:
+  folder: "rf005_app"
+  image_name: "rf005-app"
   image_tag: "v1.0.0"
   authors:
     - j.paterninam
