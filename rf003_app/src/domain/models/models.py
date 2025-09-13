@@ -1,5 +1,56 @@
 from pydantic import BaseModel, Field, EmailStr
 from typing import List, Optional
+    
+
+# User
+class User(BaseModel):
+    """User domain model."""
+    id: str
+    username: str
+    email: str
+    fullName: str
+    dni: str
+    phoneNumber: str
+    status: str
+
+
+# Post
+class Post(BaseModel):
+    """Post domain model."""
+    id: str
+    routeId: str
+    userId: str
+    expireAt: str # 2025-09-18T02:04:26.637Z
+    createdAt: str # 2025-09-18T02:04:26.637Z
+
+
+class CreatedPost(BaseModel):
+    """CreatedPost."""
+    id: str
+    userId: str
+    createdAt: str
+
+
+# Route
+class Route(BaseModel):
+    """Route domain model."""
+    id: str
+    flightId: str
+    sourceAirportCode: str
+    sourceCountry: str
+    destinyAirportCode: str
+    destinyCountry: str
+    bagCost: int
+    plannedStartDate: str
+    plannedEndDate: str
+    createdAt: str
+
+class CreatedRoute(BaseModel):
+    """CreatedRoute."""
+    id: str
+    createdAt: str
+
+
 
 
 # Inputs received from user: submodels
@@ -16,7 +67,7 @@ class RouteDestiny(BaseModel):
 
 # Inputs received from user
 class UserInput(BaseModel):
-    """Modelo resumido para la respuesta del servicio de usuarios."""
+    """Received Input from User, passed through HTTP."""
     flightId: str
     expireAt: str
     plannedStartDate: str
@@ -24,7 +75,15 @@ class UserInput(BaseModel):
     origin: RouteOrigin
     destiny: RouteDestiny
     bagCost: int
-    
+
+
+
+
+
+
+
+
+
 
 
 
@@ -119,4 +178,4 @@ class PublicationResponseData(BaseModel):
 class PublicationResponse(BaseModel):
     """Modelo principal que encapsula toda la respuesta final."""
     data: PublicationResponseData
-    msg: str
+    msg: str = 'Publicación creada exitosamente'
