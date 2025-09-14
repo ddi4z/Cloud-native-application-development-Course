@@ -15,18 +15,16 @@ spec:
       labels:
         app: users-app
     spec:
-      initContainers:
-      - name: wait-for-db
-        image: busybox:1.36.1
-        command: ['sh', '-c', 'until nc -z postgres-service 5432; do echo waiting for db; sleep 2; done;']
+      # Removed initContainers section
       containers:
         - name: users-app
-          image: users-app:v1.0.0
+          image: 637423520989.dkr.ecr.us-east-1.amazonaws.com/deployment/dann-grp19:users-app-v1.0.0
           ports:
             - containerPort: 9000
+          # CAMBIAR ESTO
           env:
             - name: DATABASE_URL
-              value: postgresql://user:password@postgres-service:5432/main_db
+              value: "postgresql://dann20252:dann20252@terraform-20250913154012671500000001.cnwq8kyk654s.us-east-1.rds.amazonaws.com:5432/delivery_db"
           livenessProbe:
             httpGet:
               path: /users/ping   # ← puse "/" delante
@@ -34,6 +32,7 @@ spec:
             initialDelaySeconds: 5 
             periodSeconds: 30
             failureThreshold: 3
+          imagePullPolicy: IfNotPresent
 
 ---
 apiVersion: v1

@@ -16,26 +16,24 @@ spec:
       labels:
         app: routes-app
     spec:
-      initContainers:
-        - name: wait-for-db
-          image: busybox:1.36.1
-          command: ['sh', '-c', 'until nc -z postgres-service 5432; do echo "Esperando a la base de datos central..."; sleep 2; done;']
+      # Removed initContainers section
       containers:
         - name: routes-app
-          image: routes-app:v1.0.0
-          imagePullPolicy: Never
+          image: 637423520989.dkr.ecr.us-east-1.amazonaws.com/deployment/dann-grp19:routes-app-v1.0.0
+          imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8000
           env:
+            # TODO BUSCAR MANERA DE CAMBIAR ESTO
             - name: DATABASE_URL
-              value: "postgresql://user:password@postgres-service:5432/main_db"
-          readinessProbe:
-            httpGet:
-              path: /routes/ping
-              port: 8000
-            initialDelaySeconds: 15
-            periodSeconds: 10
-            failureThreshold: 3
+              value: "postgresql://dann20252:dann20252@terraform-20250913154012671500000001.cnwq8kyk654s.us-east-1.rds.amazonaws.com:5432/delivery_db"
+          resources:
+            requests:
+              memory: "64Mi"
+              cpu: "250m"
+            limits:
+              memory: "128Mi"
+              cpu: "500m"
           livenessProbe:
             httpGet:
               path: /routes/ping

@@ -1,28 +1,30 @@
 FROM python:3.11-slim AS base
 LABEL author="me.estevez-breton10@uniandes.edu.co"
 
-RUN pip install poetry
+RUN pip install poetry \
+    && poetry self add poetry-plugin-export
 
 WORKDIR /app
 
 COPY pyproject.toml poetry.lock ./
-RUN poetry config virtualenvs.create false \
-    && poetry install --only main --no-interaction --no-ansi
 
-COPY src/ src/
+RUN poetry export -f requirements.txt --without-hashes -o requirements.txt
 
-FROM python:3.11 AS runner
+FROM python:3.11-slim AS runner
 
 WORKDIR /app
 
-COPY --from=base /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages
-COPY --from=base /usr/local/bin /usr/local/bin
-COPY --from=base /app/src/ /app/src/
+ENV PYTHONPATH=/app/src
 
-RUN groupadd -r noroot && useradd -r -g noroot noroot
-RUN chown -R noroot:noroot /app
+COPY --from=base /app/requirements.txt ./
+RUN pip install --no-cache-dir -r requirements.txt
 
-USER noroot
+COPY . .
+
+# Use an user without root privileges
+RUN groupadd -r appuser && useradd -r -g appuser appuser
+RUN chown -R appuser:appuser /app
+USER appuser
 
 EXPOSE 9000
 CMD ["uvicorn", "src.entrypoints.api.main:app", "--host", "0.0.0.0", "--port", "9000"]

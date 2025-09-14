@@ -1,7 +1,7 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: api-gateway-ingress
+  name: gateway-ingress-8
 spec:
   ingressClassName: nginx
   rules:
@@ -41,5 +41,12 @@ spec:
         backend:
           service:
             name: scores-app-service
+            port:
+              number: 80
+      - path: /rf004
+        pathType: Prefix
+        backend:
+          service:
+            name: rf004-app-service
             port:
               number: 80

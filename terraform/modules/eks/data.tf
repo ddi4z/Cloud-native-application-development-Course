@@ -1,7 +1,26 @@
-module "my_eks_cluster" {
-  source = "../../modules/eks"
+data "aws_vpc" "default" {
+  default = true
+}
 
-  cluster_name                   = var.cluster_name
-  k8s_cluster_version            = var.k8s_cluster_version
-  cluster_endpoint_public_access = var.cluster_endpoint_public_access
+data "aws_subnets" "all" {
+  filter {
+    name   = "vpc-id"
+    values = [data.aws_vpc.default.id]
+  }
+  filter {
+    name   = "availability-zone"
+    values = ["us-east-1a", "us-east-1b", "us-east-1c", "us-east-1d"]
+  }
+}
+
+data "aws_iam_roles" "eks_cluster" {
+  name_regex = "LabEksClusterRole"
+}
+
+data "aws_iam_roles" "eks_node" {
+  name_regex = "LabEksNodeRole"
+}
+
+data "aws_iam_roles" "lab_role" {
+  name_regex = "LabRole"
 }
