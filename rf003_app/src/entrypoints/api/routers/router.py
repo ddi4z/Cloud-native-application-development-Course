@@ -92,16 +92,28 @@ def create_post(
         raise HTTPException(status_code=403, detail=str(e))
     
     except InvalidRouteDatesError as e:
-        raise HTTPException(status_code=412, detail=str(e))
+        return JSONResponse(
+            status_code=412,
+            content={"msg": "Las fechas del trayecto no son válidas"},
+        )
     
     except InvalidExpiredAtError as e:
-        raise HTTPException(status_code=412, detail=str(e))
+        return JSONResponse(
+            status_code=412,
+            content={"msg": "La fecha expiración no es válida"},
+        )
     
     except ConflictError as e:
-        raise HTTPException(status_code=412, detail=str(e))
+        return JSONResponse(
+            status_code=412,
+            content={"msg": "El usuario ya tiene una publicación para la misma fecha"},
+        )
     
     except ServiceCommunicationError as e:
-        raise HTTPException(status_code=503, detail=str(e))
+        return JSONResponse(
+            status_code=503,
+            content={"msg": "El servicio está temporalmente fuera de servicio."},
+        )
     
 
 

@@ -94,6 +94,14 @@ class HTTPRoutesClientAdapter(RoutesPort):
         return CreatedRoute(**response.json())
     
 
+    @catch_unavailable_service("Routes")
+    def ping(self) -> None:
+        self.route_service_url = route_service_url
+        response: Response = requests.get(f"{self.route_service_url}/ping")
+        if response.status_code != 200:
+            raise ServiceCommunicationError("Routes service is not working")
+    
+
 
 
 
@@ -141,6 +149,13 @@ class HTTPPostsClientAdapter(PostsPort):
             return None
         
         return CreatedPost(**response.json())
+    
+
+    @catch_unavailable_service("Posts")
+    def ping(self) -> None:
+        response: Response = requests.get(f"{self.post_service_url}/ping")
+        if response.status_code != 200:
+            raise ServiceCommunicationError("Posts service is not working")
 
 
 
