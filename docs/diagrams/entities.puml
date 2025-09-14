@@ -51,6 +51,8 @@ entity "offers" as offers {
 }
 
 entity "scores" as scores {
+  offer_id: string
+  value: int
 }
 
 
