@@ -15,7 +15,7 @@ users_client = HTTPUsersClientAdapter(base_url=os.getenv("USERS_SERVICE_URL"))
 posts_client = HTTPPostsClientAdapter(base_url=os.getenv("POSTS_SERVICE_URL"))
 routes_client = HTTPRoutesClientAdapter(base_url=os.getenv("ROUTES_SERVICE_URL"))
 offers_client = HTTPOffersClientAdapter(base_url=os.getenv("OFFERS_SERVICE_URL"))
-score_client = HTTPScoreClientAdapter(base_url=os.getenv("SCORE_SERVICE_URL"))
+score_client = HTTPScoreClientAdapter(base_url=os.getenv("SCORES_SERVICE_URL"))
 
 def build_get_post_sorted_by_score_use_case() -> GetPostSortedByScoreUseCase:
     """
