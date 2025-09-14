@@ -1,4 +1,4 @@
-@startuml deployment
+@startuml
 
 skinparam actorStyle awesome
 
@@ -18,105 +18,151 @@ skinparam component {
   BackgroundColor #b1f2bc
 }
 
-title "Vista de despliegue local"
+skinparam component<<Registry>> {
+  BackgroundColor #f5a623
+  BorderColor #c67a00
+  FontColor black
+}
+
+title "Despliegue: Kubernetes en AWS + Ingress único + PostgreSQL en AWS + Imágenes en AWS ECR"
 
 actor User
 
-frame "k8s" as "KubernetesCluster" {
-  ' Users app
-  component "users-app-service" as users_app_service <<Service>>
+cloud "AWS Cloud" as aws {
 
-  frame "users-app" as users-app {
-    frame "docker" {
-      component "users_app" as users_app
+  ' ======== Registro de contenedores ========
+  component "Amazon ECR\n(Container Registry)" as aws_ecr <<Registry>>
+
+  ' ======== Cluster Kubernetes (en AWS) ========
+  package "k8s" as k8s {
+
+    ' ----- Ingress único (entrada HTTP/S) -----
+    component "Ingress (Nginx)\nLoadBalancer" as ingress <<Service>>
+    note right of ingress
+      Reglas (ejemplo):
+      - POST /posts -> rf003-app-service
+      - GET  /posts/{id}/details -> rf004-app-service
+      - POST /offers -> rf005-app-service
+    end note
+
+    ' ----- Servicios de dominio (internos) -----
+    component "users-app-service"  as users_app_svc  <<Service>>
+    node "users_app"  as users_pod {
+      artifact "docker\nusers_app" as docker_users {
+        component "users_app" as users_app_comp
+      }
     }
+    users_app_svc --> users_pod
+    docker_users ..> aws_ecr : pull image
+
+    component "posts-app-service"  as posts_app_svc  <<Service>>
+    node "posts_app"  as posts_pod {
+      artifact "docker\nposts_app" as docker_posts {
+        component "posts_app" as posts_app_comp
+      }
+    }
+    posts_app_svc --> posts_pod
+    docker_posts ..> aws_ecr : pull image
+
+    component "routes-app-service" as routes_app_svc <<Service>>
+    node "routes_app" as routes_pod {
+      artifact "docker\nroutes_app" as docker_routes {
+        component "routes_app" as routes_app_comp
+      }
+    }
+    routes_app_svc --> routes_pod
+    docker_routes ..> aws_ecr : pull image
+
+    component "offers-app-service" as offers_app_svc <<Service>>
+    node "offers_app" as offers_pod {
+      artifact "docker\noffers_app" as docker_offers {
+        component "offers_app" as offers_app_comp
+      }
+    }
+    offers_app_svc --> offers_pod
+    docker_offers ..> aws_ecr : pull image
+
+    component "scores-app-service" as scores_app_svc <<Service>>
+    node "scores_app" as scores_pod {
+      artifact "docker\nscores_app" as docker_scores {
+        component "scores_app" as scores_app_comp
+      }
+    }
+    scores_app_svc --> scores_pod
+    docker_scores ..> aws_ecr : pull image
+
+    note right of scores_app_svc
+      Cada *-app-service expone endpoints internos
+      para su propio dominio; consumidos por
+      rf003/rf004/rf005 y servicios autorizados.
+      Por motivos de diseño, no se agregaron todas las conexiones entre Ingress y apps existentes.
+    end note
+
+    ' ----- APIs expuestas (RF-003..005) -----
+    component "rf003-app-service" as rf003_app_svc <<Service>>
+    node "rf003_app" as rf003_pod {
+      artifact "docker\nrf003_app" as docker_rf003 {
+        component "rf003_app" as rf003_app_comp
+      }
+    }
+    rf003_app_svc --> rf003_pod
+    docker_rf003 ..> aws_ecr : pull image
+
+    component "rf004-app-service" as rf004_app_svc <<Service>>
+    node "rf004_app" as rf004_pod {
+      artifact "docker\nrf004_app" as docker_rf004 {
+        component "rf004_app" as rf004_app_comp
+      }
+    }
+    rf004_app_svc --> rf004_pod
+    docker_rf004 ..> aws_ecr : pull image
+
+    component "rf005-app-service" as rf005_app_svc <<Service>>
+    node "rf005_app" as rf005_pod {
+      artifact "docker\nrf005_app" as docker_rf005 {
+        component "rf005_app" as rf005_app_comp
+      }
+    }
+    rf005_app_svc --> rf005_pod
+    docker_rf005 ..> aws_ecr : pull image
+
+    ' ----- Routing del Ingress único a RF Services -----
+    ingress --> rf003_app_svc
+    ingress --> rf004_app_svc
+    ingress --> rf005_app_svc
+
+    ' ----- Llamadas internas entre servicios (vía Services) -----
+    ' RF003 (no conecta con scores_app; sí con users_app)
+    rf003_app_comp --> users_app_svc
+    rf003_app_comp --> routes_app_svc
+    rf003_app_comp --> posts_app_svc
+
+    ' RF004 (incluye scores)
+    rf004_app_comp --> users_app_svc
+    rf004_app_comp --> posts_app_svc
+    rf004_app_comp --> offers_app_svc
+    rf004_app_comp --> routes_app_svc
+    rf004_app_comp --> scores_app_svc
+
+    ' RF005 (incluye scores)
+    rf005_app_comp --> users_app_svc
+    rf005_app_comp --> posts_app_svc
+    rf005_app_comp --> offers_app_svc
+    rf005_app_comp --> scores_app_svc
   }
 
-  component "users-db-service" as users_db_service <<Service>>
-  frame "users-db" as PodDbUsers {
-    frame "docker" as DockerDbUsers {
-      database "users_db" as users_db
-    }
-  }
-  artifact "users-db-volumen" as users_db_volumen
+  ' ======== Persistencia única (en AWS) ========
+  database "PostgreSQL (AWS RDS)\nplatform_db" as platform_db
 
-  users_app_service --> users_app
-  users_app --> users_db_service
-  users_db_service --> users_db
-  users_db --> users_db_volumen
-
-  ' Posts app
-  component "posts-app-service" as posts_app_service <<Service>>
-
-  frame "posts-app" as posts-app {
-    frame "docker" as DockerPosts {
-      component "posts_app" as posts_app
-    }
-  }
-
-  component "posts-db-service" as posts_db_service <<Service>>
-
-  frame "posts-db" as PodDbPosts {
-    frame "docker" as DockerDbPosts {
-      database "posts_db" as posts_db
-    }
-  }
-  artifact "posts-db-volumen" as posts_db_volumen
-
-  posts_app_service --> posts_app
-  posts_app --> posts_db_service
-  posts_db_service --> posts_db
-  posts_db --> posts_db_volumen
-
-  ' Routes app
-  component "routes-app-service" as routes_app_service <<Service>>
-
-  frame "routes-app" as routes-app {
-    frame "docker" as DockerRoutes {
-      component "routes_app" as routes_app
-    }
-  }
-
-  component "routes-db-service" as routes_db_service <<Service>>
-
-  frame "routes-db" as PodDbRoutes {
-    frame "docker" as DockerDbRoutes {
-      database "routes_db" as routes_db
-    }
-  }
-  artifact "routes-db-volumen" as routes_db_volumen
-  
-  routes_app_service --> routes_app
-  routes_app --> routes_db_service
-  routes_db_service --> routes_db
-  routes_db --> routes_db_volumen
-
-  ' Offers app
-  component "offers-app-service" as offers_app_service <<Service>>
-
-  frame "offers-app" as offers-app {
-    frame "docker" as DockerOffers {
-      component "offers_app" as offers_app
-    }
-  }
-  component "offers-db-service" as offers_db_service <<Service>>
-
-  frame "offers-db" as PodDbOffers {
-    frame "docker" as DockerDbOffers {
-      database "offers_db" as offers_db
-    }
-  }
-  artifact "offers-db-volumen" as offers_db_volumen 
-
-  offers_app_service --> offers_app
-  offers_app --> offers_db_service
-  offers_db_service --> offers_db
-  offers_db --> offers_db_volumen
+  ' Acceso a BD desde las apps (dentro de los contenedores)
+  users_app_comp  --> platform_db
+  routes_app_comp --> platform_db
+  posts_app_comp  --> platform_db
+  offers_app_comp --> platform_db
+  scores_app_comp --> platform_db
 }
 
-User ..> users_app_service: HTTP
-User ..> posts_app_service: HTTP
-User ..> offers_app_service: HTTP
-User ..> routes_app_service: HTTP
+' ======== Tráfico externo (User → Ingress único) ========
+User ..> ingress : HTTP(S)
 
 @enduml
