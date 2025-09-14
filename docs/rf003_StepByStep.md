@@ -61,7 +61,7 @@
 | 4 | Token inválido / usuario no resuelto | `InvalidTokenError("Usuario no autorizado")` | **401** |
 | 5 (buscar/crear route) | Fallo de comunicación con `routes_app` | `ServiceCommunicationError("routes")` | **503** |
 | 6 (verificar duplicidad) | Ya existe post del usuario para ese `route_id` | `ConflictError("Usuario ya tiene ruta para ese trayecto")` | **412** |
-| 7 (crear post) | Fallo de comunicación con `posts_app` o validación fallida en posts | `ServiceCommunicationError("posts")` *(adapter)* u otro error del dominio de posts | **503** (si es infraestructura) / **422** (si validación)
+| 7 (crear post) | Fallo de comunicación con `posts_app` o validación fallida en posts | `ServiceCommunicationError("posts")` *(adapter)* u otro error del dominio de posts | **503** 
 
 > **Mapeo de errores externos** (adapters):  
 > - 401/403 desde `users_app` → `InvalidTokenError`.  
