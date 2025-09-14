@@ -1,10 +1,16 @@
 # Grupo 19
 
+## Entrega 1 estado - GitHub Actions (GA)
+
 [![Evaluador Implementación Entrega 1](https://github.com/MISW-4301-Desarrollo-Apps-en-la-Nube/s202514-proyecto-grupo19/actions/workflows/ci_evaluador_entrega1_k8s.yml/badge.svg)](https://github.com/MISW-4301-Desarrollo-Apps-en-la-Nube/s202514-proyecto-grupo19/actions/workflows/ci_evaluador_entrega1_k8s.yml)
 
 [![Evaluador Documentación Entrega 1](https://github.com/MISW-4301-Desarrollo-Apps-en-la-Nube/s202514-proyecto-grupo19/actions/workflows/ci_evaluador_entrega1_docs.yml/badge.svg)](https://github.com/MISW-4301-Desarrollo-Apps-en-la-Nube/s202514-proyecto-grupo19/actions/workflows/ci_evaluador_entrega1_docs.yml)
 
 [![Evaluador Pruebas Unitarias](https://github.com/MISW-4301-Desarrollo-Apps-en-la-Nube/s202514-proyecto-grupo19/actions/workflows/ci_evaluador_unit.yml/badge.svg)](https://github.com/MISW-4301-Desarrollo-Apps-en-la-Nube/s202514-proyecto-grupo19/actions/workflows/ci_evaluador_unit.yml)
+
+## Entrega 2 - estado GA
+
+[![Evaluador Implementación Entrega 2](https://github.com/MISW-4301-Desarrollo-Apps-en-la-Nube/s202514-proyecto-grupo19/actions/workflows/ci_evaluador_entrega2.yml/badge.svg)](https://github.com/MISW-4301-Desarrollo-Apps-en-la-Nube/s202514-proyecto-grupo19/actions/workflows/ci_evaluador_entrega2.yml)
 
 ## Tabla de contenido
 
