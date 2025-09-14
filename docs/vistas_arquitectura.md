@@ -1,4 +1,19 @@
-# Vistas de arquitectura
+# Tabla de Contenido
+ * [Vista de componentes](ruta a la página con la documentación).
+ * [Vista de despliegue](ruta a la página con la documentación).
+ * [Vista de desarrollo](ruta a la página con la documentación).
+   * [Descripción de nuevos componentes](ruta a la página con la documentación).
+* Requerimientos
+   * Requerimiento RF-003
+     * [Documentación patrón solución requerimiento 3](ruta a la página con la documentación).
+     * [Explicación del proceso paso a paso de la solución requerimiento 3](ruta a la página con la documentación).
+   * Requerimiento RF-004
+     * [Documentación patrón solución requerimiento 4](ruta a la página con la documentación).
+     * [Explicación del proceso paso a paso de la solución requerimiento 4](ruta a la página con la documentación).
+   * Requerimiento RF-005
+     * [Documentación patrón solución requerimiento 5](ruta a la página con la documentación).
+     * [Explicación del proceso paso a paso de la solución requerimiento 5](ruta a la página con la documentación).
+
 
 ## Vista de componentes
   
@@ -74,29 +89,64 @@ Se propaga `X-Request-Id` para trazabilidad.
 
 ![Vista de despliegue](./diagrams/deployment.png "Vista de despliegue")
 
-Despliegue local en un clúster k8s (p. ej., minikube/kind). 
-- Acceso del usuario: el User consume las APIs vía HTTP a través de los Services de las apps.
-- Patrón por dominio (users, posts, routes, offers):
-  - App: contenedor Docker (*_app) ejecutado en k8s y expuesto por un Service.
-  - Base de datos: contenedor (*_db) accesible mediante su Service interno.
-  - Persistencia: volumen dedicado para la BD (PVC/PV) para evitar pérdida de datos al reiniciar pods.
-- Comunicación: cada app se conecta solo a su BD vía el Service correspondiente (sin acceso cruzado).
-- Operación: componentes aislados y escalables de forma independiente.
+> **Modelo de despliegue:** describe cómo los **componentes funcionales** (RF-003/004/005 y servicios de dominio `users/routes/posts/offers/scores`) se **despliegan usando servicios de nube**.
 
-## Vista de redes
+## Entorno
+- Kubernetes en **AWS** (p. ej., **EKS**).
+- Todas las imágenes se publican y se **extraen desde Amazon ECR**.
 
-![Vista de redes](./diagrams/networks.png "Vista de redes")
+## Acceso del usuario (entrada única)
+Un **Ingress** (Nginx / AWS Load Balancer Controller + ALB) expone un punto HTTP(S) y enruta por **host/path** hacia los servicios **RF-003..RF-005**:
+- `POST /posts` → **rf003-app-service** (Crear publicación)
+- `GET /posts/{id}/details` → **rf004-app-service** (Ver publicación + ofertas)
+- `POST /offers` → **rf005-app-service** (Crear oferta)
 
-K8s con cuatro dominios lógicos/“networks”: users, posts, routes, offers.
-- Exposición externa: cada app se publica vía Service NodePort; el usuario accede por Internet → NodePort → *-app-service (HTTP :80) → pod *_app.
-- Acceso a datos: la app se conecta a su propia BD vía ClusterIP *-db-service (:5432) → pod *_db. No hay acceso cruzado entre bases ni entre dominios.
-- Aislamiento y escalabilidad: cada dominio puede escalarse y desplegarse de forma independiente manteniendo propiedad de datos por servicio.
+## Consumo directo de servicios de dominio (interno)
+Además de ser llamados por los RF, los servicios de dominio (**users_app, routes_app, posts_app, offers_app, scores_app**) pueden **exponer sus propios endpoints** para Backoffice/integraciones mediante:
+- **ClusterIP Services** (DNS interno de k8s), y/o
+- **Reglas adicionales en el mismo Ingress** con **restricciones** (mTLS, IP allowlist, autenticación).
+  
+Rutas internas típicas: `/users/*`, `/routes/*`, `/posts/*`, `/offers/*`, `/scores/*`.
 
-## Vista de información
+## Patrón de despliegue por servicio
+- **Pod** por servicio con **Docker** encapsulando la app (`*_app`) y un **Service** delante (ClusterIP).
+- Servicios **RF**: `rf003_app`, `rf004_app`, `rf005_app`.
+- Servicios de **dominio**: `users_app`, `routes_app`, `posts_app`, `offers_app`, `scores_app`.
 
-![Vista de información](./diagrams/entities.png "Vista de información")
+## Persistencia (única en la nube)
+- **PostgreSQL en AWS (RDS)** como **única BD**: `platform_db`.
+- Cada dominio **posee sus propias tablas/esquemas** (p. ej., `users.*`, `routes.*`, `posts.*`, `offers.*`, `scores.*`).
+- **Sin llaves foráneas cruzadas** ni *joins* entre dominios; la coordinación entre dominios se hace **vía APIs**.
+- **Sin PVC/PV** de BD en el clúster (la BD es gestionada por RDS). Conexión mediante **Secrets**.
 
-Modelo lógico de datos para la primera iteración. Muestra entidades clave, atributos y relaciones.
+## Comunicación entre servicios (HTTP/JSON síncrono)
+- **RF003** → `users_app`, `routes_app`, `posts_app`
+- **RF004** → `users_app`, `posts_app`, `offers_app`, `routes_app`, `scores_app`.
+- **RF005** → `users_app`, `posts_app`, `offers_app`, `scores_app`.
+- Los servicios de dominio también pueden ser **consumidos directamente** para sus propios endpoints (interno).
+
+## Operación y escalado
+- **Aislamiento y escalado independiente** por servicio (HPA, requests/limits de CPU/RAM).
+- **Rolling updates**, *readiness/liveness probes*.
+- **NetworkPolicy** para tráfico Este–Oeste; **RBAC** e **IRSA**/credenciales mínimas para acceder a RDS/ECR.
+- **Observabilidad**: trazabilidad con `X-Request-Id`, métricas y trazas distribuidas; *timeouts* y *reintentos* con *backoff*.
+- **Seguridad**: Bearer token en la capa RF; secretos gestionados.
+
+## Idempotencia y consistencia
+- Claves de idempotencia y **restricciones únicas** (p. ej., `(owner_id, route_id)` en publicaciones).
+- Transacciones en RDS para **consistencia**; degradación controlada en lecturas de `scores_app` (retornar `score: null` si hay indisponibilidad).
+
+---
+
+## Servicios cloud usados
+- **Amazon EKS** – Orquestación Kubernetes (Pods, Services, HPA, RBAC).
+- **Ingress Controller** (Nginx / **AWS Load Balancer Controller** + **ALB**) – Entrada HTTP(S) y *routing* por host/path.
+- **Amazon ECR** – Registro de imágenes de contenedor (pull desde los Pods).
+- **Amazon RDS for PostgreSQL** – Base de datos única `platform_db`.
+- **AWS Secrets Manager / Kubernetes Secrets** – Gestión de credenciales y cadenas de conexión.
+- **AWS IAM / IRSA** – Permisos mínimos para Pods hacia servicios AWS (ECR/RDS/Secrets).
+- **Amazon CloudWatch** – Logs y métricas (y/o Prometheus/Grafana para métricas/trazas).
+- **AWS Certificate Manager (ACM)** – Certificados TLS para el Ingress/ALB.
 
 ## Vista de desarollo 
 
@@ -138,6 +188,7 @@ Se opta por utilizar una estructura similar a las 4 aplicaciones. Tomando como b
 | Docker          | Plataforma de contenedores para empaquetar y ejecutar aplicaciones. Todas las aplicaciones se empaquetaron con esto. | Ejecución |
 | Minikube        | Herramienta para correr Kubernetes en local. | Despliegue |
 | GitHub Actions  | Servicio de CI/CD integrado en GitHub. Para el proyecto solo se utilizo para integración continua: linter y la ejecución de las pruebas. Además, se utilizaron en los evaluadores. | Despliegue |
+
 
 
 
