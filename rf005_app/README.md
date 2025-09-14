@@ -366,7 +366,7 @@ docker build -t rf005-app:v1.0.0 .
 ```
 
 **2. Desplegar el manifiesto de Kubernetes:**
-El archivo rf005_app.yaml debe tener definidas las variables de entorno apuntando a los nombres de servicio correctos dentro del clúster (ej. http://users-app-service).
+El archivo rf005_app.yaml debe tener definidas las variables de entorno apuntando a los nombres de servicio correctos dentro del clúster (ej. <http://users-app-service>).
 
 ```bash
 kubectl apply -f k8s/local/rf005_app.yaml
@@ -397,4 +397,4 @@ curl -X GET http://localhost:8005/rf005/ping
 
 ## Autor
 
-Jorge Paternina – <j.paterninam@uniandes.edu.co>
+Jorge Paternina – [j.paterninam@uniandes.edu.co](mailto:j.paterninam@uniandes.edu.co)
