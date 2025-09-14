@@ -62,7 +62,7 @@ Se propaga `X-Request-Id` para trazabilidad.
 | Integraciones         | **Auth/Usuarios** (gateway o `users_app`): JWT Bearer para identidad y `user_id` (síncrono).<br>**Publicaciones** (`posts_app`): `GET /posts/{postId}` para verificar existencia/expiración y dueño (JSON/HTTP).<br>**Ofertas** (`offers_app`): `POST /offers` para persistir la oferta (JSON/HTTP).<br>**Scores** (`scores_app`): `POST /scores/offers` (o equivalente) para calcular la utilidad antes de persistir; *timeouts* y reintentos con backoff; propagar `X-Request-Id`/`Idempotency-Key`. |
 
 ### RF-005
-| Componente                 | Servicio **Consultar publicación y ofertas** (RF004)                                                                                         |
+| Componente                 | RF-005                                                                                      |
 |---------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------|
 | **Código/Id del componente** | `rf004.get_post_details` (Use case `GetPostWithOffersUseCase` expuesto vía `GET /posts/{postId}/details`)                                      |
 | **Tipo**                  | Servicio orquestador de lectura (consulta compuesta) expuesto por API HTTP/REST                                                               |
@@ -138,6 +138,7 @@ Se opta por utilizar una estructura similar a las 4 aplicaciones. Tomando como b
 | Docker          | Plataforma de contenedores para empaquetar y ejecutar aplicaciones. Todas las aplicaciones se empaquetaron con esto. | Ejecución |
 | Minikube        | Herramienta para correr Kubernetes en local. | Despliegue |
 | GitHub Actions  | Servicio de CI/CD integrado en GitHub. Para el proyecto solo se utilizo para integración continua: linter y la ejecución de las pruebas. Además, se utilizaron en los evaluadores. | Despliegue |
+
 
 
 
