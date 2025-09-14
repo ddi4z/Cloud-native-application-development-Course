@@ -8,6 +8,7 @@ import requests
 
 from .catch_unavailable_service import catch_unavailable_service
 
+from src.errors import UnavailableService
 
 class ScoreCalculationAdapter(ScoreCalculationPort):
     """"""
@@ -22,7 +23,13 @@ class ScoreCalculationAdapter(ScoreCalculationPort):
             json=score.model_dump(),
             headers={"Content-Type": "application/json"},
         )
-        if response.status_code != 201: # created
+        if response.status_code != 201:  # created
             return None
 
         return response.json().get("score")
+
+    @catch_unavailable_service("Score")
+    def ping(self) -> None:
+        response: Response = requests.get(f"{self.service_url}/ping")
+        if response.status_code != 200:
+            raise UnavailableService("Score service is not working")

@@ -1,0 +1,61 @@
+---
+# Deployment de offers-app
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: offers-app-deployment
+  labels:
+    app: offers-app
+spec: 
+  replicas: 1
+  selector:
+    matchLabels:
+      app: offers-app
+  template:
+    metadata:
+      labels:
+        app: offers-app
+    spec:
+      containers:
+      - name: offers-app
+        image: 637423520989.dkr.ecr.us-east-1.amazonaws.com/deployment/dann-grp19:offers-app-v1.0.0
+        ports:
+        - containerPort: 3003
+        livenessProbe:
+          httpGet:
+            path: /offers/ping
+            port: 3003
+          initialDelaySeconds: 5
+          periodSeconds: 30
+          failureThreshold: 3
+        env:
+        - name: CONNECTION_STRING
+          valueFrom:
+            secretKeyRef:
+              name: db-secret
+              key: CONNECTION_STRING
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "250m"
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+        imagePullPolicy: IfNotPresent
+---
+# Servicio para offers-app
+apiVersion: v1
+kind: Service 
+metadata:
+  name: offers-app-service
+  labels:
+    app: offers-app
+spec:
+  type: ClusterIP   # <-- cambiado a ClusterIP
+  selector:
+    app: offers-app
+  ports:
+  - protocol: TCP
+    port: 80         # puerto dentro del cluster
+    targetPort: 3003 # puerto interno del contenedor
+

@@ -5,3 +5,13 @@ __pycache__/
 *.pyc
 .ruff_cache/
 build_images.ps1
+
+# Terraform files
+*.tfstate
+*.tfstate.backup
+.terraform/
+.terraform.lock.hcl
+.tfplan
+
+# k8s secret
+k8s/deployment/secret.yaml

@@ -10,8 +10,9 @@ team:
       - user: js.barrerat1
         percentage: 25
 board: https://github.com/orgs/MISW-4301-Desarrollo-Apps-en-la-Nube/projects/284
-url: <url del host de la aplicación, ejemplo https://host>
+url: http://a62d5c35c5f9240fd8c741e31b0f8691-1859017394.us-east-1.elb.amazonaws.com
 docs: https://special-broccoli-rwy5pw6.pages.github.io/
+cluster_name: main-dann-cluster
 users_app:
   folder: "users_app"
   image_name: "users-app"

@@ -1,8 +1,11 @@
-from abc import abstractmethod, ABC
+from abc import abstractmethod
 
 from typing import Optional
 
-class FindBagCostRoutePort(ABC):
+from .http_request import HttpRequest
+
+
+class FindBagCostRoutePort(HttpRequest):
     """Offer repository interface."""
 
     @abstractmethod

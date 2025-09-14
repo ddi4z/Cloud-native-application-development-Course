@@ -1,0 +1,61 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: scores-app
+  labels:
+    app: scores-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: scores-app
+  template:
+    metadata:
+      labels:
+        app: scores-app
+    spec:
+      # Removed initContainers section
+      containers:
+        - name: scores-app
+          image: 637423520989.dkr.ecr.us-east-1.amazonaws.com/deployment/dann-grp19:scores-app-v1.0.0
+          ports:
+            - containerPort: 9000
+          env:
+            # CAMBIAR ESTO
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: db-secret
+                  key: CONNECTION_STRING
+          resources:
+            requests:
+              memory: "64Mi"
+              cpu: "250m"
+            limits:
+              memory: "128Mi"
+              cpu: "500m"
+          livenessProbe:
+            httpGet:
+              path: /scores/ping   # añadí "/" delante
+              port: 9000
+            initialDelaySeconds: 5 
+            periodSeconds: 30
+            failureThreshold: 3
+          imagePullPolicy: IfNotPresent
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: scores-app-service
+  labels:
+    app: scores-app
+spec:
+  type: ClusterIP   # ← cambiado a ClusterIP
+  selector:
+    app: scores-app
+  ports:
+    - protocol: TCP
+      port: 80         # expuesto dentro del cluster
+      targetPort: 9000 # puerto interno del contenedor
