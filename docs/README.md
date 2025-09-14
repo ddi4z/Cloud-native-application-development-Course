@@ -58,7 +58,7 @@ Puede consultar la documentación completa haciendo uso de la siguiente tabla de
  * [Vista de componentes](./vistas_componentes.md).
  * [Vista de despliegue](./vistas_despliegue.md).
  * [Vista de desarrollo](./vistas_desarrollo.md).
-   * [Descripción de nuevos componentes](./descripcion_nuevos.md).
+   * [Descripción de nuevos componentes](./vistas_descripcion_nuevos.md).
 * Requerimientos
    * Requerimiento RF-003
      * [Documentación patrón solución requerimiento 3](./rf003_Patterns.md).
