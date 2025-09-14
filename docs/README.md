@@ -61,11 +61,11 @@ Puede consultar la documentación completa haciendo uso de la siguiente tabla de
    * [Descripción de nuevos componentes](./descripcion_nuevos.md).
 * Requerimientos
    * Requerimiento RF-003
-     * [Documentación patrón solución requerimiento 3](.rf003_Patterns.md).
-     * [Explicación del proceso paso a paso de la solución requerimiento 3](rf003_StepByStep.md).
+     * [Documentación patrón solución requerimiento 3](./rf003_Patterns.md).
+     * [Explicación del proceso paso a paso de la solución requerimiento 3](./rf003_StepByStep.md).
    * Requerimiento RF-004
-     * [Documentación patrón solución requerimiento 4](.rf004_Patterns.md).
-     * [Explicación del proceso paso a paso de la solución requerimiento 4](rf004_StepByStep.md).
+     * [Documentación patrón solución requerimiento 4](./rf004_Patterns.md).
+     * [Explicación del proceso paso a paso de la solución requerimiento 4](./rf004_StepByStep.md).
    * Requerimiento RF-005
-     * [Documentación patrón solución requerimiento 5](.rf005_Patterns.md).
-     * [Explicación del proceso paso a paso de la solución requerimiento 5](rf005_StepByStep.md).
+     * [Documentación patrón solución requerimiento 5](./rf005_Patterns.md).
+     * [Explicación del proceso paso a paso de la solución requerimiento 5](./rf005_StepByStep.md).
