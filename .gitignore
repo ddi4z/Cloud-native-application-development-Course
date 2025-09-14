@@ -12,3 +12,6 @@ build_images.ps1
 .terraform/
 .terraform.lock.hcl
 .tfplan
+
+# k8s secret
+k8s/deployment/secret.yaml

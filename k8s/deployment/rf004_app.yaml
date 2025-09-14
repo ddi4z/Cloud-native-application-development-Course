@@ -21,7 +21,7 @@ spec:
       containers:
       - name: rf004-app
         image: 637423520989.dkr.ecr.us-east-1.amazonaws.com/deployment/dann-grp19:rf004-app-v1.0.0 # URI
-        imagePullPolicy: Always
+        imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 9000
         resources:

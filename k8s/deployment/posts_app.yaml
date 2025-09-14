@@ -16,17 +16,18 @@ spec:
       labels:
         app: posts-app
     spec:
-      # Removed initContainers section
       containers:
         - name: posts-app
-          image: 637423520989.dkr.ecr.us-east-1.amazonaws.com/deployment/dann-grp19:posts-app-v1.0.0 # CAMBIAR URI
+          image: 637423520989.dkr.ecr.us-east-1.amazonaws.com/deployment/dann-grp19:posts-app-v1.0.0
           imagePullPolicy: IfNotPresent # Always
           ports:
             - containerPort: 9000
           env:
-            # TODO BUSCAR MANERA DE CAMBIAR ESTO
             - name: DATABASE_URL
-              value: "postgresql://dann20252:dann20252@terraform-20250913154012671500000001.cnwq8kyk654s.us-east-1.rds.amazonaws.com:5432/delivery_db"
+              valueFrom:
+                secretKeyRef:
+                  name: db-secret
+                  key: CONNECTION_STRING
           resources:
             requests:
               memory: "64Mi"
