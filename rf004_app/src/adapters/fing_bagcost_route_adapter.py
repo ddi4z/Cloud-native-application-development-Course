@@ -8,6 +8,9 @@ from typing import Optional
 import requests
 from requests.models import Response
 
+from src.errors import UnavailableService
+
+
 class FindBagCostRouteAdapter(FindBagCostRoutePort):
     """"""
 
@@ -21,3 +24,9 @@ class FindBagCostRouteAdapter(FindBagCostRoutePort):
             return None
 
         return RouteBagCost(**response.json()).bagCost
+
+    @catch_unavailable_service("Route")
+    def ping(self) -> None:
+        response: Response = requests.get(f"{self.service_url}/ping")
+        if response.status_code != 200:
+            raise UnavailableService("Route service is not working")

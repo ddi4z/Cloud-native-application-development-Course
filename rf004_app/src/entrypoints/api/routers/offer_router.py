@@ -1,6 +1,13 @@
 from fastapi import APIRouter, Depends, HTTPException
-from fastapi.responses import PlainTextResponse
-from src.errors import UnauthorizedError, PostNotFoundError, OfferOnOwnPostError, InvalidOfferInputError, PostExpiredError, UnavailableService
+from fastapi.responses import JSONResponse, PlainTextResponse
+from src.errors import (
+    UnauthorizedError,
+    PostNotFoundError,
+    OfferOnOwnPostError,
+    InvalidOfferInputError,
+    PostExpiredError,
+    UnavailableService,
+)
 
 from src.assembly import build_create_offer_use_case
 
@@ -37,9 +44,7 @@ def health_check():
 
 # use a path param called postId
 # obtain the headers of the request
-@router.post(
-    "/posts/{postId}/offers", response_model=OfferWrapperDto, status_code=201
-)
+@router.post("/posts/{postId}/offers", response_model=OfferWrapperDto, status_code=201)
 def create_offer(
     offer: OfferInfoDto,
     postId: str,
@@ -63,7 +68,9 @@ def create_offer(
             offer=offer,
         )
 
-        created_offer_dto: CreatedOfferInfoDto = CreatedOfferInfoDto.from_domain(created_offer, postId=postId)
+        created_offer_dto: CreatedOfferInfoDto = CreatedOfferInfoDto.from_domain(
+            created_offer, postId=postId
+        )
 
         return OfferWrapperDto(data=created_offer_dto)
 
@@ -85,6 +92,10 @@ def create_offer(
     # if the postId or token is not a valid UUID
     except ValueError as _:
         raise HTTPException(status_code=400, detail="Remember that IDs are UUIDs")
-    # if there's some service down, response with 503
-    except UnavailableService as e:
-        raise HTTPException(status_code=503, detail=str(e))
+    # if there's some service down, response with
+    # the response code should to be {"msg": "El servicio está temporalmente fuera de servicio."}
+    except UnavailableService as _:
+        return JSONResponse(
+            status_code=503,
+            content={"msg": "El servicio está temporalmente fuera de servicio."},
+        )

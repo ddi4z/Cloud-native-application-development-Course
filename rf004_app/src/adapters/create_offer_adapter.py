@@ -10,6 +10,9 @@ from requests.models import Response
 
 from .catch_unavailable_service import catch_unavailable_service
 
+from src.errors import UnavailableService
+
+
 class CreateOfferAdapter(CreateOfferPort):
     """"""
 
@@ -32,3 +35,9 @@ class CreateOfferAdapter(CreateOfferPort):
             return None
 
         return CreatedOffer(**response.json())
+
+    @catch_unavailable_service("Offer")
+    def ping(self) -> None:
+        response: Response = requests.get(f"{self.service_url}/ping")
+        if response.status_code != 200:
+            raise UnavailableService("Offer service is not working")

@@ -6,6 +6,8 @@ from requests.models import Response
 from src.errors import UnavailableService
 
 from .catch_unavailable_service import catch_unavailable_service
+
+
 class UserValidationAdapter(UserValidationPort):
     """Implementation of UserValidationPort to orchestrate the validation of a user."""
 
@@ -22,11 +24,11 @@ class UserValidationAdapter(UserValidationPort):
 
         if response.status_code != 200:
             return None
-        
+
         user_response = User(**response.json())
 
         return user_response
-    
+
     @catch_unavailable_service("Users")
     def ping(self) -> None:
         response: Response = requests.get(f"{self.user_service_url}/ping")

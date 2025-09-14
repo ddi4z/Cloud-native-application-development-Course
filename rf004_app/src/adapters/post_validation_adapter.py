@@ -5,11 +5,14 @@ import requests
 from requests.models import Response
 from .catch_unavailable_service import catch_unavailable_service
 
+from src.errors import UnavailableService
+
 class PostValidationAdapter(PostValidationPort):
     """"""
+
     def __init__(self, post_service_url: str):
         self.post_service_url = post_service_url
-    
+
     @catch_unavailable_service("Post")
     def validate_and_get_post(self, postId: str) -> Optional[Post]:
         """Validate the postId and get the post. If the postId is invalid, return None."""
@@ -19,7 +22,13 @@ class PostValidationAdapter(PostValidationPort):
 
         if response.status_code != 200:
             return None
-        
+
         post_response = Post(**response.json())
 
         return post_response
+
+    @catch_unavailable_service("Post")
+    def ping(self) -> None:
+        response: Response = requests.get(f"{self.post_service_url}/ping")
+        if response.status_code != 200:
+            raise UnavailableService("Post service is not working")
