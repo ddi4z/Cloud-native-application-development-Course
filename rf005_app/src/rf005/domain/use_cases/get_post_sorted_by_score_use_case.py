@@ -36,17 +36,26 @@ class GetPostSortedByScoreUseCase:
         self.score_client = score_client
 
     async def execute(self, post_id: str, token: str) -> PublicationResponse:
+        # Si algún servicio dependiente no está arriba, se lanza ServiceCommunicationError
+        # y el router devolverá 503 
+        await self.users_client.ping()
+        await self.posts_client.ping()
+        await self.routes_client.ping()
+        await self.offers_client.ping()
+        # El servicio de scores es opcional para cálculo
+        # await self.score_client.ping()
+
         # Autenticar usuario y obtener la publicación
         try:
             current_user = await self.users_client.get_user_from_token(token)
             post = await self.posts_client.get_post_by_id(post_id)
         except InvalidTokenError as e:
-            raise e # error de token inválido
+            raise e  # error de token inválido
         except EntityNotFoundError:
             # Si el post no existe, lanzamos el error específico.
             raise EntityNotFoundError("La publicación no existe.")
         except ServiceCommunicationError as e:
-            raise e # error de comunicación
+            raise e  # error de comunicación
 
         # Autorizar: Verificar si el usuario es el dueño de la publicación
         if current_user.id != post.userId:
@@ -70,14 +79,14 @@ class GetPostSortedByScoreUseCase:
         offers_with_score: List[OfferWithScore] = [
             OfferWithScore(
                 **offer.model_dump(),
-                score=scores_map.get(offer.id) # .get() devuelve None si no encuentra el ID
+                score=scores_map.get(offer.id)  # .get() devuelve None si no encuentra el ID
             )
             for offer in offers
         ]
         # Ordenar ofertas por score (descendente), manejando valores nulos.
         offers_with_score.sort(key=lambda o: (o.score is not None, o.score), reverse=True)
 
-            # Construir la respuesta final usando los modelos de Pydantic
+        # Construir la respuesta final usando los modelos de Pydantic
         response_data = PublicationResponseData(
             id=post.id,
             expireAt=post.expireAt,
