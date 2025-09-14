@@ -69,3 +69,4 @@ Puede consultar la documentación completa haciendo uso de la siguiente tabla de
    * Requerimiento RF-005
      * [Documentación patrón solución requerimiento 5](./rf005_Patterns.md).
      * [Explicación del proceso paso a paso de la solución requerimiento 5](./rf005_StepByStep.md).
+     
