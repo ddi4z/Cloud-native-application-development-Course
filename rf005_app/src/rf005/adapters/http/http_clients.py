@@ -35,7 +35,7 @@ class HTTPUsersClientAdapter(HTTPClientBase, UsersClientPort):
     """Adaptador HTTP para el servicio de usuarios."""
 
     async def ping(self) -> None:
-        resp = await self._request("GET", "/ping")
+        resp = await self._request("GET", "/users/ping")
         if resp.status_code != 200:
             raise ServiceCommunicationError("users")
 
@@ -61,7 +61,7 @@ class HTTPPostsClientAdapter(HTTPClientBase, PostsClientPort):
     """Adaptador HTTP para el servicio de Publicaciones."""
 
     async def ping(self) -> None:
-        resp = await self._request("GET", "/ping")
+        resp = await self._request("GET", "/posts/ping")
         if resp.status_code != 200:
             raise ServiceCommunicationError("posts")
 
@@ -79,7 +79,7 @@ class HTTPRoutesClientAdapter(HTTPClientBase, RoutesClientPort):
     """Adaptador HTTP para el servicio de Rutas."""
 
     async def ping(self) -> None:
-        resp = await self._request("GET", "/ping")
+        resp = await self._request("GET", "/routes/ping")
         if resp.status_code != 200:
             raise ServiceCommunicationError("routes")
 
@@ -97,7 +97,7 @@ class HTTPOffersClientAdapter(HTTPClientBase, OffersClientPort):
     """Adaptador HTTP para el servicio de Ofertas."""
 
     async def ping(self) -> None:
-        resp = await self._request("GET", "/ping")
+        resp = await self._request("GET", "/offers/ping")
         if resp.status_code != 200:
             raise ServiceCommunicationError("offers")
 
@@ -116,7 +116,7 @@ class HTTPScoreClientAdapter(HTTPClientBase, ScoreClientPort):
     """Adaptador HTTP para el servicio de Scores."""
 
     async def ping(self) -> None:
-        resp = await self._request("GET", "/ping")
+        resp = await self._request("GET", "/scores/ping")
         if resp.status_code != 200:
             raise ServiceCommunicationError("scores")
 
