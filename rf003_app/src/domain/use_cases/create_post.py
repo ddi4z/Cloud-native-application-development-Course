@@ -21,10 +21,10 @@ class CreatePostUseCase(BaseUseCase):
             self,
             users_client: UsersPort,
             routes_client: RoutesPort,
-            posts_client: PostsPort
+            posts_client: PostsPort,
     
     ):
-        
+        super().__init__()
         self.users_client = users_client
         self.posts_client = posts_client
         self.routes_client = routes_client 
@@ -39,6 +39,19 @@ class CreatePostUseCase(BaseUseCase):
         :param content: Content of the post to be created
         :return: Response from the post creation service
         """
+
+        self.logger.info("[CREATE_POST_USE_CASE] Starting CreatePostUseCase execution")
+        self.logger.info("[CREATE_POST_USE_CASE] pinging USERS_APP")
+        self.users_client.ping()
+        self.logger.info("[CREATE_POST_USE_CASE] USERS_APP is up")
+
+        self.logger.info("[CREATE_POST_USE_CASE] pinging ROUTES_APP")
+        self.routes_client.ping()
+        self.logger.info("[CREATE_POST_USE_CASE] ROUTES_APP is up")
+
+        self.logger.info("[CREATE_POST_USE_CASE] pinging POSTS_APP")
+        self.posts_client.ping()
+        self.logger.info("[CREATE_POST_USE_CASE] POSTS_APP is up")
         
         # Validate user input is complete
         if input_dto.flightId is None or input_dto.expireAt is None or input_dto.plannedEndDate is None \
@@ -53,23 +66,27 @@ class CreatePostUseCase(BaseUseCase):
             
             # PlannedStartDate is in the future                        
         if start_date_user_input <= current_date:
+            self.logger.error("[CREATE_POST_USE_CASE] invalid start date")
             raise InvalidRouteDatesError('la fecha de inicio debe estar en el futuro.')
 
             # Expire date between current date and start date
         if not (current_date < expire_date_user_input <= start_date_user_input):
+            self.logger.error("[CREATE_POST_USE_CASE] invalid expiration date")
             raise InvalidExpiredAtError('La fecha de expiración debe ser posterior a fecha actual y anterior a comienzo viaje.')
         
         # Check for token
         if token is None:
+            self.logger.error("[CREATE_POST_USE_CASE] missing token")
             raise NoTokenError('Token no está en la solicitud')
               
         # Validate user
         current_user = await self.users_client.get_user_from_token(token=token)
 
         if current_user is None:
+            self.logger.error("[CREATE_POST_USE_CASE] unauthorized user")
             raise InvalidTokenError('Usuario no autorizado')
         
-        print(f"[LOG] user validated: {current_user}")
+        self.logger.info(f"[CREATE_POST_USE_CASE] user validated: {current_user}")
 
         # Validate if provided route already exists
         route_search = await self.routes_client.find_route_by_flightid(flightId=input_dto.flightId)
@@ -86,11 +103,15 @@ class CreatePostUseCase(BaseUseCase):
                 plannedStartDate = input_dto.plannedStartDate,
                 plannedEndDate = input_dto.plannedStartDate
             )
+            self.logger.info(f"[CREATE_POST_USE_CASE] route didn't previously exist")
+
             route_created = await self.routes_client.create_route(route_dto=route_to_create)
             route_id = route_created.id
             route = route_created
         
         else:
+            self.logger.info(f"[CREATE_POST_USE_CASE] route already existed")
+
             route_id = route_search.id
             route = route_search
 
@@ -98,6 +119,7 @@ class CreatePostUseCase(BaseUseCase):
         post = await self.posts_client.get_post_from_userid_route_id(user_id=current_user.id, route_id=route_id)
 
         if post is not None:
+            self.logger.error("[CREATE_POST_USE_CASE] post already exists")
             raise ConflictError('Usuario ya tiene ruta para ese trayecto')
 
 
@@ -109,5 +131,7 @@ class CreatePostUseCase(BaseUseCase):
         )
 
         created_post = await self.posts_client.create_post(new_post_creation_request)
+        self.logger.info(f"[CREATE_POST_USE_CASE] post created")
+
 
         return created_post, input_dto.expireAt, route.id, route.createdAt

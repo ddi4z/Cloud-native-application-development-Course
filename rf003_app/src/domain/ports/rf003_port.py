@@ -4,7 +4,16 @@ from src.domain.models.models import User, Route, Post, CreatedRoute, RouteCreat
 #Post, CreatePost, UserGetResponse, RouteGetResponse, RouteCreateInput, RouteCreateResponse, CreatePostResponse
 
 
-class UsersPort(ABC):
+class HttpRequest(ABC):
+    """Post repository interface."""
+
+    @abstractmethod
+    def ping(self) -> bool:
+        """Create a new post."""
+        raise NotImplementedError("This method should be overridden in subclasses")
+
+
+class UsersPort(HttpRequest):
     "User Rep inter"
 
     @abstractmethod
@@ -12,7 +21,7 @@ class UsersPort(ABC):
         " Get user from token"
         raise NotImplementedError("This method should be overriden in subclasses")
 
-class RoutesPort(ABC):
+class RoutesPort(HttpRequest):
     "User Rep inter"
 
     @abstractmethod
@@ -25,7 +34,7 @@ class RoutesPort(ABC):
         " Get user from token"
         raise NotImplementedError("This method should be overriden in subclasses")
 
-class PostsPort(ABC):
+class PostsPort(HttpRequest):
 
     @abstractmethod
     def get_post_from_userid_route_id(self, user_id: str, route_id: str) -> Optional[List[Post]]:
