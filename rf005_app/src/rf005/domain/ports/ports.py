@@ -1,9 +1,11 @@
+# src/rf005/domain/ports/ports.py
+
 from abc import ABC, abstractmethod
-from typing import List
+from typing import List, Dict
 from ..models.models import User, Post, Route, Offer
 
 class APIClientPort(ABC):
-    """Puerto base para los clientes de API"""
+    """Puerto base para los clientes de API."""
     pass
 
 class UsersClientPort(APIClientPort):
@@ -25,9 +27,12 @@ class OffersClientPort(APIClientPort):
     @abstractmethod
     async def get_offers_by_post_id(self, post_id: str) -> List[Offer]:
         raise NotImplementedError
-
 class ScoreClientPort(APIClientPort):
     @abstractmethod
-    def calculate_score(self, offer: Offer, route: Route) -> float:
-        """This is mocked, so it can be synchronous."""
+    async def get_scores_for_offers(
+        self, offers: List[Offer], route: Route
+    ) -> Dict[str, float]:
+        """
+        Obtiene los scores para una lista de ofertas y los devuelve en un mapa.
+        """
         raise NotImplementedError
