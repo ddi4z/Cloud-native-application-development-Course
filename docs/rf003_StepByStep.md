@@ -63,10 +63,6 @@
 | 6 (verificar duplicidad) | Ya existe post del usuario para ese `route_id` | `ConflictError("Usuario ya tiene ruta para ese trayecto")` | **412** |
 | 7 (crear post) | Fallo de comunicación con `posts_app` o validación fallida en posts | `ServiceCommunicationError("posts")` *(adapter)* u otro error del dominio de posts | **503** 
 
-> **Mapeo de errores externos** (adapters):  
-> - 401/403 desde `users_app` → `InvalidTokenError`.  
-> - 4xx/5xx desde `routes_app`/`posts_app` → envolver en `ServiceCommunicationError("routes|posts")` o excepción del dominio correspondiente.
-
 ---
 
 ## Respuesta (éxito)
