@@ -49,15 +49,16 @@
 
 ## Excepciones y manejo de errores
 
-| Paso | Condición | Excepción (del código) | HTTP sugerido | Efecto / Observación |
-|---|---|---|---|---|
-| 2 | Props de oferta `None` | `InvalidOfferInputError` | 422 Unprocessable Entity | No se crean recursos. |
-| 3 | Token inválido/sin usuario | `UnauthorizedError` | 401 Unauthorized | No se continúa el flujo. |
-| 4 | Publicación no existe | `PostNotFoundError` | 404 Not Found | No se crea la oferta. |
-| 5 | Publicación expirada | `PostExpiredError` | 409 Conflict (o 410 Gone) | No se crea la oferta. |
-| 6 | Oferta sobre propia publicación | `OfferOnOwnPostError` | 403 Forbidden | No se crea la oferta. |
-| 7 | Falla al crear oferta (infra/validación) | (excepción del adapter) | 502/503 ó 422 | Oferta **no** creada; no se calcula score. |
-| 8 | Falla al calcular score | (excepción del adapter) | 502/503 | **La oferta ya quedó creada.** El código no implementa compensación; la llamada puede fallar pese a que exista la oferta. |
+| Paso | Condición | Excepción (del código) | HTTP sugerido |
+|---|---|---|---|
+| 2 | Props de oferta `None` | `InvalidOfferInputError` | 400 |
+| 3 | Token inválido/sin usuario | `UnauthorizedError` | 401 |
+| 4 | Token no está en solicitud | `UnauthorizedError` | 403 |
+| 5 | Publicación no existe | `PostNotFoundError` | 404 | 
+| 6 | Publicación expirada | `PostExpiredError` | 412 |
+| 7 | Oferta sobre propia publicación | `OfferOnOwnPostError` | 412 |
+| 8 | Falla al crear oferta | (excepción del adapter) | 503 |
+| 9 | Falla al calcular score | (excepción del adapter) | 503 |
 
 **Casos límites cubiertos por la implementación:**
 - `bagCost` no disponible → se usa `0` para el cálculo del score.
@@ -68,7 +69,6 @@
 ## Observabilidad y reglas técnicas
 - **Logs** detallados por paso (`self.logger.info/error`).
 - Pings de *readiness* previos a la orquestación (ayuda a diagnósticos).
-- Recomendado (no está en el código): **Idempotency-Key** y/o restricción única *(user_id, post_id)* si se desea evitar ofertas duplicadas del mismo usuario.
 
 ---
 
