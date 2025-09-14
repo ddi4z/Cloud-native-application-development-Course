@@ -5,7 +5,7 @@
 ![Vista de componentes](./diagrams/components.png "Vista de componentes")
 
 Arquitectura por servicios con propiedad de datos por dominio y acoplamiento bajo, enfocada en cubrir funcionalidades esenciales de la segunda entrega.
-## Descripción del sistema actualizado
+## Descripción del sistema
 
 ### Actor (líneas punteadas)
 El **User** interactúa vía **API REST** exclusivamente con los **nuevos servicios**:
@@ -138,5 +138,6 @@ Se opta por utilizar una estructura similar a las 4 aplicaciones. Tomando como b
 | Docker          | Plataforma de contenedores para empaquetar y ejecutar aplicaciones. Todas las aplicaciones se empaquetaron con esto. | Ejecución |
 | Minikube        | Herramienta para correr Kubernetes en local. | Despliegue |
 | GitHub Actions  | Servicio de CI/CD integrado en GitHub. Para el proyecto solo se utilizo para integración continua: linter y la ejecución de las pruebas. Además, se utilizaron en los evaluadores. | Despliegue |
+
 
 
