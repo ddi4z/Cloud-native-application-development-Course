@@ -1,5 +1,6 @@
 
 ### Componente RF-003
+
 | Componente                  | RF-003                                                                 |
 |----------------------------|----------------------------------------------------------------------------------------|
 | Código/Id del componente   | RF-003                                                                                 |
@@ -9,6 +10,7 @@
 | Integraciones              | **Auth/Usuarios** (`users_app` o gateway): HTTP Bearer JWT; validar identidad y obtener `user_id` (sincronía).<br>**Rutas** (`routes_app`): `GET /routes?…` para buscar; `POST /routes` para crear cuando no exista (JSON/HTTP).<br>**Publicaciones** (`posts_app`): `GET /posts?owner={userId}&route={routeId}` para verificar duplicados; `POST /posts` para crear (JSON/HTTP).<br>**Comunicación:** síncrona REST, *timeouts* y reintentos con *backoff*; propagar `X-Request-Id`/`Idempotency-Key`. |           |
 
 ### Componente RF-004
+
 | Componente                 | RF-004                                                                                                         |
 |---------------------------|---------------------------------------------------------------------------------------------------------------------------------------------|
 | Código/Id del componente | RF-005                                                            |
@@ -18,6 +20,7 @@
 | Integraciones         | **Auth/Usuarios** (gateway o `users_app`): JWT Bearer para identidad y `user_id` (síncrono).<br>**Publicaciones** (`posts_app`): `GET /posts/{postId}` para verificar existencia/expiración y dueño (JSON/HTTP).<br>**Ofertas** (`offers_app`): `POST /offers` para persistir la oferta (JSON/HTTP).<br>**Scores** (`scores_app`): `POST /scores/offers` (o equivalente) para calcular la utilidad antes de persistir; *timeouts* y reintentos con backoff; propagar `X-Request-Id`/`Idempotency-Key`. |
 
 ### RF-005
+
 | Componente                 | RF-005                                                                                      |
 |---------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------|
 | **Código/Id del componente** | RF-005                                      |
