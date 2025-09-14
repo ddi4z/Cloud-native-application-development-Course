@@ -1,238 +1,243 @@
-# `rf004`
+# rf004 – Orquestador de Creación de Ofertas
 
-Este proyecto es el desarrollo de una aplicación con FastAPI que implementa una arquitectura hexagonal (también conocida como puertos y adaptadores) para gestionar la entidad `Offer`. La aplicación se ejecuta haciendo uso de docker y puede ser ejecutada directamente en su ambiente o haciendo uso de k8s.
+Este proyecto es una aplicación FastAPI que implementa el patrón de orquestación y sigue los principios de la arquitectura hexagonal. Su única responsabilidad es cumplir con el requerimiento RF-004: crear una oferta sobre una publicación existente para un usuario autenticado.
 
-## Tabla de contenido
+Como orquestador, este servicio es sin estado (stateless) y no tiene su propia base de datos. En su lugar, se comunica a través de clientes HTTP con los siguientes microservicios:
+● **users_app** : Para autenticar y autorizar al usuario a partir de un token.
+● **posts_app** : Para validar que la publicación a la que se oferta existe, no ha expirado y
+no pertenece al mismo usuario.
+● **routes_app** : Para obtener el costo de la maleta ( bagCost ) del trayecto asociado a la publicación.
+● **offers_app** : Para persistir la nueva oferta creada.
+● **scores_app** : Para calcular y persistir la utilidad (score) de la nueva oferta.
 
-- [`offers_app`](#offers-app---proyecto-ejemplo)
-  - [Tabla de contenido](#tabla-de-contenido)
-  - [Requisitos](#requisitos)
-  - [Estructura del Proyecto](#estructura-del-proyecto)
-    - [Carpeta src](#carpeta-src)
-      - [Domain](#domain)
-      - [Adapters](#adapters)
-      - [Entrypoints](#entrypoints)
-      - [Configuración y ensamble](#configuración-y-ensamble)
-      - [Errores](#errores)
-    - [Configuración](#configuración)
-  - [Ejecución de la aplicación](#ejecución-de-la-aplicación)
-    - [1. Instale las dependencias:](#1-instale-las-dependencias)
-    - [2. Ejecución](#2-ejecución)
-  - [Ejecutar en Docker](#ejecutar-en-docker)
-  - [Ejecutar en minikube](#ejecutar-en-minikube)
-  - [API Endpoints](#api-endpoints)
-  - [Pruebas](#pruebas)
-    - [Unitarias](#unitarias)
-    - [Integración](#integración)
-  - [Cómo contribuir](#cómo-contribuir)
-  - [Licencia](#licencia)
-  - [Autor](#autor)
+## Índice
 
-
-## Requisitos
-
-- Python 3.11
-- Poetry version 2.1.1
-- Docker
-- Postman
+1. [Estructura del Proyecto](#estructura-del-proyecto)
+2. [Ejecución de la Aplicación](#ejecución-de-la-aplicación)
+3. [Ejecutar en Docker](#ejecutar-en-docker)
+4. [Ejecutar en Minikube/Kubernetes](#ejecutar-en-minikubekubernetes)
+5. [Endpoints de la API](#endpoints-de-la-api)
+6. [Autor](#autor)
 
 ## Estructura del Proyecto
 
-```
-.
+La aplicación sigue los principios de la arquitectura hexagonal para separar la lógica de negocio de la infraestructura de comunicación.
+
+``` bash
+rf004_app/
 ├── src/
-│   ├── domain/             # Capa de dominio
-│   │   ├── models/         # Modelos de dominio
-│   │   ├── ports/          # Puertos (interfaces)
-│   │   └── use_cases/      # Casos de uso
-│   ├── adapters/           # Capa de adaptadores
-│   │   └── database/       # Adaptador de base de datos
-│   └── entrypoints/        # Puntos de entrada
-│       └── api/            # API REST
-├── tests/                  # Pruebas
-│   ├── domain/             # Pruebas de la capa de dominio
-│   │   ├── models/         # Pruebas de los modelos
-│   │   ├── ports/          # Pruebas de los puertos
-│   │   └── use_cases/      # Pruebas de los casos de uso
-│   ├── adapters/           # Prueba de los adaptadores
-│   └── entrypoints/        # Prueba de la API y puntos de entrada
-├── Dockerfile              # Configuración de Docker
-├── pyproject.toml          # Configuración de Poetry
-└── README.md               # Este archivo
+│ └── rf004_app/
+│ ├── adapters/ # Clientes HTTP para otros microservicios
+│ ├── domain/ # Lógica de orquestación y modelos
+│ │ ├── models/ # Modelos de datos para comunicación
+│ │ ├── ports/ # Interfaces para los clientes HTTP
+│ │ └── use_cases/ # Lógica de orquestación
+│ ├── entrypoints/ # Puntos de entrada (API REST)
+│ │ └── api/
+│ ├── assembly.py # Inyección de dependencias
+│ └── errors.py # Excepciones personalizadas
+├── tests/
+├── Dockerfile
+├── pyproject.toml
+└── README.md # Esta documentación
 ```
 
-### Carpeta src
+### Dominio
 
-Esta carpeta contiene el código y la lógica de la aplicación que permite exponer el API y puede integrar otras aplicaciones o componentes si lo requiere.
+Contiene el núcleo de la lógica de negocio.
+* **/domain/models** : Define los modelos que el orquestador usa para comunicarse con otros servicios.
 
-#### Domain
-
-Carpeta con la lógica de la aplicación.
-
-- `/domain/models`: Contiene las clases que representan las entidades necesarias para los casos de uso de la aplicación. Comúnmente estos modelos son usados para el almacenamiento en la base de datos, pero no deben confundirse, estas clases no deben estar acopladas a una base de datos en específico y solo representan las entidades que se van a manipular en los casos de uso. Será responsabilidad de los adaptadores transformarlas y almacenarlas en una determinada base de datos. En este ejemplo los modelos estarán soportados haciendo uso de pydantic por facilidad de validación e integración con FastAPI.
-
-- `/domain/ports`: Contiene las interfaces que habilitan la interacción con componentes o lógica externa. Estas clases no son implementaciones sino únicamente el "template" que deben seguir nuestras integraciones. Esto permite desacoplar la implementación, habilitando que se pueda reemplazar fácilmente los componentes con los que se integra la aplicación, siempre y cuando se respecte la definición de las interfaces. En este proyecto encontrará que se hace uso de una clase llamada [Repository](https://martinfowler.com/eaaCatalog/repository.html) la cual sigue un patrón que es comúnmente usado cuando el puerto es usado para almacenamiento de una entidad. Sin embargo, los puertos pueden seguir otros patrones para interactuar con otros componentes, por ejemplo notificaciones.
-
-- `/domain/use_cases`: Contiene los casos de uso de la aplicación, almacenar, consultar, modificar, borrar o cualquier otra funcionalidad (obtener el número de registros o limpiar la base de datos). Todos los casos de usos deben compartir el mismo contrato. Para ello deben extender de una interfaz que define como es el comportamiento de los casos de uso, esta interfaz resulta ser clave para permitir que los entrypoints de la aplicación puedan interactuar con los casos de uso sin generar acoplamiento.
-
-#### Adapters
-
-En la carpeta adapters se encuentra la implementación de los puertos definidos en la carpeta de ports. En este proyecto de ejemplo se encuentra una implementación de un almacenamiento en memoria, pero usted puede seguir el mismo schema si quiere realizar una implementación para almacenar en una base de datos. **En particular, en el proyecto se realizaron dos implementaciones una en memoria y otra con PostgreSQL. La que corresponde al adaptador de "en memoria" facilito las pruebas sobre los casos de uso.**
-
-#### Entrypoints
-
-Contiene los archivos que servirán como punto de acceso a la aplicación; también podrían considerarse como puertos de ingreso. En esta carpeta se encuentran las funciones o clases que permiten interactuar con los casos de uso.
-
-En este proyecto se hace uso de routers donde se definen las rutas y los métodos HTTP que se soportan. Si usted quiere agregar nuevas rutas, debe agregar otro archivo router o modificar el actual siguiendo el mismo patrón.
-
-Posteriormente debe agregar el router a la aplicación en el archivo `main.py`. Todo esto ya se encuentra hecho. 
-
-#### Configuración y ensamble
-
-- `config.py`: En este archivo se encuentran las funciones que permiten leer las variables de ambiente o constantes que se usan en todo el proyecto. Es una buena práctica consolidar el manejo de las variables de ambiente y constantes a un solo archivo, facilita las pruebas y la mantenibilidad.
-- `assembly.py`: Este archivo contiene las funciones que realizan la inyección de dependencias. Como ha podido ver en todos los ejemplos previos, las asociaciones entre las clases y funciones se realizan por medio de interfaces, ninguna clase conoce o usa una implementación en particular. Es en este paquete donde se instancian las implementaciones que se van a usar y las cuales son usadas por cada router:
-
-#### Errores
-
-En el proyecto se encuentra el archivo `errors.py` el cual está diseñado para albergar todas las clases de excepciones personalizadas que se creen en el proyecto. Recomendamos crear sus propias clases de excepción para tener mayor control del flujo del programa.
-
-```python
-class OfferNotFoundError(Exception):
-  """Exception raised when a offer is not found."""
-  pass
+``` python
+# src/rf004_app/domain/models/offer.py
+from pydantic import BaseModel
+from enum import Enum
+  class OfferSize(str, Enum):
+    SMALL = "SMALL"
+    MEDIUM = "MEDIUM"
+    LARGE = "LARGE"
+  class Offer(BaseModel):
+  """Modelo de entrada para una oferta."""
+    description: str
+    size: OfferSize
+    fragile: bool
+    offer: int
+  class CreatedOffer(BaseModel):
+  """Modelo de respuesta del servicio de ofertas."""
+    id: str
+    userId: str
+    createdAt: str
 ```
 
-Las excepciones se manejan en los puntos de entrada de la app como por ejemplo:
+* **/domain/ports** : Define las interfaces que la lógica de negocio utiliza para interactuar con servicios externos.
 
-```python
-try:
-  ...
-except OfferNotFoundError as e:
-  raise HTTPException(status_code=404, msg=str(e))
+``` python
+# src/rf004_app/domain/ports/user_validation_port.py
+from abc import abstractmethod
+from src.domain.models.user import User
+class UserValidationPort(HttpRequest):
+@abstractmethod
+def validate_token_and_get_user(self, token: str) -> Optional[User]:
+raise NotImplementedError
+
+# src/rf004_app/domain/ports/post_validation_port.py
+from src.domain.models.post import Post
+class PostValidationPort(HttpRequest):
+@abstractmethod
+def validate_and_get_post(self, postId: str) -> Optional[Post]:
+raise NotImplementedError
+# ... y así para cada puerto (CreateOfferPort, ScoreCalculationPort, etc.)
 ```
 
-### Configuración
+* **/domain/use_cases** : Contiene la lógica de aplicación que orquesta los servicios para crear una oferta.
 
-Este proyecto hace uso de [poetry](https://python-poetry.org/) para la gestión de dependencias y configuración de algunas librerías usadas en el proyecto. Encontrará la configuración en el archivo `pyproject.toml` el cuál ya es un estandar para la configuración de proyectos en Python. [Documentación](https://packaging.python.org/en/latest/guides/writing-pyproject-toml/).
-
-> Recomendación: procure evitar otros archivos de configuración como el `setup.cfg`, `setup.py`, `<archivo>.ini` u otros, con el fin de mejorar la mantenibilidad de nuestro código y evitar errores por conflictos de configuración.
-
-Algunos puntos que tener en cuenta en la configuración:
-
-- Agregue todas las dependencias que se usarán en producción en el group por defecto `[tool.poetry.dependencies]`. Esto sucederá por defecto al usar el comando add de poetry: 
-```bash
-poetry add <libreria>
+``` python
+# src/rf004_app/domain/use_cases/create_offer_use_case.py
+from src.errors import UnauthorizedError, PostNotFoundError, OfferOnOwnPostError,
+PostExpiredError
+  class CreateOfferUseCase(BaseUseCase):
+  # ... __init__ con todos los clientes inyectados
+  def execute(self, auth_token: str, post_id: str, offer: Offer) -> CreatedOffer:
+    # 1. Validar usuario
+    user = self.user_validation.validate_token_and_get_user(token=auth_token)
+    if user is None:
+      raise UnauthorizedError("Usuario no autorizado")
+    # 2. Validar publicación
+    post = self.post_validation.validate_and_get_post(postId=post_id)
+    if post is None:
+      raise PostNotFoundError(f"Publicación con id {post_id} no encontrada")
+    if post.userId == user.id:
+      raise OfferOnOwnPostError("Usuario no puede ofertar en su propia publicación")
+    if datetime.fromisoformat(post.expireAt) < datetime.now(timezone.utc):
+      raise PostExpiredError("La publicación ha expirado")
+    # 3. Crear la oferta en offers_app
+    created_offer = self.create_offer.create_offer(offer, userId=user.id, postId=post_id)
+    # 4. Obtener bagCost de routes_app
+    bagCost = self.find_bagcost.get_bagcost(post.routeId)
+    # 5. Calcular y guardar score en scores_app
+    score_payload = Score(
+    offer_id=created_offer.id,
+    size=offer.size,
+    baggage_value=bagCost if bagCost is not None else 0,
+    amount_offered=offer.offer,
+    )
+    self.score_calculation.calculate_score(score_payload)
+    return created_offer
 ```
-- Agregue las dependencias de desarrollo en el grupo `dev`. Para esto defina el grupo cuando agregue la librería:
-```bash
-poetry add <librería> --group dev
+
+### Adaptadores
+
+Son clientes HTTP que implementan los puertos para comunicarse con los otros microservicios.
+
+``` python
+# src/rf004_app/adapters/post_validation_adapter.py
+import requests
+from src.domain.ports.post_validation_port import PostValidationPort
+from src.domain.models.post import Post
+class PostValidationAdapter(PostValidationPort):
+  def __init__(self, post_service_url: str):
+    self.post_service_url = post_service_url
+  def validate_and_get_post(self, postId: str) -> Optional[Post]:
+    response = requests.get(f"{self.post_service_url}/{postId}")
+    if response.status_code != 200:
+      return None
+    return Post(**response.json())
 ```
-- El archivo contiene las reglas de configuración de linters y herramientas de análisis habilitadas en el proyecto. `[tool.isort]`, `[tool.bandit]`, `[tool.pydoclint]`, `[tool.ruff]`. Si desea modificar las reglas o conocer más de ellas puede revisar los links en cada sección.
-- El archivo contiene las reglas de configuración para la ejecución de pruebas con pytest. En la sección `[tool.pytest.ini_options]` puede modificar o agregar nuevas reglas de pruebas. Así como las variables de ambiente que se usarán en las pruebas.
 
-Siempre que modifique el archivo, recomendamos regenerar el archivo de poetry.lock usando:
-```bash
-poetry lock
+### Entrypoints
+
+Define la API REST con **FastAPI** que expone la funcionalidad del orquestador.
+
+``` python
+# src/rf004_app/entrypoints/api/routers/offer_router.py
+from fastapi import APIRouter, Depends, HTTPException
+from src.assembly import build_create_offer_use_case
+from src.entrypoints.api.dtos.offer_info_dto import OfferInfoDto
+router = APIRouter(prefix="/rf004")
+@router.post("/posts/{postId}/offers", response_model=OfferWrapperDto, status_code=201)
+  def create_offer(
+    offer: OfferInfoDto,
+    postId: str,
+    token: str = Depends(get_current_token),
+    use_case: BaseUseCase = Depends(build_create_offer_use_case),
+    ):
+    """Crea una nueva oferta en una publicación."""
+    try:
+      created_offer = use_case.execute(
+      auth_token=token,
+      post_id=postId,
+      offer=offer,
+      )
+    # ... construir respuesta
+      return OfferWrapperDto(data=created_offer_dto)
+    except PostNotFoundError as e:
+      raise HTTPException(status_code=404, detail=str(e))
+    except (OfferOnOwnPostError, PostExpiredError) as e:
+      raise HTTPException(status_code=412, detail=str(e))
+# ... otros manejadores de excepciones
 ```
 
-## Ejecución de la aplicación
+## Ejecución de la Aplicación
 
-### 1. Instale las dependencias:
-```bash
+### **Prerrequisitos**
+
+* Python 3.11+
+* Poetry
+* Docker
+* Minikube / Kubernetes
+
+### **Instalar dependencias**
+
+Desde la carpeta rf004_app :
+
+``` bash
 poetry install
-
-# Si no existe el archivo poetry.lock ejecute primero
-# poetry lock
-```
-Poetry instalará todas las dependencias en un ambiente virtual gestionado por Poetry.
-
-### 2. Ejecución
-
-dado que todas las dependencias están instaladas en una ambiente virtualizado y gestionado por Poetry es necesario correr el servidor haciendo uso de Poetry:
-```bash
-PYTHONPATH=$(pwd)/src poetry run uvicorn entrypoints.api.main:app --host 0.0.0.0 --port 9000
 ```
 
-Lo anterior si utiliza un sistema operativo basado en UNIX, de lo contrario haga esto si esta utilizando Windows:
+### **Ejecutar la Aplicación Localmente**
 
-```powershell
-$env:PYTHONPATH = "$pwd\src"
-poetry run uvicorn src.entrypoints.api.main:app --host 0.0.0.0 --port 9000 --reload
+``` bash
+export USERS_SERVICE_URL=http://localhost:
+export POSTS_SERVICE_URL=http://localhost:
+export ROUTES_SERVICE_URL=http://localhost:
+export OFFERS_SERVICE_URL=http://localhost:
+export SCORES_SERVICE_URL=http://localhost:
+poetry run uvicorn src.main:app --host 0.0.0.0 --port 8004
 ```
 
-El API estará disponible en `http://localhost:9000`
-
-Cargue el archivo `offers_app/tests/api/offers.postman_collection.json` en su postman y reemplace la variable `baseUrl` por la url.
-
-Ejecute las pruebas y verifique que se completa correctamente.
+La API estará disponible en [http://localhost:](http://localhost:).
 
 ## Ejecutar en Docker
 
-```bash
-APP_VERSION = ... # use la misma versión del documento pyproject.toml
-APP_NAME = ... # use el mismo definido en el documento pyproject.toml
-docker build --rm --platform linux/amd64 -t ${APP_NAME}:${APP_VERSION} -f Dockerfile --target runner --label version=${APP_VERSION} .
-
-docker run --platform linux/amd64 -p 9000:9000 ${APP_NAME}:${APP_VERSION}
+``` bash
+docker build -t rf004-app:v1.0..
+docker run --rm -p 8004:8004 \
+-e USERS_SERVICE_URL="http://users-app-service" \
+-e POSTS_SERVICE_URL="http://posts-app-service" \
+-e ROUTES_SERVICE_URL="http://routes-app-service" \
+-e OFFERS_SERVICE_URL="http://offers-app-service" \
+-e SCORES_SERVICE_URL="http://scores-app-service" \
+rf004-app:v1.0.
 ```
 
-## Ejecutar en minikube
+## Ejecutar en Minikube/Kubernetes
 
-Después de haber creado la imagen haciendo uso de docker, ejecute:
-
-```bash
-minikube start --cpus=2 --memory=3g --cni calico
-
-#make mkbuild
-minikube image load ${APP_NAME}:${APP_VERSION}
-
-kubectl apply -f k8s
-minikube service offers-service
-```
-
-Minikube asignará un puerto para que pueda acceder a su servicio. Puede usarlo en su browser o en postman.
-
-## API Endpoints
-
-- `GET /offers/ping/` - Endpoint para saber la salud del servicio
-- `GET /offers/count/` - Cuenta los registros en base de datos
-- `GET /offers/reset/` - Limpia la base de datos
-- `POST /offers/` - Crea una ofera
-- `GET /offers/{offer_id}` - Trae una oferta en específico
-- `GET /offers/` - Trae todas las ofertas 
-- `DELETE /offers/{offer_id}` - Borra una oferta
-  
-Accede a la documentación después de ejecutar la aplicación:
-- Swagger UI: `http://localhost:9000/docs`
-
----
-
-El proyecto contempla dos paquetes de pruebas: pruebas unitarias y pruebas de API (Integración).
-
-### Unitarias
-
-Si está usando pytest para sus pruebas, utilice [fixtures](https://docs.pytest.org/en/stable/explanation/fixtures.html) para crear recursos reutilizables en las pruebas. Esto mejorará su código y permitirá que las pruebas sean consistentes. Estos fixtures deben estar ubicados en un archivo `conftest.py` y no en los archivos de pruebas.
-
-Para ejecutar las pruebas unitarias y establecer el porcentaje mínimo de cobertura del conjunto de pruebas en 70%, ejecuta el siguiente comando:
+Aplica un manifiesto de Kubernetes similar al de rf005 , asegurándote de que el nombre de la imagen, el puerto y las 5 variables de entorno de servicio sean correctas.
 
 ```bash
-poetry install
-poetry run pytest --cov=src -v -s --cov-fail-under=70 --cov-report term-missing
+minikube image build -t rf004-app:v1.0.0 .
+eval $(minikube docker-env)
+docker build -t rf004-app:v1.0.0 .
+kubectl apply -f k8s/local/rf004_app.yaml
+kubectl port-forward service/rf004-app-service 800x:80
 ```
 
-Por último, recuerde que la configuración de pytest está en el archivo `pyproject.toml`, ajuste la sección dependiendo de las necesidades que tenga. Acuda a la [documentación](https://docs.pytest.org/en/stable/reference/customize.html) si lo requiere.
+## Endpoints de la API
 
-### Integración
-
-Las pruebas de integración se realizan por medio de postman y newman. Encontrará un archivo de colección de postman en la carpeta `tests/api/` el cuál puede cargar en su aplicación de postman de manera local. Posteriormente puede ejecutar `Run collection` para verificar que la aplicación está funcionando correctamente.
-
-Estas pruebas son ejecutadas de manera automática en los pipelines de pruebas.
-
-## Licencia
-
-Este proyecto está licenciado bajo la Licencia MIT - ver el archivo [LICENSE](LICENSE) para más detalles.
+| Método | Ruta                     | Descripción                                                             | Auth |
+|-------:|--------------------------|-------------------------------------------------------------------------|:----:|
+| GET    | `/rf004/ping`            | Verifica el estado de salud del servicio.                               |  –   |
+| GET    | `/rf004/posts/{post_id}/offers` | Crea una nueva oferta en una publicación    | ✅   |
 
 ## Autor
 
-- César Forero - [ca.forero10@uniandes.edu.co](mailto:ca.forero10@uniandes.edu.co)
-- Javier Barrera (adaptación de la documentación acorde a la API desarrollada)  - [js.barrerat1@uniandes.edu.co](mailto:js.barrerat1@uniandes.edu.co)
+Javier Barrera - [js.barrerat1@uniandes.edu.co](mailto:js.barrerat1@uniandes.edu.co)
