@@ -1,4 +1,4 @@
-from typing import List, Optional, Dict 
+from typing import List, Optional, Dict
 import httpx
 
 from ...domain.ports.ports import (
@@ -15,8 +15,6 @@ from ...errors import (
     AuthorizationError,
     EntityNotFoundError,
 )
-
-
 class HTTPClientBase:
     def __init__(self, base_url: str, timeout: float = 10.0):
         if not base_url:
@@ -35,6 +33,12 @@ class HTTPClientBase:
 
 class HTTPUsersClientAdapter(HTTPClientBase, UsersClientPort):
     """Adaptador HTTP para el servicio de usuarios."""
+
+    async def ping(self) -> None:
+        resp = await self._request("GET", "/ping")
+        if resp.status_code != 200:
+            raise ServiceCommunicationError("users")
+
     async def get_user_from_token(self, token: str) -> Optional[User]:
         bearer = token if token.startswith("Bearer ") else f"Bearer {token}"
         resp = await self._request("GET", "/users/me", headers={"Authorization": bearer})
@@ -55,6 +59,12 @@ class HTTPUsersClientAdapter(HTTPClientBase, UsersClientPort):
 
 class HTTPPostsClientAdapter(HTTPClientBase, PostsClientPort):
     """Adaptador HTTP para el servicio de Publicaciones."""
+
+    async def ping(self) -> None:
+        resp = await self._request("GET", "/ping")
+        if resp.status_code != 200:
+            raise ServiceCommunicationError("posts")
+
     async def get_post_by_id(self, post_id: str) -> Optional[Post]:
         resp = await self._request("GET", f"/posts/{post_id}")
 
@@ -67,6 +77,12 @@ class HTTPPostsClientAdapter(HTTPClientBase, PostsClientPort):
 
 class HTTPRoutesClientAdapter(HTTPClientBase, RoutesClientPort):
     """Adaptador HTTP para el servicio de Rutas."""
+
+    async def ping(self) -> None:
+        resp = await self._request("GET", "/ping")
+        if resp.status_code != 200:
+            raise ServiceCommunicationError("routes")
+
     async def get_route_by_id(self, route_id: str) -> Optional[Route]:
         resp = await self._request("GET", f"/routes/{route_id}")
 
@@ -79,6 +95,12 @@ class HTTPRoutesClientAdapter(HTTPClientBase, RoutesClientPort):
 
 class HTTPOffersClientAdapter(HTTPClientBase, OffersClientPort):
     """Adaptador HTTP para el servicio de Ofertas."""
+
+    async def ping(self) -> None:
+        resp = await self._request("GET", "/ping")
+        if resp.status_code != 200:
+            raise ServiceCommunicationError("offers")
+
     async def get_offers_by_post_id(self, post_id: str) -> List[Offer]:
         resp = await self._request("GET", "/offers/", params={"post": post_id})
 
@@ -86,11 +108,17 @@ class HTTPOffersClientAdapter(HTTPClientBase, OffersClientPort):
             data = resp.json()
             return [Offer(**item) for item in data]
         if resp.status_code == 404:
-            return []  
+            return []
         raise ServiceCommunicationError("offers")
+
 
 class HTTPScoreClientAdapter(HTTPClientBase, ScoreClientPort):
     """Adaptador HTTP para el servicio de Scores."""
+
+    async def ping(self) -> None:
+        resp = await self._request("GET", "/ping")
+        if resp.status_code != 200:
+            raise ServiceCommunicationError("scores")
 
     async def get_scores_for_offers(
         self, offers: List[Offer], route: Route
@@ -102,7 +130,6 @@ class HTTPScoreClientAdapter(HTTPClientBase, ScoreClientPort):
         if not offers:
             return {}
 
-        # Prepara el payload para la solicitud batch al servicio de scores.
         payload = [
             {
                 "offer_id": offer.id,
