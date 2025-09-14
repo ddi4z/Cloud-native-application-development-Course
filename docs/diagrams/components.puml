@@ -14,29 +14,67 @@ skinparam database {
   FontColor white
 }
 
-title "Vista Funcional Componentes"
+title "Vista Funcional Componentes (arquitectura actualizada + scores_app)"
 
 actor User
 
 frame "env" {
-  component "users_app" as users_app
-  component "posts_app" as posts_app
-  component "offers_app" as offers_app
-  component "routes_app" as routes_app
 
-  database "\nusers_db\n" as users_db
-  database "\nposts_db\n" as posts_db
-  database "\noffers_db\n" as offers_db
-  database "\nroutes_db\n" as routes_db
+  frame "APIs REST expuestas (RF-003..005)" {
+    component "rf003_app\n(Crear publicación)" as rf003_app
+    component "rf004_app\n(Consultar post + ofertas)" as rf004_app
+    component "rf005_app\n(Crear oferta)" as rf005_app
+  }
 
-  User ..> users_app
-  User ..> posts_app
-  User ..> offers_app
-  User ..> routes_app
+  frame "Servicios de dominio (APIs internas)" {
+    component "users_app"   as users_app
+    component "routes_app"  as routes_app
+    component "posts_app"   as posts_app
+    component "offers_app"  as offers_app
+    component "scores_app\n(Score de ofertas)" as scores_app
+  }
 
-  users_app --> users_db
-  posts_app --> posts_db
-  offers_app --> offers_db
-  routes_app --> routes_db
+  database "PostgreSQL (Cloud)\nplatform_db" as platform_db
+
+  note right of platform_db
+    Tablas por servicio:
+    - users.*
+    - routes.*
+    - posts.*
+    - offers.*
+    - scores.*
+    Sin FKs cruzadas ni joins entre dominios.
+    Acceso a tablas solo por su servicio dueño.
+  end note
+
+  ' Interacción del usuario: solo con los nuevos RF via API REST
+  User ..> rf003_app
+  User ..> rf004_app
+  User ..> rf005_app
+
+  ' Orquestación RF-003 (sin scores_app)
+  rf003_app --> users_app
+  rf003_app --> routes_app
+  rf003_app --> posts_app
+
+  ' Orquestación RF-004
+  rf004_app --> users_app
+  rf004_app --> posts_app
+  rf004_app --> offers_app
+  rf004_app --> routes_app
+  rf004_app --> scores_app
+
+  ' Orquestación RF-005
+  rf005_app --> users_app
+  rf005_app --> posts_app
+  rf005_app --> offers_app
+  rf005_app --> scores_app
+
+  ' Persistencia: una sola BD en la nube; cada servicio usa sus propias tablas
+  users_app  --> platform_db
+  routes_app --> platform_db
+  posts_app  --> platform_db
+  offers_app --> platform_db
+  scores_app --> platform_db
 }
 @enduml
