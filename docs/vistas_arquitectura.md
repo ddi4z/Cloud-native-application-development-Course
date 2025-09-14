@@ -24,7 +24,7 @@ Todos son **desplegables de forma independiente** y se comunican entre sí vía 
 (sin acceso directo a datos ajenos).
 
 ### Persistencia (cilindro azul)
-- **Una sola base de datos** **PostgreSQL en la nube** (ej: Cloud SQL, RDS, Neon).  
+- **Una sola base de datos** **PostgreSQL en la nube** (en AWS).  
 - Cada servicio **posee sus propias tablas** (y/o *schema* lógico) dentro de esa BD única:  
   - `users.*`  
   - `routes.*`  
@@ -138,4 +138,5 @@ Se opta por utilizar una estructura similar a las 4 aplicaciones. Tomando como b
 | Docker          | Plataforma de contenedores para empaquetar y ejecutar aplicaciones. Todas las aplicaciones se empaquetaron con esto. | Ejecución |
 | Minikube        | Herramienta para correr Kubernetes en local. | Despliegue |
 | GitHub Actions  | Servicio de CI/CD integrado en GitHub. Para el proyecto solo se utilizo para integración continua: linter y la ejecución de las pruebas. Además, se utilizaron en los evaluadores. | Despliegue |
+
 
