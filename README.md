@@ -28,11 +28,16 @@
 │   └── workflows/          # Pipelines del repositorio
 ├── k8s/                    # Archivos para despliegue en k8s
 ├── docs/                   # Archivos de documentación técnica
+├── rf003_app               # Api de creación de publicaciones
+├── rf004_app               # Api de ofertar sobre publicaciones
+├── rf005_app               # Api de consultar publicaciones y ordenarlas por score, descendiente
 ├── offers_app              # Api de ofertas
 ├── posts_app               # Api de publicaciones
 ├── routes_app              # Api de rutas
 ├── users_app               # Api de usuarios
 ├── vale.ini                # Configuración para Vale. NO MODIFICAR
+├── build-all.ps1           # Script automatizacón compilación apps
+├── deploy.ps1              # Script automatización despliegue apps
 ├── config.yaml             # Configuración del repositorio. 
 ├── Makefile                # Scripts para evaluación. 
 └── README.md               # Este archivo
