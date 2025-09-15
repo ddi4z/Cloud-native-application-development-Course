@@ -96,7 +96,13 @@ async def create_post(input_dto: UserInput, Authorization: Optional[str] = Heade
     except InvalidTokenError as e:
         raise HTTPException(status_code=401, detail=str(e))
     except ServiceCommunicationError as e:
-        raise HTTPException(status_code=503, detail=str(e))
+        return JSONResponse(
+            status_code=503,
+            content={"msg": "El servicio está temporalmente fuera de servicio."},
+        )
     except Exception:
         logger.error("Ocurrió un error fatal no controlado en RF003", exc_info=True)
-        raise HTTPException(status_code=503, detail="Error interno en RF003")
+        return JSONResponse(
+            status_code=503,
+            content={"msg": "El servicio está temporalmente fuera de servicio."},
+        )
