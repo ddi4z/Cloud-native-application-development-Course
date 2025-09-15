@@ -55,26 +55,90 @@ Cada aplicación incluye un `Dockerfile` y un archivo `README.md` con sus instru
 
 ## Ejecución en Minikube
 
-Para desplegar las aplicaciones en Minikube, siga estos pasos:
+Para desplegar las aplicaciones, siga estos pasos:
+---
 
-0. Cargar las imágenes de Docker en Minikube:
-   ```bash
-   minikube image load <nombre-imagen>
-   ```
+### 0) Prerrequisitos
+- AWS CLI configurado (`aws configure`), `kubectl`, `docker`, y (opcional) `eksctl`, `helm`.
+- Cuenta/rol con permisos para EKS, ECR, RDS, IAM.
+- Variables que usarás durante los pasos:
+```bash
+export AWS_REGION=<tu-region>          # ej: us-east-1
+export AWS_ACCOUNT_ID=<tu-account-id>
+export ECR="${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com"
+export NAMESPACE=platform              # o el que uses en tus manifests
+```
 
-1. Iniciar Minikube:
-   ```bash
-   minikube start
-   ```
+### 1) Crear cluster (si no existe)
+```bash
+eksctl create cluster --name platform-cluster \
+  --version 1.29 --region $AWS_REGION \
+  --nodegroup-name ng-ondemand --nodes 2 --nodes-min 2 --nodes-max 4
+kubectl config use-context arn:aws:eks:$AWS_REGION:$AWS_ACCOUNT_ID:cluster/platform-cluster
+kubectl create namespace $NAMESPACE
+```
 
-2. Aplicar los archivos de configuración de Kubernetes:
-   ```bash
-   kubectl apply -f k8s
-   ```
+### 2) Crear repos en ECR y autenticar Docker
+```bash
+aws ecr get-login-password --region $AWS_REGION \
+ | docker login --username AWS --password-stdin $ECR
 
-3. Exponer el servicio deseado:
-   ```bash
-   minikube service <NombreServicio>
-   ```
+for repo in users_app routes_app posts_app offers_app scores_app rf003_app rf004_app rf005_app; do
+  aws ecr create-repository --repository-name $repo --region $AWS_REGION >/dev/null 2>&1 || true
+done
 
-4. Acceder a la aplicación a través de la URL generada por Minikube.
+```
+
+### 3) Construir y publicar imágenes en ECR
+```bash
+# ejemplo para posts_app (repite para cada app)
+docker build -t posts_app:1.0.0 ./posts_app
+docker tag posts_app:1.0.0 $ECR/posts_app:1.0.0
+docker push $ECR/posts_app:1.0.0
+
+```
+* Asegurarse de actualizar la imagen en los manifests de k8s al URI de ECR correspondiente (ej.: $ECR/posts_app:1.0.0).
+
+### 4) Provisionar RDS PostgreSQL
+```bash
+kubectl -n $NAMESPACE create secret generic platform-db \
+  --from-literal=DATABASE_URL="postgresql://<user>:<pass>@<endpoint-rds>:5432/<dbname>"
+
+```
+
+### 5) Instalar el Ingress Controler (Ngix)
+```bash
+helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
+helm repo update
+helm upgrade --install ingress-nginx ingress-nginx/ingress-nginx \
+  --namespace ingress-nginx --create-namespace
+
+```
+
+
+### 6) Aplicar manifiestos de K8s
+```bash
+kubectl apply -n $NAMESPACE -f k8s/
+# Si tienes una carpeta específica para cloud:
+# kubectl apply -n $NAMESPACE -f k8s/cloud/
+```
+
+### 7) Verificar despliegue
+```bash
+kubectl get pods,svc,ingress -n $NAMESPACE
+```
+
+### 8) Actualizar imágenes en despliegues (si cambia de versión)
+```bash
+kubectl -n $NAMESPACE set image deployment/posts-app posts-app-container=$ECR/posts_app:1.0.1
+# Repite por servicio; observa rolling update:
+kubectl rollout status deployment/posts-app -n $NAMESPACE
+
+```
+### 9) Limpieza (Opcional)
+```bash
+kubectl delete ns $NAMESPACE
+eksctl delete cluster --name platform-cluster --region $AWS_REGION
+
+```
+
