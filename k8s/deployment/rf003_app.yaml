@@ -41,8 +41,7 @@ spec:
             value: "http://posts-app-service"
           - name: ROUTES_SERVICE_URL
             value: "http://routes-app-service"
-          - name: OFFERS_SERVICE_URL
-            value: "http://offers-app-service"
+
 ---
 # Service to expose the rf003_app pod
 apiVersion: v1
