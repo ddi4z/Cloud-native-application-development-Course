@@ -1,26 +1,29 @@
 FROM python:3.11-slim AS builder
 
-WORKDIR /app
-
-RUN pip install poetry
-COPY pyproject.toml poetry.lock README.md ./
-
-RUN poetry config virtualenvs.create false \
-    && poetry install --only main --no-interaction --no-ansi --no-root
-
-COPY src/ /app/src
-
-FROM python:3.11 AS runner
+RUN pip install poetry \
+    && poetry self add poetry-plugin-export
 
 WORKDIR /app
+COPY pyproject.toml poetry.lock ./
 
-RUN groupadd -r noroot && useradd --no-create-home -r -g noroot noroot
-COPY --from=builder /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages
-COPY --from=builder /usr/local/bin /usr/local/bin
-COPY --from=builder /app/src ./src
+# Export dependencies to requirements.txt
+RUN poetry export -f requirements.txt --without-hashes -o requirements.txt
 
-ENV PYTHONPATH="/app/src"
-RUN chown -R noroot:noroot /app
-USER noroot
+FROM python:3.11-slim AS runner
+
+WORKDIR /app
+
+ENV PYTHONPATH=/app/src
+
+COPY --from=builder /app/requirements.txt ./
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY . .
+
+# Use an user without root privileges
+RUN groupadd -r appuser && useradd -r -g appuser appuser
+RUN chown -R appuser:appuser /app
+USER appuser
+
 EXPOSE 8005
 CMD ["uvicorn", "rf005.entrypoints.api.main:app", "--host", "0.0.0.0", "--port", "8005"]

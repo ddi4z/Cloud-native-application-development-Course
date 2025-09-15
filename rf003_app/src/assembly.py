@@ -12,7 +12,7 @@ url_services = {}
 
 for service in services:
     service_name = f"{service}_SERVICE_URL"
-    if service_name not in os.eniron:
+    if service_name not in os.environ:
         raise EnvironmentError(f"{service}_SERVICE_URL environment variable not set")
     
     url_services[service] = os.environ[service_name]

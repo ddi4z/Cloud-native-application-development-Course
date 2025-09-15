@@ -2,15 +2,18 @@
 # This can be improved by using a for_each loop if the number of repositories increases
 # CAMBIAR POR LOS REPOSITORIOS
 
-module "add_repository" {
-  source = "../../modules/repository"
+# made a for loop to generate the repositories for: users, scores, offers, routes. 
 
-  keep_tags_number = var.keep_tags_number
-  repository_name  = var.add_repository_name
+variable "apps" {
+  type    = list(string)
+  default = ["users", "scores", "offers", "routes", "posts", "rf003", "rf004", "rf005"]
 }
 
-module "multiply_repository" {
-  source           = "../../modules/repository"
+module "apps_repositories" {
+  source = "../../modules/repository"
+
+  for_each = toset([for app in var.apps : "${app}-repository"])
+
   keep_tags_number = var.keep_tags_number
-  repository_name  = var.multiply_repository_name
+  repository_name  = each.value
 }

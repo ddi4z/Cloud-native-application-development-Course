@@ -18,7 +18,7 @@ spec:
     spec:
       containers:
       - name: offers-app
-        image: 637423520989.dkr.ecr.us-east-1.amazonaws.com/deployment/dann-grp19:offers-app-v1.0.0
+        image: 637423520989.dkr.ecr.us-east-1.amazonaws.com/offers-repository:offers-app-v1.0.0
         ports:
         - containerPort: 3003
         livenessProbe:

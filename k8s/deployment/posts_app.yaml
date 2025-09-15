@@ -18,7 +18,7 @@ spec:
     spec:
       containers:
         - name: posts-app
-          image: 637423520989.dkr.ecr.us-east-1.amazonaws.com/deployment/dann-grp19:posts-app-v1.0.0
+          image: 637423520989.dkr.ecr.us-east-1.amazonaws.com/posts-repository:posts-app-v1.0.0
           imagePullPolicy: IfNotPresent # Always
           ports:
             - containerPort: 9000

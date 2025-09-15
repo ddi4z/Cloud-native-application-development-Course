@@ -18,7 +18,7 @@ spec:
       # Removed initContainers section
       containers:
         - name: scores-app
-          image: 637423520989.dkr.ecr.us-east-1.amazonaws.com/deployment/dann-grp19:scores-app-v1.0.0
+          image: 637423520989.dkr.ecr.us-east-1.amazonaws.com/scores-repository:scores-app-v1.0.0
           ports:
             - containerPort: 9000
           env:
