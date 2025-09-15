@@ -17,7 +17,7 @@ spec:
       containers:
       - name: rf005-app
         image: 637423520989.dkr.ecr.us-east-1.amazonaws.com/rf005-repository:rf005-app-v1.0.0 # URI
-        imagePullPolicy: IfNotPresent
+        imagePullPolicy: Always
         ports:
         - containerPort: 8005
         resources:
@@ -43,6 +43,8 @@ spec:
             value: "http://routes-app-service"
           - name: OFFERS_SERVICE_URL
             value: "http://offers-app-service"
+          - name: SCORES_SERVICE_URL
+            value: "http://scores-app-service"
 ---
 # Service to expose the rf005_app pod
 apiVersion: v1

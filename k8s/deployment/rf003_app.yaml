@@ -17,7 +17,7 @@ spec:
       containers:
       - name: rf003-app
         image: 637423520989.dkr.ecr.us-east-1.amazonaws.com/rf003-repository:rf003-app-v1.0.0 # URI
-        imagePullPolicy: IfNotPresent
+        imagePullPolicy: Always
         ports:
         - containerPort: 8003
         resources:
