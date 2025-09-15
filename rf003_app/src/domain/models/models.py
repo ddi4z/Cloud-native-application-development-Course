@@ -28,9 +28,9 @@ class Post(BaseModel):
 
 class CreatedPost(BaseModel):
     """CreatedPost."""
-    routeId: UUID
+    Id: str
     userId: datetime
-    createdAt: UUID
+    createdAt: str
 
 
 # Route
@@ -142,15 +142,6 @@ class RouteCreateResponse(BaseModel):
     id: str
     createdAt: str
 
-
-    # posts
-class Post(BaseModel):
-    """Modelo resumido para la respuesta del servicio de publicaciones."""
-    id: str
-    routeId: str
-    userId: str
-    expireAt: str
-    createdAt: str
 
 class CreatePostResponse(BaseModel):
     """Modelo para la respuesta de creación de post"""
