@@ -16,4 +16,5 @@ build_images.ps1
 # k8s secret
 k8s/deployment/secret.yaml
 
+rf003_appn/
 deploy_registry_database.ps1

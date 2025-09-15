@@ -1,11 +1,14 @@
 from functools import wraps
 from requests.exceptions import RequestException
-import httpx ## CAMBIO: Importamos httpx en lugar de requests
+import httpx 
 from typing import List, Optional
+import logging
 
 from src.domain.ports.rf003_port import UsersPort, RoutesPort, PostsPort, RouteCreateInput
 from src.domain.models.models import User, Route, Post, CreatedRoute, CreatedPost, CreatePost
 from src.errors import ServiceCommunicationError
+
+logger = logging.getLogger(__name__)
 
 def catch_unavailable_service(service_name: str):
     def decorator(func):
@@ -13,71 +16,77 @@ def catch_unavailable_service(service_name: str):
         async def wrapper(*args, **kwargs): 
             try:
                 return await func(*args, **kwargs) 
-            except (httpx.RequestError, httpx.ConnectError, httpx.TimeoutException): 
+            except (httpx.RequestError, httpx.ConnectError, httpx.TimeoutException) as e: 
+                logger.error(f"Error comunicando con {service_name}: {e}")
                 raise ServiceCommunicationError(f'{service_name} service is not available')
         return wrapper
     return decorator
 
+
 class HTTPClientBase:
     def __init__(self, base_url: str):
         self.base_url = base_url.rstrip("/")
-        self.client = httpx.AsyncClient(base_url=self.base_url)
+        self.client = httpx.AsyncClient(base_url=self.base_url, follow_redirects=True)
 
     async def close(self):
         await self.client.aclose()
 
+
 # Users
-class HTTPUsersClientAdapter(HTTPClientBase, UsersPort):
-    "Implementation of UsersPort."
-
-    def __init__(self, user_service_url: str):
-        super().__init__(base_url=user_service_url)
-
-    @catch_unavailable_service("Users")
-    async def get_user_from_token(self, token:str) -> Optional[User]: 
-        "Validate token and get user. Return None if token invalid"
-        headers = {"Authorization": f"Bearer {token}"}
-        response = await self.client.get("/users/me", headers=headers)
-
-        if response.status_code != 200:
-            return None
-        return User(**response.json())
-    
-    @catch_unavailable_service("Users")
-    async def ping(self) -> None: 
-        response = await self.client.get("/users/ping") 
-        if response.status_code != 200:
-            raise ServiceCommunicationError("Users service is not working")
-
-# Routes
 class HTTPRoutesClientAdapter(HTTPClientBase, RoutesPort):
     """Implementation of RoutesPort."""
 
-    def __init__(self, route_service_url:str):
+    def __init__(self, route_service_url: str):
         super().__init__(base_url=route_service_url)
 
     @catch_unavailable_service("Routes")
-    async def find_route_by_flight_id(self, flightId:str) -> Optional[Route]:
+    async def find_route_by_flight_id(self, flightId: str) -> Optional[Route]:
+        # ✅ usa /routes/ (con slash) para evitar 307
         params = {"flight": flightId}
-        response = await self.client.get("/routes", params=params)
+        response = await self.client.get("/routes/", params=params)
         
         if response.status_code != 200:
             return None
+        
+        items = response.json() or []
+        items = [r for r in items if r.get("flightId") == flightId]
+        return Route(**items[0]) if items else None
 
-        response_data = response.json()
-        if not response_data:
-            return None # No se encontró la ruta, devolvemos None
-
-        route_data = response_data[0] 
-        return Route(**route_data)
-    
-    @catch_unavailable_service('Routes')
+    @catch_unavailable_service("Routes")
     async def create_route(self, route_dto: RouteCreateInput) -> Optional[CreatedRoute]:
-        response = await self.client.post("/routes", json=route_dto.model_dump())
+        # ✅ usa /routes/ (con slash) para evitar 307
+        response = await self.client.post("/routes/", json=route_dto.model_dump())
 
-        if response.status_code != 201:
+        if response.status_code == 201:
+            return CreatedRoute(**response.json())
+
+        if response.status_code == 412 and "flightId ya existe" in (response.text or ""):
+            import logging
+            logging.getLogger(__name__).warning(
+                "[RF003->ROUTES] POST /routes/ respondió 412 (flightId ya existe). "
+                "Intentando recuperar trayecto existente..."
+            )
+            existing = await self.find_route_by_flight_id(route_dto.flightId)
+            if existing:
+                return CreatedRoute(**existing.model_dump())
+            logging.getLogger(__name__).error(
+                "[RF003->ROUTES] 412 recibido pero no se pudo recuperar el trayecto por flightId."
+            )
             return None
-        return CreatedRoute(**response.json())
+
+        import logging
+        logging.getLogger(__name__).error(
+            f"[RF003->ROUTES] POST /routes/ devolvió {response.status_code}: {response.text}"
+        )
+        return None
+
+    @catch_unavailable_service("Routes")
+    async def ping(self) -> None:
+        # /routes/ping no cambia
+        response = await self.client.get("/routes/ping")
+        if response.status_code != 200:
+            raise ServiceCommunicationError("Routes service is not working")
+
     
     @catch_unavailable_service("Routes")
     async def ping(self) -> None:
@@ -85,33 +94,54 @@ class HTTPRoutesClientAdapter(HTTPClientBase, RoutesPort):
         if response.status_code != 200:
             raise ServiceCommunicationError("Routes service is not working")
 
+
+
 # Posts
 class HTTPPostsClientAdapter(HTTPClientBase, PostsPort):
     """Implementation of PostsPort."""
-
-    def __init__(self, post_service_url:str):
+    def __init__(self, post_service_url: str):
         super().__init__(base_url=post_service_url)
 
-    async def get_post_from_userid_route_id(self, user_id:str, route_id:str) -> Optional[List[Post]]: 
-        params = {'route': route_id, 'owner': user_id}
-        response = await self.client.get("/posts", params=params) 
+    async def get_post_from_userid_route_id(self, user_id: str, route_id: str) -> Optional[List[Post]]:
+        # En query params, usa strings
+        params = {"route": str(route_id), "owner": str(user_id)}
+        # Mejor con slash final para evitar 307 si el router lo exige
+        response = await self.client.get("/posts/", params=params)
+
         if response.status_code != 200:
-            return [] 
+            return []
 
-        # Solo si el status es 200, procesa el JSON
-        response_data = response.json()
-        if not response_data:
-            return [] 
-        
-        return [Post(**post_data) for post_data in response_data]
-    
+        raw = response.json() or []
+        normalized: List[Post] = []
+
+        for item in raw:
+            d = dict(item)
+            # Normaliza nombres de campos según lo que envíe posts_app
+            if "ownerId" not in d and "userId" in d:
+                d["ownerId"] = d["userId"]
+            # (si tu modelo Post usa "id", "routeId", "createdAt" etc., no hace falta tocar)
+            normalized.append(Post(**d))
+
+        return normalized
+
     @catch_unavailable_service('Posts')
-    async def create_post(self, create_post_dto: CreatePost) -> Optional[CreatedPost]: 
-        response = await self.client.post("/posts", json=create_post_dto.model_dump()) 
+    async def create_post(self, create_post_dto: CreatePost) -> Optional[CreatedPost]:
+        payload = create_post_dto.model_dump(mode="json")
+        response = await self.client.post("/posts/", json=payload)
 
-        if response.status_code != 201:
-            return None
-        return CreatedPost(**response.json())
+        if response.status_code == 201:
+            return CreatedPost(**response.json())
+
+        # Duplicado: usuario ya tiene publicación para ese trayecto/fecha
+        if response.status_code in (409, 412):
+            from src.errors import ConflictError
+            raise ConflictError("El usuario ya tiene una publicación para la misma fecha")
+
+        import logging
+        logging.getLogger(__name__).error(
+            f"[RF003->POSTS] POST /posts/ devolvió {response.status_code}: {response.text}"
+        )
+        return None
 
     @catch_unavailable_service("Posts")
     async def ping(self) -> None: 
@@ -119,123 +149,23 @@ class HTTPPostsClientAdapter(HTTPClientBase, PostsPort):
         if response.status_code != 200:
             raise ServiceCommunicationError("Posts service is not working")
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-"""
-class HTTPClientBase:
-    def __init__(self, base_url: str, timeout: float = 10.0):
-        if not base_url:
-            raise ValueError("La URL base del servicio no puede estar vacía.")
-        self.base_url = base_url.rstrip("/")
-        self.timeout = timeout
-
-    async def _request(self, method: str, endpoint: str, **kwargs) -> httpx.Response:
-        url = f"{self.base_url}{endpoint}"
-        try:
-            async with httpx.AsyncClient(timeout=self.timeout) as client:
-                return await client.request(method, url, **kwargs)
-        except httpx.RequestError as exc:
-            raise ServiceCommunicationError(f"Error de comunicación con {url}: {exc}")
-        
-
 class HTTPUsersClientAdapter(HTTPClientBase, UsersPort):
-    #Adaptador HTTP para el servicio de usuarios.
-    async def get_user_from_token(self, token: str) -> UserGetResponse:
-        bearer = token if token.startswith("Bearer ") else f"Bearer {token}"
-        resp = await self._request("GET", "/users/me", headers={"Authorization": bearer})
+    """Implementation of UsersPort."""
 
-        ct = resp.headers.get("content-type", "")
-        body = resp.json() if "application/json" in ct else {}
+    def __init__(self, user_service_url: str):
+        super().__init__(base_url=user_service_url)
 
-        if resp.status_code == 200:
-            return UserGetResponse(**body)
-        elif resp.status_code == 401:
-            raise InvalidTokenError(body.get("msg", "Token inválido."))
-        elif resp.status_code == 403:
-            raise AuthorizationError(body.get("msg", "No autorizado."))
-        elif resp.status_code == 404:
-            raise EntityNotFoundError(body.get("msg", "El usuario no existe."))
-        else:
-            raise ServiceCommunicationError("users")
-    
+    @catch_unavailable_service("Users")
+    async def get_user_from_token(self, token: str) -> Optional[User]:
+        """Valida token y obtiene el usuario. Devuelve None si el token es inválido."""
+        headers = {"Authorization": f"Bearer {token}"}
+        response = await self.client.get("/users/me", headers=headers)
+        if response.status_code != 200:
+            return None
+        return User(**response.json())
 
-    
-class HTTPRoutesClientAdapter(HTTPClientBase, RoutesPort):
-    #Adaptador HTTP para el servicio de Rutas.
-    async def get_route_by_flightid(self, route_id: str) -> Optional[List[RouteGetResponse]]:
-        resp = await self._request("GET", f"/routes/{route_id}")
-
-        if resp.status_code == 200:
-            return RouteGetResponse(**resp.json())
-        elif resp.status_code == 404:
-            raise EntityNotFoundError("El trayecto no existe.")
-        else: 
-            raise ServiceCommunicationError("routes")
-    
-    async def create_route(self, route_dto: RouteCreateInput) -> Optional[RouteCreateResponse]:
-        try:
-            json_data = route_dto.model_dump_json()
-            resp = await self._request("POST", "/routes", data=json_data, headers={"Content-Type": "application/json"})
-
-            if resp.status_code == 201:  # 201 Created is the standard for successful creation
-                return RouteGetResponse(**resp.json())
-            
-            # Handle specific error cases from the service
-            elif resp.status_code == 400:
-                raise ValidationError("Los datos de entrada no son válidos.")
-            
-            elif resp.status_code == 412:
-                raise ConflictError("Trayecto ya existe o fechas son incorrectas.")
-            
-        except Exception:
-            raise ServiceCommunicationError(f"routes. Status code: {resp.status_code}")
-
-
-
-
-class HTTPPostsClientAdapter(HTTPClientBase, PostsPort):
-    #Adaptador HTTP para el servicio de Publicaciones.
-    async def get_post_from_userid_route_id(self, user_id: str, route_id: str) -> Optional[List[Post]]:
-        params = {"owner": user_id, "route": route_id}
-        resp = await self._request("GET", "/posts", params=params)
-
-        if resp.status_code == 200:
-            data = resp.json() or []
-            return [Post(**item) for item in data]
-        elif resp.status_code == 400:
-            raise ValidationError("Invalid query parameters.")
-        
-        else:
-            raise ServiceCommunicationError("Servicio temporalmente fuera servicio.")
-        
-
-    async def create_post(self, create_post_dto: CreatePost) -> CreatePostResponse:
-        try:
-            json_data = create_post_dto.model_dump_json()
-            resp = await self._request("POST", "/posts", data=json_data, headers={"Content-Type": "application/json"})
-
-            if resp.status_code == 201:  # 201 Created is the standard for successful creation
-                return CreatePostResponse(**resp.json())
-            
-            # Handle specific error cases from the service
-            elif resp.status_code == 400:
-                raise ValidationError("Los datos de entrada no son válidos.")
-            
-            elif resp.status_code == 412:
-                raise ConflictError("Trayecto ya existe o fechas son incorrectas.")
-            
-        except Exception:
-            raise ServiceCommunicationError(f"routes. Status code: {resp.status_code}")
-"""
+    @catch_unavailable_service("Users")
+    async def ping(self) -> None:
+        response = await self.client.get("/users/ping")
+        if response.status_code != 200:
+            raise ServiceCommunicationError("Users service is not working")
