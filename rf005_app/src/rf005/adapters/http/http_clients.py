@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import List, Optional, Dict
 import httpx
 
 from ...domain.ports.ports import (
@@ -6,6 +6,7 @@ from ...domain.ports.ports import (
     PostsClientPort,
     RoutesClientPort,
     OffersClientPort,
+    ScoreClientPort,
 )
 from ...domain.models.models import User, Post, Route, Offer
 from ...errors import (
@@ -14,8 +15,6 @@ from ...errors import (
     AuthorizationError,
     EntityNotFoundError,
 )
-
-
 class HTTPClientBase:
     def __init__(self, base_url: str, timeout: float = 10.0):
         if not base_url:
@@ -34,6 +33,12 @@ class HTTPClientBase:
 
 class HTTPUsersClientAdapter(HTTPClientBase, UsersClientPort):
     """Adaptador HTTP para el servicio de usuarios."""
+
+    async def ping(self) -> None:
+        resp = await self._request("GET", "/users/ping")
+        if resp.status_code != 200:
+            raise ServiceCommunicationError("users")
+
     async def get_user_from_token(self, token: str) -> Optional[User]:
         bearer = token if token.startswith("Bearer ") else f"Bearer {token}"
         resp = await self._request("GET", "/users/me", headers={"Authorization": bearer})
@@ -54,19 +59,30 @@ class HTTPUsersClientAdapter(HTTPClientBase, UsersClientPort):
 
 class HTTPPostsClientAdapter(HTTPClientBase, PostsClientPort):
     """Adaptador HTTP para el servicio de Publicaciones."""
+
+    async def ping(self) -> None:
+        resp = await self._request("GET", "/posts/ping")
+        if resp.status_code != 200:
+            raise ServiceCommunicationError("posts")
+
     async def get_post_by_id(self, post_id: str) -> Optional[Post]:
         resp = await self._request("GET", f"/posts/{post_id}")
 
         if resp.status_code == 200:
             return Post(**resp.json())
         if resp.status_code == 404:
-            # ← lo que el test "post inexistente" espera
             raise EntityNotFoundError("La publicación no existe.")
         raise ServiceCommunicationError("posts")
 
 
 class HTTPRoutesClientAdapter(HTTPClientBase, RoutesClientPort):
     """Adaptador HTTP para el servicio de Rutas."""
+
+    async def ping(self) -> None:
+        resp = await self._request("GET", "/routes/ping")
+        if resp.status_code != 200:
+            raise ServiceCommunicationError("routes")
+
     async def get_route_by_id(self, route_id: str) -> Optional[Route]:
         resp = await self._request("GET", f"/routes/{route_id}")
 
@@ -79,6 +95,12 @@ class HTTPRoutesClientAdapter(HTTPClientBase, RoutesClientPort):
 
 class HTTPOffersClientAdapter(HTTPClientBase, OffersClientPort):
     """Adaptador HTTP para el servicio de Ofertas."""
+
+    async def ping(self) -> None:
+        resp = await self._request("GET", "/offers/ping")
+        if resp.status_code != 200:
+            raise ServiceCommunicationError("offers")
+
     async def get_offers_by_post_id(self, post_id: str) -> List[Offer]:
         resp = await self._request("GET", "/offers/", params={"post": post_id})
 
@@ -86,5 +108,42 @@ class HTTPOffersClientAdapter(HTTPClientBase, OffersClientPort):
             data = resp.json()
             return [Offer(**item) for item in data]
         if resp.status_code == 404:
-            return []  
+            return []
         raise ServiceCommunicationError("offers")
+
+
+class HTTPScoreClientAdapter(HTTPClientBase, ScoreClientPort):
+    """Adaptador HTTP para el servicio de Scores."""
+
+    async def ping(self) -> None:
+        resp = await self._request("GET", "/scores/ping")
+        if resp.status_code != 200:
+            raise ServiceCommunicationError("scores")
+
+    async def get_scores_for_offers(
+        self, offers: List[Offer], route: Route
+    ) -> Dict[str, float]:
+        """
+        Obtiene los scores para una lista de ofertas haciendo una única llamada batch,
+        lo cual es más eficiente que hacer una llamada por cada oferta.
+        """
+        if not offers:
+            return {}
+
+        payload = [
+            {
+                "offer_id": offer.id,
+                "size": offer.size,
+                "baggage_value": route.bagCost,
+                "amount_offered": offer.offer,
+            }
+            for offer in offers
+        ]
+        resp = await self._request("POST", "/scores/", json=payload)
+
+        # El servicio de scores devuelve 201 en caso de éxito.
+        if resp.status_code == 201:
+            results = resp.json()
+            return {item["offer_id"]: item["score"] for item in results}
+
+        raise ServiceCommunicationError("scores")

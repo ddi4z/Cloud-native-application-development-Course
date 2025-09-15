@@ -12,7 +12,7 @@
 ---
 
 ## Entradas (request)
-- **token** (string, Bearer) — requerido.
+- **token** (string, Bearer token) — requerido.
 - **UserInput** con campos obligatorios:
   - `flightId`, `expireAt`, `plannedStartDate`, `plannedEndDate`,
   - `origin.{airportCode,country}`, `destiny.{airportCode,country}`,
@@ -52,20 +52,16 @@
 
 ## Flujos de excepción y manejo de errores
 
-| Paso | Condición / Falla | Excepción en el caso de uso | Respuesta HTTP sugerida | Acción / Efecto |
-|---|---|---|---|---|
-| 1 | Falta cualquier campo obligatorio | `ValidationError("Inputs faltantes")` | **400 Bad Request** | No se llama a servicios externos. |
-| 2 | `plannedStartDate` no es futuro | `InvalidRouteDatesError("la fecha de inicio debe estar en el futuro.")` | **422 Unprocessable Entity** | No se llama a servicios externos. |
-| 2 | `expireAt` no cumple `ahora < expireAt ≤ plannedStartDate` | `InvalidExpiredAtError("...")` | **422 Unprocessable Entity** | No se llama a servicios externos. |
-| 3 | Token ausente | `NoTokenError("Token no está en la solicitud")` | **401 Unauthorized** | No se llama a servicios externos. |
-| 4 | Token inválido / usuario no resuelto | `InvalidTokenError("Usuario no autorizado")` | **401/403** | No se continúa el flujo. |
-| 5 (buscar/crear route) | Fallo de comunicación con `routes_app` | `ServiceCommunicationError("routes")` *(lanzada por el adapter)* | **502/503** | **Sin cambios persistidos** en posts. Si se alcanzó a crear route y luego falla más adelante, ver *notas de consistencia*. |
-| 6 (verificar duplicidad) | Ya existe post del usuario para ese `route_id` | `ConflictError("Usuario ya tiene ruta para ese trayecto")` | **409 Conflict** | No se crea la publicación. |
-| 7 (crear post) | Fallo de comunicación con `posts_app` o validación fallida en posts | `ServiceCommunicationError("posts")` *(adapter)* u otro error del dominio de posts | **502/503** (si es infraestructura) / **422** (si validación) | No queda creada la publicación. El **route** puede haber quedado creado (si era nuevo) — ver *notas*. |
-
-> **Mapeo de errores externos** (adapters):  
-> - 401/403 desde `users_app` → `InvalidTokenError`.  
-> - 4xx/5xx desde `routes_app`/`posts_app` → envolver en `ServiceCommunicationError("routes|posts")` o excepción del dominio correspondiente.
+| Paso | Condición / Falla | Excepción en el caso de uso | Respuesta |
+|---|---|---|---|
+| 1 | Falta cualquier campo obligatorio | `ValidationError("Inputs faltantes")` | **400** |
+| 2 | `plannedStartDate` no es futuro | `InvalidRouteDatesError("la fecha de inicio debe estar en el futuro.")` | **412** |
+| 2 | `expireAt` no cumple `ahora < expireAt ≤ plannedStartDate` | `InvalidExpiredAtError("...")` | **412** |
+| 3 | Token ausente | `NoTokenError("Token no está en la solicitud")` | **403** |
+| 4 | Token inválido / usuario no resuelto | `InvalidTokenError("Usuario no autorizado")` | **401** |
+| 5 (buscar/crear route) | Fallo de comunicación con `routes_app` | `ServiceCommunicationError("routes")` | **503** |
+| 6 (verificar duplicidad) | Ya existe post del usuario para ese `route_id` | `ConflictError("Usuario ya tiene ruta para ese trayecto")` | **412** |
+| 7 (crear post) | Fallo de comunicación con `posts_app` o validación fallida en posts | `ServiceCommunicationError("posts")` *(adapter)* u otro error del dominio de posts | **503** 
 
 ---
 
@@ -78,4 +74,4 @@
 
 ### Observabilidad y seguridad
 - Propagar `X-Request-Id`, **logs estructurados** por paso, y métricas (intentos/éxitos/errores por tipo).  
-- Autenticación **Bearer JWT** en la capa RF; autorización basada en `user_id`.
+- Autenticación Bearer token en la capa RF; autorización basada en `user_id`.

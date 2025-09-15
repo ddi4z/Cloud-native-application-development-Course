@@ -26,4 +26,6 @@ RUN chown -R appuser:appuser /app
 USER appuser
 
 EXPOSE 8005
+
 CMD ["uvicorn", "rf005.entrypoints.api.main:app", "--host", "0.0.0.0", "--port", "8005"]
+# CMD ["uvicorn", "rf005.entrypoints.api.main:app", "--host", "0.0.0.0", "--port", "8005", "--log-level", "debug"]

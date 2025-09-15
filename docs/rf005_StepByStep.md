@@ -1,4 +1,4 @@
-# RF-005 — Obtener publicación con trayecto y ofertas (según código provisto)
+# RF-005 — Consultar Publicaciones
 
 ## Secuencia resumida (texto)
 1. `rf005_app` recibe `post_id` y `token`.
@@ -38,12 +38,12 @@
 
 ## Excepciones y manejo
 
-| Paso | Condición | Excepción (del código) | HTTP sugerido | Efecto |
-|---|---|---|---|---|
-| 1 | Token inválido | `InvalidTokenError` | 401 Unauthorized | No continúa |
-| 1 | Post no existe | `EntityNotFoundError("La publicación no existe.")` | 404 Not Found | No continúa |
-| 1 | Error de comunicación con servicios | `ServiceCommunicationError` | 502/503 | No continúa |
-| 2 | Usuario no es el dueño | `AuthorizationError` | 403 Forbidden | No continúa |
+| Paso | Condición | Excepción (del código) | HTTP sugerido 
+|---|---|---|---|
+| 1 | Token inválido | `InvalidTokenError` | 401 |
+| 1 | Post no existe | `EntityNotFoundError("La publicación no existe.")` | 404 |
+| 2 | Usuario no es el dueño | `AuthorizationError` | 403 |
+| 3 | Error de comunicación con servicios | `ServiceCommunicationError` | 503 |
 
 ---
 
@@ -52,4 +52,4 @@
   - `id`, `expireAt`, `createdAt`
   - `route` (`RouteDetails` con `flightId`, `origin/destiny`, `bagCost`, `plannedStartDate`, `plannedEndDate`)
   - `offers: List[OfferDetails]` con `score=None`
-- **HTTP 200 OK** sugerido
+- **HTTP 200 OK**

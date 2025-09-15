@@ -60,3 +60,29 @@ Rutas internas típicas: `/users/*`, `/routes/*`, `/posts/*`, `/offers/*`, `/sco
 - **AWS IAM / IRSA** – Permisos mínimos para Pods hacia servicios AWS (ECR/RDS/Secrets).
 - **Amazon CloudWatch** – Logs y métricas (y/o Prometheus/Grafana para métricas/trazas).
 - **AWS Certificate Manager (ACM)** – Certificados TLS para el Ingress/ALB.
+
+
+
+# Vista de Redes
+![Vista de redes](./diagrams/networks.png "Vista de despliegue")
+
+- **K8s con dominios lógicos (“networks”):** `users`, `posts`, `routes`, `offers`, `scores` y una **capa de APIs expuestas** (`rf003`, `rf004`, `rf005`).
+
+- **Exposición externa:** **único Ingress** (Nginx/ALB). Flujo:  
+  **Internet → Ingress → rf00x-app-service (HTTP :80) → pod rf00x_app → (interno) servicios de dominio**  
+  (`users_app`, `routes_app`, `posts_app`, `offers_app`, `scores_app`, todos como **ClusterIP**).
+
+- **Acceso a datos:** **una sola BD PostgreSQL (AWS RDS)** `platform_db`.  
+  Cada servicio accede **solo a sus tablas/esquema** (p. ej., `users.*`, `routes.*`, `posts.*`, `offers.*`, `scores.*`).  
+  **Sin llaves foráneas cruzadas ni joins** entre dominios; conexión mediante **Secrets**. *(Se eliminan los pods `*_db` y sus NodePorts.)*
+
+- **Imágenes y nube:** Contenedores publicados en **Amazon ECR**; los Pods hacen *pull* con **IAM/IRSA**. El clúster corre en **EKS**.
+
+- **Aislamiento y escalabilidad:** cada servicio se **despliega y escala** de forma independiente (HPA, requests/limits), manteniendo **propiedad de datos por dominio** y comunicación **HTTP/JSON** entre servicios.
+
+
+
+# Vista de información
+![Vista de despliegue](./diagrams/entities.png "Vista de despliegue")
+
+Modelo lógico de datos para la segunda iteración. Muestra entidades clave, atributos y relaciones.
