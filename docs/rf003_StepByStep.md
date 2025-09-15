@@ -1,5 +1,9 @@
 # RF-003 — Crear publicación
 
+![RF003 - paso a paso](./diagrams/rf003_step_diagram_1.png "Step by step 1")
+
+![Rf003 - paso a paso](./diagrams/rf003_step_diagram_2.png "Step by step 2")
+
 ## Secuencia resumida
 1. `rf003_app` recibe `token` + `UserInput`.  
 2. Valida campos y fechas.  
