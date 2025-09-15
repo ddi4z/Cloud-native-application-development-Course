@@ -1,5 +1,9 @@
 # RF-005 — Consultar Publicaciones
 
+![RF005 - paso a paso](./diagrams/rf005_step_diagram_1.png "Step by step 1")
+
+![Rf005 - paso a paso](./diagrams/rf005_step_diagram_2.png "Step by step 2")
+
 ## Secuencia resumida (texto)
 1. `rf005_app` recibe `post_id` y `token`.
 2. Llama a `users_client.get_user_from_token` y `posts_client.get_post_by_id`.
