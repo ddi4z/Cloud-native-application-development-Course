@@ -1,158 +1,121 @@
 from functools import wraps
 from requests.exceptions import RequestException
-from requests.models import Response
-import requests
+import httpx ## CAMBIO: Importamos httpx en lugar de requests
 from typing import List, Optional
-# import httpx
 
 from src.domain.ports.rf003_port import UsersPort, RoutesPort, PostsPort, RouteCreateInput
-
 from src.domain.models.models import User, Route, Post, CreatedRoute, CreatedPost, CreatePost
-#UserInput, CreatePost, RouteCreateInput, UserGetResponse, RouteGetResponse, RouteCreateResponse, Post, CreatePostResponse, PublicationResponseData, PublicationResponse
-
-from src.errors import ValidationError, InvalidTokenError, NoTokenError, InvalidRouteDatesError, InvalidExpiredAtError, ConflictError, ServiceCommunicationError, AuthorizationError, EntityNotFoundError
+from src.errors import ServiceCommunicationError
 
 def catch_unavailable_service(service_name: str):
     def decorator(func):
         @wraps(func)
-        def wrapper(*args, **kwargs):
+        async def wrapper(*args, **kwargs): 
             try:
-                return func(*args, **kwargs)
-            except (RequestException, ConnectionError, TimeoutError) as _:
+                return await func(*args, **kwargs) 
+            except (httpx.RequestError, httpx.ConnectError, httpx.TimeoutException): 
                 raise ServiceCommunicationError(f'{service_name} service is not available')
         return wrapper
     return decorator
 
+class HTTPClientBase:
+    def __init__(self, base_url: str):
+        self.base_url = base_url.rstrip("/")
+        self.client = httpx.AsyncClient(base_url=self.base_url)
 
+    async def close(self):
+        await self.client.aclose()
 
 # Users
-class HTTPUsersClientAdapter(UsersPort):
+class HTTPUsersClientAdapter(HTTPClientBase, UsersPort):
     "Implementation of UsersPort."
 
     def __init__(self, user_service_url: str):
-        self.user_service_url = user_service_url
+        super().__init__(base_url=user_service_url)
 
     @catch_unavailable_service("Users")
-    def get_user_from_token(self, token:str) -> Optional[User]:
+    async def get_user_from_token(self, token:str) -> Optional[User]: 
         "Validate token and get user. Return None if token invalid"
-        response: Response = requests.get(
-            f"{self.user_service_url}/me",
-            headers={"Authorization": f"Bearer {token}"},
-        )
+        headers = {"Authorization": f"Bearer {token}"}
+        response = await self.client.get("/users/me", headers=headers)
 
         if response.status_code != 200:
             return None
-
-        user_response = User(**response.json())
-
-        return user_response
+        return User(**response.json())
     
     @catch_unavailable_service("Users")
-    def ping(self) -> None:
-        response: Response = requests.get(f"{self.user_service_url}/ping")
+    async def ping(self) -> None: 
+        response = await self.client.get("/users/ping") 
         if response.status_code != 200:
             raise ServiceCommunicationError("Users service is not working")
-        
 
-
-
-
-
-
-class HTTPRoutesClientAdapter(RoutesPort):
+# Routes
+class HTTPRoutesClientAdapter(HTTPClientBase, RoutesPort):
     """Implementation of RoutesPort."""
 
     def __init__(self, route_service_url:str):
-        self.route_service_url = route_service_url
+        super().__init__(base_url=route_service_url)
 
     @catch_unavailable_service("Routes")
-    def find_route_by_flight_id(self, flightId:str) -> Optional[Route]:
-        response: Response = requests.get(
-            f"{self.post_service_url}/{flightId}",
-        )
-
+    async def find_route_by_flight_id(self, flightId:str) -> Optional[Route]:
+        params = {"flight": flightId}
+        response = await self.client.get("/routes", params=params)
+        
         if response.status_code != 200:
             return None
-        
-        route_response = Route(**response.json())
 
-        return route_response
+        response_data = response.json()
+        if not response_data:
+            return None # No se encontró la ruta, devolvemos None
+
+        route_data = response_data[0] 
+        return Route(**route_data)
     
     @catch_unavailable_service('Routes')
-    def create_route(self, route_dto: RouteCreateInput):
-        request_body = route_dto.model_dump()
-
-        response: Response = requests.post(
-            f"{self.route_service_url}",
-            json=request_body,
-            headers={"Content-Type": "application/json"},
-        )
+    async def create_route(self, route_dto: RouteCreateInput) -> Optional[CreatedRoute]:
+        response = await self.client.post("/routes", json=route_dto.model_dump())
 
         if response.status_code != 201:
             return None
-        
         return CreatedRoute(**response.json())
     
-
     @catch_unavailable_service("Routes")
-    def ping(self) -> None:
-        response: Response = requests.get(f"{self.route_service_url}/ping")
+    async def ping(self) -> None:
+        response = await self.client.get("/routes/ping")
         if response.status_code != 200:
             raise ServiceCommunicationError("Routes service is not working")
-    
 
-
-
-
-
-class HTTPPostsClientAdapter(PostsPort):
-    """Implementation of RoutesPort."""
+# Posts
+class HTTPPostsClientAdapter(HTTPClientBase, PostsPort):
+    """Implementation of PostsPort."""
 
     def __init__(self, post_service_url:str):
-        self.post_service_url = post_service_url
+        super().__init__(base_url=post_service_url)
 
-    @catch_unavailable_service("Posts")
-    def get_post_from_userid_route_id(self, user_id:str, route_id:str) -> Optional[List[Post]]:
-        response: Response = requests.get(
-            f"{self.post_service_url}",
-            params={'route':route_id, 'owner':user_id}
-        )
-
+    async def get_post_from_userid_route_id(self, user_id:str, route_id:str) -> Optional[List[Post]]: 
+        params = {'route': route_id, 'owner': user_id}
+        response = await self.client.get("/posts", params=params) 
         if response.status_code != 200:
-            return None
+            return [] 
 
-        try:
-            post_data_list = response.json()
-            # Check if the response is a list
-            if not isinstance(post_data_list, list):
-                # Handle cases where the endpoint might return a single object or an error
-                return None
-                
-            return [Post(**post_data) for post_data in post_data_list]
-        except (requests.exceptions.JSONDecodeError, KeyError, TypeError):
-            # Handle cases where the JSON is malformed or keys are missing
-            return None
+        # Solo si el status es 200, procesa el JSON
+        response_data = response.json()
+        if not response_data:
+            return [] 
+        
+        return [Post(**post_data) for post_data in response_data]
     
-
     @catch_unavailable_service('Posts')
-    def create_post(self, create_post_dto: CreatePost) -> Optional[CreatedPost]:
-        request_body = create_post_dto.model_dump()
-
-        response: Response = requests.post(
-            f"{self.post_service_url}",
-            json=request_body,
-            headers={"Content-Type": "application/json"},
-        )
+    async def create_post(self, create_post_dto: CreatePost) -> Optional[CreatedPost]: 
+        response = await self.client.post("/posts", json=create_post_dto.model_dump()) 
 
         if response.status_code != 201:
             return None
-        
         return CreatedPost(**response.json())
-    
 
     @catch_unavailable_service("Posts")
-    def ping(self) -> None:
-        response: Response = requests.get(f"{self.post_service_url}/ping")
+    async def ping(self) -> None: 
+        response = await self.client.get("/posts/ping") 
         if response.status_code != 200:
             raise ServiceCommunicationError("Posts service is not working")
 

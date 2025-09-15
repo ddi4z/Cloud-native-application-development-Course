@@ -1,3 +1,4 @@
+import logging
 from fastapi import APIRouter, Depends, Header, HTTPException, Response
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 import uuid
@@ -48,20 +49,17 @@ def health_check():
     "/posts", response_model=PublicationResponse, status_code=201
 )
 
-def create_post(
+async def create_post(
     input_dto: UserInput,
     token: str = Depends(get_current_token), 
     create_post_use_case: BaseUseCase = Depends(build_create_post_use_case),
 ):
-    
-    """Create new post"""
-
-    if token == "":
+    """Crea una nueva publicación."""
+    if not token:
         raise HTTPException(status_code=403, detail="Token is required")
     
     try:
-
-        created_post, expire_at, route_id, route_created_at = create_post_use_case.execute(token=token, input_dto=input_dto)
+        created_post, expire_at, route_id, route_created_at = await create_post_use_case.execute(token=token, input_dto=input_dto)
 
         route_details = RouteDetails(
             id = route_id,
@@ -70,7 +68,7 @@ def create_post(
 
         publication_response_data = PublicationResponseData(
             id = created_post.id,
-            userId=create_post.userId,
+            userId=created_post.userId,
             createdAt=created_post.createdAt,
             expireAt=expire_at,
             route=route_details
@@ -79,7 +77,6 @@ def create_post(
         api_answer = PublicationResponse(
             data=publication_response_data
         )
-
         return api_answer
     
     except ValidationError as e:
@@ -110,6 +107,13 @@ def create_post(
         )
     
     except ServiceCommunicationError as e:
+        return JSONResponse(
+            status_code=503,
+            content={"msg": "El servicio está temporalmente fuera de servicio."},
+        )
+    
+    except Exception:
+        logging.exception("Ocurrió un error fatal no controlado en RF003")
         return JSONResponse(
             status_code=503,
             content={"msg": "El servicio está temporalmente fuera de servicio."},

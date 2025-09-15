@@ -1,5 +1,7 @@
 from pydantic import BaseModel, Field, EmailStr
 from typing import List, Optional
+from uuid import UUID
+from datetime import datetime
     
 
 # User
@@ -26,9 +28,9 @@ class Post(BaseModel):
 
 class CreatedPost(BaseModel):
     """CreatedPost."""
-    id: str
-    userId: str
-    createdAt: str
+    routeId: UUID
+    userId: datetime
+    createdAt: UUID
 
 
 # Route

@@ -24,3 +24,11 @@ class ConflictError(Exception):
 class ServiceCommunicationError(Exception):
     """503: El servicio está temporalmente fuera de servicio."""
     pass
+
+class AuthorizationError(Exception):
+    """403: El usuario no tiene permiso para realizar la acción."""
+    pass
+
+class EntityNotFoundError(Exception):
+    """404: La entidad o recurso solicitado no fue encontrado."""
+    pass
