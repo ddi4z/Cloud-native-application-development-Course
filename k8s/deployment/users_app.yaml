@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: users-app
-          image: 637423520989.dkr.ecr.us-east-1.amazonaws.com/deployment/dann-grp19:users-app-v1.0.0
+          image: 637423520989.dkr.ecr.us-east-1.amazonaws.com/users-repository:users-app-v1.0.0
           ports:
             - containerPort: 9000
           env:

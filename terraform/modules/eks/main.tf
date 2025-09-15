@@ -18,9 +18,9 @@ module "eks_cluster" {
       iam_role_arn    = local.node_role_arn
       ami_type        = "AL2023_x86_64_STANDARD" # Si esto se podrá modificar convierta esto en una variable
       instance_types  = ["t3.medium"]            # Si esto se podrá modificar convierta esto en una variable
-      desired_size    = 1                        # Si esto se podrá modificar< convierta esto en una variable
+      desired_size    = 2                        # Si esto se podrá modificar convierta esto en una variable
       min_size        = 1                        # Si esto se podrá modificar convierta esto en una variable
-      max_size        = 1                        # Si esto se podrá modificar convierta esto en una variable
+      max_size        = 2                        # Si esto se podrá modificar convierta esto en una variable
     }
   }
 

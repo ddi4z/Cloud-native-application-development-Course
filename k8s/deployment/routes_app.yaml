@@ -19,7 +19,7 @@ spec:
       # Removed initContainers section
       containers:
         - name: routes-app
-          image: 637423520989.dkr.ecr.us-east-1.amazonaws.com/deployment/dann-grp19:routes-app-v1.0.0
+          image: 637423520989.dkr.ecr.us-east-1.amazonaws.com/routes-repository:routes-app-v1.0.0
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8000
