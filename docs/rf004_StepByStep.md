@@ -1,5 +1,11 @@
 # RF-004 - Crear oferta
 
+
+![RF004 - paso a paso](./diagrams/rf004_step_diagram_1.png "Step by step 1")
+
+![Rf004 - paso a paso](./diagrams/rf004_step_diagram_2.png "Step by step 2")
+
+
 ## Secuencia resumida
 
 1. `rf004_app` recibe `auth_token`, `post_id` y el objeto `offer`.
