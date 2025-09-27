@@ -13,9 +13,11 @@ from src.errors import (
     InvalidTokenError,
     MissingTokenError,
     MissingUserInformationError,
+    UnauthorizedUserStatusError,
     UserAlreadyExistsError,
     UserNotFoundError,
 )
+from src.domain.models.user_callback_request import UserCallbackRequest
 
 
 class InMemoryUserRepositoryAdapter(UserRepositoryPort):
@@ -61,7 +63,7 @@ class InMemoryUserRepositoryAdapter(UserRepositoryPort):
             password=password_hash,
             salt=salt,
             token=str(uuid4()),
-            status=UserStatus.NOT_VERIFIED,
+            status=UserStatus.PENDING_VERIFICATION,
             expireAt=time_in_1_hour,
             createdAt=time_now,
             updatedAt=time_now,
@@ -102,6 +104,11 @@ class InMemoryUserRepositoryAdapter(UserRepositoryPort):
                 (password + user.salt).encode()
             ).hexdigest()
             if user.username == username and user.password == salted_password:
+                if user.status != UserStatus.VERIFIED:
+                    raise UnauthorizedUserStatusError(
+                        "User status does not allow authentication."
+                    )
+
                 token = str(uuid4())
                 time_now = datetime.now().isoformat(timespec="seconds")
                 expire_at = self.generate_expiration_time(time_now)
@@ -138,3 +145,14 @@ class InMemoryUserRepositoryAdapter(UserRepositoryPort):
         """Delete all users."""
         self.memory_store.clear()
         self.tokens_store.clear()
+
+    def patch(self, user_id: str, callback_data: UserCallbackRequest) -> User:
+        SECRET_TOKEN = callback_data.secretToken
+        RUV = callback_data.ruv
+        SCORE = callback_data.score
+
+        token = f"{SECRET_TOKEN}:{RUV}:{SCORE}"
+        sha_token = hashlib.sha256(token.encode()).hexdigest()
+        assert sha_token == callback_data.verifyToken
+
+        return self.update(user_id, UserUpdateRequest(status=UserStatus.VERIFIED))

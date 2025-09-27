@@ -24,6 +24,8 @@ pydantic-settings = "~2.1.0 "
 python-multipart = "^0.0.20"
 sqlalchemy = "^2.0.42"
 psycopg2-binary = "^2.9.10"
+boto3 = "^1.40.40"
+requests = "^2.32.5"
 
 [tool.poetry.group.dev.dependencies]
 black = "~25.1.0"

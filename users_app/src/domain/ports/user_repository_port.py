@@ -3,6 +3,7 @@ from typing import Optional
 
 from src.domain.models.user import User
 from src.domain.models.user_creation_request import UserCreationRequest
+from src.domain.models.user_callback_request import UserCallbackRequest
 
 
 class UserRepositoryPort(ABC):
@@ -16,6 +17,11 @@ class UserRepositoryPort(ABC):
     @abstractmethod
     def update(self, user_id: str, user: User) -> User:
         """Update an existing user by ID."""
+        pass
+
+    @abstractmethod
+    def patch(self, user_id: str, user: UserCallbackRequest) -> User:
+        """Patch an existing user by ID."""
         pass
 
     @abstractmethod

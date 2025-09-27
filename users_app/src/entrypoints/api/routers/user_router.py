@@ -1,5 +1,3 @@
-from typing import Optional
-
 from fastapi import APIRouter, Depends, Response
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse, PlainTextResponse
@@ -8,13 +6,18 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from src.assembly import (
     build_authenticate_user_use_case,
     build_create_user_use_case,
+    build_create_user_with_verification_use_case,
     build_get_current_user_use_case,
     build_get_users_count_use_case,
+    build_identity_verifier_use_case,
+    build_patch_user_use_case,
     build_reset_users_use_case,
+    build_send_user_email_message_use_case,
+    build_send_user_email_use_case,
+    build_update_user_status_use_case,
     build_update_user_use_case,
 )
 from src.domain.models.auth_request import AuthRequest
-from src.domain.models.user import User
 from src.domain.models.user_creation_request import UserCreationRequest
 from src.domain.models.user_update_request import UserUpdateRequest
 from src.domain.use_cases.base_use_case import BaseUseCase
@@ -23,9 +26,12 @@ from src.errors import (
     InvalidTokenError,
     MissingTokenError,
     MissingUserInformationError,
+    UnauthorizedUserStatusError,
     UserAlreadyExistsError,
     UserNotFoundError,
 )
+from src.domain.models.user_callback_request import UserCallbackRequest
+from src.domain.models.user_verify_request import UserVerifyRequest
 
 router = APIRouter(prefix="/users")
 
@@ -34,7 +40,7 @@ router = APIRouter(prefix="/users")
 @router.post("/", status_code=201)
 def create_user(
     user_dto: UserCreationRequest,
-    use_case: BaseUseCase = Depends(build_create_user_use_case),
+    use_case: BaseUseCase = Depends(build_create_user_with_verification_use_case),
 ):
     """
     Create a new user.
@@ -99,6 +105,8 @@ def generate_token(
         return Response(status_code=404)
     except MissingUserInformationError:
         return Response(status_code=400)
+    except UnauthorizedUserStatusError:
+        return Response(status_code=403)
 
 
 # 4. Consultar información del usuario
@@ -165,3 +173,26 @@ def reset_users_database(use_case: BaseUseCase = Depends(build_reset_users_use_c
     return JSONResponse(
         content={"msg": "Todos los datos fueron eliminados"}, status_code=200
     )
+
+
+@router.patch("/status/{user_id}", status_code=201)
+def update_user_status(
+    user_id: str,
+    user_dto: UserCallbackRequest,
+    use_case: BaseUseCase = Depends(build_update_user_status_use_case),
+):
+    """
+    Update user status based on external callback data.
+    Sends an email notification after updating the user.
+    """
+    try:
+        updated_user = use_case.execute(user_id, user_dto)
+        return {
+            "id": updated_user.id,
+            "updatedAt": updated_user.updatedAt.isoformat(timespec="seconds"),
+            "status": updated_user.status,
+        }
+    except UserAlreadyExistsError:
+        return Response(status_code=412)
+    except MissingUserInformationError:
+        return Response(status_code=400)

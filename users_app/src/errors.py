@@ -32,3 +32,19 @@ class UserAlreadyExistsError(Exception):
     """Exception raised when trying to create a user that already exists."""
 
     pass
+
+
+class UnauthorizedUserStatusError(Exception):
+    """Exception raised when the user status does not allow the requested operation."""
+
+    pass
+
+class IntegrationError(Exception):
+    """Exception raised when there is an integration error with an external service."""
+
+    pass
+
+class UnavailableService(Exception):
+    """Exception raised when an external service is unavailable."""
+
+    pass
