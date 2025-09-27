@@ -1,5 +1,6 @@
 import datetime
-from unittest.mock import MagicMock
+import os
+from unittest.mock import MagicMock, patch
 
 import pytest
 from sqlalchemy import create_engine
@@ -17,7 +18,6 @@ from src.domain.use_cases.get_current_user_use_case import GetCurrentUserUseCase
 from src.domain.use_cases.get_users_count_use_case import GetUsersCountUseCase
 from src.domain.use_cases.reset_users_use_case import ResetUsersUseCase
 from src.domain.use_cases.update_user_use_case import UpdateUserUseCase
-
 
 @pytest.fixture
 def valid_user_data():

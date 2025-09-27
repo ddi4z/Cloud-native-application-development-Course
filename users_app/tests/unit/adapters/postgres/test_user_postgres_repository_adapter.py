@@ -32,7 +32,7 @@ def test_create_user_success(repo):
     assert isinstance(user, User)
     assert user.username == "new_user"
     assert user.email == "new_user@example.com"
-    assert user.status == UserStatus.NOT_VERIFIED
+    assert user.status == UserStatus.PENDING_VERIFICATION
     assert user.token is not None
     assert user.salt is not None
     assert user.password is not None

@@ -183,8 +183,8 @@ class PostgresUserRepositoryAdapter:
             db.commit()
 
     def patch(self, user_id: str, callback_data: UserCallbackRequest) -> User:
-        SECRET_TOKEN = callback_data.secretToken
-        RUV = callback_data.ruv
+        SECRET_TOKEN = os.getenv("SECRET_TOKEN")
+        RUV = callback_data.RUV
         SCORE = callback_data.score
 
         token = f"{SECRET_TOKEN}:{RUV}:{SCORE}"
