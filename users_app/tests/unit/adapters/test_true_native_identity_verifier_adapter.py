@@ -38,6 +38,7 @@ def test_verify_success(adapter, user_request):
         "http://fake-service.com",
         json=user_request.model_dump(),
         headers={"Content-Type": "application/json"},
+        timeout=10
     )
     assert result == {"status": "VERIFIED"}
 
