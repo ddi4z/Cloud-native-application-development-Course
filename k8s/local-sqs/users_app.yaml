@@ -1,0 +1,54 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: users-app
+  labels:
+    app: users-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: users-app
+  template:
+    metadata:
+      labels:
+        app: users-app
+    spec:
+      initContainers:
+      - name: wait-for-db
+        image: busybox:1.36.1
+        command: ['sh', '-c', 'until nc -z postgres-service 5432; do echo waiting for db; sleep 2; done;']
+      containers:
+        - name: users-app
+          image: users-app:v1.0.0
+          ports:
+            - containerPort: 9000
+          env:
+            - name: DATABASE_URL
+              value: postgresql://user:password@postgres-service:5432/main_db
+            - name: IDENTITY_VERIFIER_SERVICE_URL
+              value: "http://service-truenative"
+          livenessProbe:
+            httpGet:
+              path: /users/ping   # ← puse "/" delante
+              port: 9000
+            initialDelaySeconds: 5 
+            periodSeconds: 30
+            failureThreshold: 3
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: users-app-service
+  labels:
+    app: users-app
+spec:
+  type: ClusterIP 
+  selector:
+    app: users-app
+  ports:
+    - protocol: TCP
+      port: 80   
+      targetPort: 9000 

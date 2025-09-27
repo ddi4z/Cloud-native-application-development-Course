@@ -20,6 +20,7 @@ from src.domain.models.user_update_request import UserUpdateRequest
 from src.domain.models.user_callback_request import UserCallbackRequest
 from src.errors import UnauthorizedUserStatusError
 
+
 def create_sample_user(
     memory_repo, username="testuser", email="test@example.com", password="password123"
 ):
@@ -67,6 +68,7 @@ def test_update_user_missing_data(memory_repo):
     with pytest.raises(MissingUserInformationError):
         memory_repo.update(user.id, UserUpdateRequest())
 
+
 def test_authenticate_invalid_credentials(memory_repo):
     create_sample_user(memory_repo, password="secret")
     with pytest.raises(InvalidCredentialsError):
@@ -95,8 +97,6 @@ def test_get_current_user_expired_token(memory_repo):
 
     with pytest.raises(InvalidTokenError):
         memory_repo.get_current_user(user.token)
-
-
 
 
 def test_authenticate_success(memory_repo):
@@ -134,7 +134,7 @@ def test_reset_clears_memory(memory_repo):
 
 def test_patch_success(memory_repo):
     user = create_sample_user(memory_repo)
-    os.environ["SECRET_TOKEN"] = "secret"  
+    os.environ["SECRET_TOKEN"] = "secret"
     secret_token = os.getenv("SECRET_TOKEN")
     ruv = "RUV123"
     score = 90

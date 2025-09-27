@@ -25,10 +25,8 @@ def test_execute_calls_create_and_verify():
     uc = CreateUserWithVerificationUseCase(create_uc, verify_uc)
     dto = UserCreationRequest(username="john", email="john@example.com", password="pwd")
 
-
     result = uc.execute(dto)
 
-  
     create_uc.execute.assert_called_once_with(dto)
     verify_uc.execute.assert_called_once()
     args, _ = verify_uc.execute.call_args

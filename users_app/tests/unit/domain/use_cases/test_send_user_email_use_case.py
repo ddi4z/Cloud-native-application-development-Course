@@ -4,6 +4,7 @@ from unittest.mock import MagicMock
 from src.domain.use_cases.send_user_email_use_case import SendUserEmailUseCase
 from src.domain.models.user import User, UserStatus
 
+
 def make_fake_user() -> User:
     now = datetime.now()
     return User(
@@ -21,6 +22,7 @@ def make_fake_user() -> User:
         createdAt=now,
         updatedAt=now,
     )
+
 
 def test_execute_calls_send_message_with_user():
     user = make_fake_user()

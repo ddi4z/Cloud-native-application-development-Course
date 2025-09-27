@@ -1,6 +1,7 @@
 from src.domain.use_cases.base_use_case import BaseUseCase
 from src.domain.models.user_callback_request import UserCallbackRequest
 
+
 class UpdateUserStatusUseCase(BaseUseCase):
     def __init__(self, patch_user_uc: BaseUseCase, email_uc: BaseUseCase):
         self.patch_user_uc = patch_user_uc

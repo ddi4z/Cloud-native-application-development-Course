@@ -39,10 +39,12 @@ class UnauthorizedUserStatusError(Exception):
 
     pass
 
+
 class IntegrationError(Exception):
     """Exception raised when there is an integration error with an external service."""
 
     pass
+
 
 class UnavailableService(Exception):
     """Exception raised when an external service is unavailable."""
