@@ -19,6 +19,7 @@ class TrueNativeIdentityVerifierAdapter(IdentityVerifierPort):
             self.service_url,
             json=user_information.model_dump(),
             headers={"Content-Type": "application/json"},
+            timeout=10,
         )
         if response.status_code != 201:
             return None
