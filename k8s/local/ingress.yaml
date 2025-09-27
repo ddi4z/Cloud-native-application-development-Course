@@ -72,3 +72,10 @@ spec:
             name: service-truenative
             port:
               number: 80
+      - path: /credit-cards
+        pathType: Prefix
+        backend:
+          service:
+            name: credit-card-app-service
+            port:
+              number: 80

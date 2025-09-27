@@ -1,0 +1,72 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: credit-card-app-service
+  labels:
+    app: credit-card-app
+spec:
+  type: ClusterIP 
+  selector:
+    app: credit-card-app
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8000 
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: credit-card-app-deployment
+  labels:
+    app: credit-card-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: credit-card-app
+  template:
+    metadata:
+      labels:
+        app: credit-card-app
+    spec:
+      initContainers:
+      - name: wait-for-db
+        image: busybox:1.36.1
+        command: ['sh', '-c', 'until nc -z postgres-service 5432; do echo "Esperando a la BD compartida..."; sleep 2; done;']
+
+      containers:
+      - name: credit-card-app
+        image: credit-card-app:v1.0.0
+        # command: ["/bin/sh", "-c"] #
+        # args: ["sleep 3600"]      #
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8000
+        env:
+        - name: DATABASE_URL
+          value: "postgresql://user:password@postgres-service:5432/credit_cards_db"
+        - name: USERS_SERVICE_URL
+          value: "http://users-app-service"
+        - name: POLLING_QUEUE_URL
+          value: "URL_DE_TU_COLA_SQS" 
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "100m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /credit-cards/ping
+            port: 8000
+          initialDelaySeconds: 15
+          periodSeconds: 30
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /credit-cards/ping
+            port: 8000
+          initialDelaySeconds: 5
+          periodSeconds: 10

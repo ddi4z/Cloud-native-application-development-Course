@@ -5,11 +5,10 @@ from sqlalchemy import Enum as SQLEnum, DateTime
 from sqlalchemy import String, orm
 from sqlalchemy.sql import func
 
-from credit_card_app.src.domain.models.credit_card import CreditCardStatus
-from credit_card_app.src.domain.models.credit_card import CreditCardIssuer
+from src.domain.models.credit_card import CreditCardStatus
+from src.domain.models.credit_card import CreditCardIssuer
 
 Base = orm.declarative_base()
-
 
 class CreditCardDB(Base):
     __tablename__ = "credit_cards"
@@ -18,6 +17,7 @@ class CreditCardDB(Base):
     token = Column(String, nullable=False)
     userId = Column(String, nullable=False)
     lastFourDigits = Column(String, nullable=False)
+    ruv = Column(String, nullable=False, index=True)
     issuer = Column(SQLEnum(CreditCardIssuer), nullable=False)
     status = Column(SQLEnum(CreditCardStatus), nullable=False)
 

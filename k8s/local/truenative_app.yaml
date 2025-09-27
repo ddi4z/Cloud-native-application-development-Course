@@ -22,7 +22,14 @@ spec:
           imagePullPolicy: Always
           env:
             - name: "SECRET_TOKEN"
-              value: <token>
+              value: "your-actual-secure-token"
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
 
 ---
 apiVersion: cloud.google.com/v1
