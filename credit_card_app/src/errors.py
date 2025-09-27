@@ -1,34 +1,40 @@
-class UserNotFoundError(Exception):
-    """Exception raised when a user is not found."""
+class BaseError(Exception):
+    @property
+    def message(self):
+        return "Ha ocurrido un error inesperado."
 
-    pass
+class InvalidTokenError(BaseError):
+    @property
+    def message(self):
+        return "El token no es válido o está vencido."
 
+class MissingTokenError(BaseError):
+    @property
+    def message(self):
+        return "No hay token en la solicitud."
 
-class InvalidCredentialsError(Exception):
-    """Exception raised when the provided credentials are invalid."""
+class MalformedRequestError(BaseError):
+    def __init__(self, details=""):
+        self._message = f"La solicitud es incorrecta. {details}".strip()
+    
+    @property
+    def message(self):
+        return self._message
 
-    pass
+class CardAlreadyExistsError(BaseError):
+    @property
+    def message(self):
+        return "El usuario ya había almacenado la misma tarjeta de crédito."
 
+class CardExpiredError(BaseError):
+    @property
+    def message(self):
+        return "La tarjeta de crédito ya está vencida."
 
-class MissingUserInformationError(Exception):
-    """Exception raised when the provided user information is incomplete."""
-
-    pass
-
-
-class MissingTokenError(Exception):
-    """Exception raised when the authentication token is missing."""
-
-    pass
-
-
-class InvalidTokenError(Exception):
-    """Exception raised when the provided authentication token is invalid."""
-
-    pass
-
-
-class UserAlreadyExistsError(Exception):
-    """Exception raised when trying to create a user that already exists."""
-
-    pass
+class ServiceCommunicationError(BaseError):
+    def __init__(self, details=""):
+        self._message = f"Error de comunicación con un servicio externo. {details}".strip()
+        
+    @property
+    def message(self):
+        return self._message

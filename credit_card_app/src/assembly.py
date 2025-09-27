@@ -1,44 +1,32 @@
-from src.adapters.memory.user_repository_adapter import InMemoryUserRepositoryAdapter
-from src.adapters.postgres.user_repository_adapter import PostgresUserRepositoryAdapter
-from src.domain.ports.user_repository_port import UserRepositoryPort
-from src.domain.use_cases.authenticate_user_use_case import AuthenticateUserUseCase
-from src.domain.use_cases.base_use_case import BaseUseCase
-from src.domain.use_cases.create_user_use_case import CreateUserUseCase
-from src.domain.use_cases.get_current_user_use_case import GetCurrentUserUseCase
-from src.domain.use_cases.get_users_count_use_case import GetUsersCountUseCase
-from src.domain.use_cases.reset_users_use_case import ResetUsersUseCase
-from src.domain.use_cases.update_user_use_case import UpdateUserUseCase
+from src.adapters.postgres.credit_card_repository_adapter import PostgresCreditCardRepositoryAdapter
 
-# Shared in-memory repository instance for all user use cases
-# repository: UserRepositoryPort = InMemoryUserRepositoryAdapter()
-repository: UserRepositoryPort = PostgresUserRepositoryAdapter()
+print("Iniciando importación del adapter SQS...")
+from src.adapters.sqs.verification_publisher_adapter import SQSVerificationPublisherAdapter
+print("Importación del adapter SQS completada.")
+
+from src.domain.use_cases.create_credit_card_use_case import CreateCreditCardUseCase
+from src.domain.use_cases.get_credit_cards_by_user_use_case import GetCreditCardsByUserUseCase
+from src.domain.use_cases.get_credit_cards_count_use_case import GetCreditCardsCountUseCase
+from src.domain.use_cases.reset_credit_cards_use_case import ResetCreditCardsUseCase
+from src.domain.use_cases.update_credit_card_status_use_case import UpdateCreditCardStatusUseCase
 
 
-def build_create_user_use_case() -> BaseUseCase:
-    """Get create user use case."""
-    return CreateUserUseCase(repository)
+repository = PostgresCreditCardRepositoryAdapter()
+publisher = SQSVerificationPublisherAdapter()
 
 
-def build_update_user_use_case() -> BaseUseCase:
-    """Get update user use case."""
-    return UpdateUserUseCase(repository)
+# Constructores de Casos de Uso 
+def build_create_credit_card_use_case() -> CreateCreditCardUseCase:
+    return CreateCreditCardUseCase(repository, publisher)
 
+def build_get_credit_cards_by_user_use_case() -> GetCreditCardsByUserUseCase:
+    return GetCreditCardsByUserUseCase(repository)
 
-def build_authenticate_user_use_case() -> BaseUseCase:
-    """Get authenticate user use case."""
-    return AuthenticateUserUseCase(repository)
+def build_get_credit_cards_count_use_case() -> GetCreditCardsCountUseCase:
+    return GetCreditCardsCountUseCase(repository)
 
+def build_reset_credit_cards_use_case() -> ResetCreditCardsUseCase:
+    return ResetCreditCardsUseCase(repository)
 
-def build_get_current_user_use_case() -> BaseUseCase:
-    """Get current user use case."""
-    return GetCurrentUserUseCase(repository)
-
-
-def build_get_users_count_use_case() -> BaseUseCase:
-    """Get users count use case."""
-    return GetUsersCountUseCase(repository)
-
-
-def build_reset_users_use_case() -> BaseUseCase:
-    """Get reset users use case."""
-    return ResetUsersUseCase(repository)
+def build_update_credit_card_status_use_case() -> UpdateCreditCardStatusUseCase:
+    return UpdateCreditCardStatusUseCase(repository)
