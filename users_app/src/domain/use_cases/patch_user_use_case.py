@@ -1,7 +1,7 @@
 from src.domain.models.user import User
+from src.domain.models.user_callback_request import UserCallbackRequest
 from src.domain.ports.user_repository_port import UserRepositoryPort
 from src.domain.use_cases.base_use_case import BaseUseCase
-from src.domain.models.user_callback_request import UserCallbackRequest
 
 
 class PatchUserUseCase(BaseUseCase):

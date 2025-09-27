@@ -1,7 +1,8 @@
-from src.errors import UnavailableService
-
 from functools import wraps
+
 from requests.exceptions import RequestException
+
+from src.errors import UnavailableService
 
 
 def catch_unavailable_service(service_name: str):

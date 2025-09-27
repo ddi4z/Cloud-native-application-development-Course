@@ -1,9 +1,11 @@
-import pytest
-from unittest.mock import MagicMock
 from datetime import datetime
-from src.domain.use_cases.patch_user_use_case import PatchUserUseCase
+from unittest.mock import MagicMock
+
+import pytest
+
 from src.domain.models.user import User, UserStatus
 from src.domain.models.user_callback_request import UserCallbackRequest
+from src.domain.use_cases.patch_user_use_case import PatchUserUseCase
 
 
 def make_fake_user() -> User:

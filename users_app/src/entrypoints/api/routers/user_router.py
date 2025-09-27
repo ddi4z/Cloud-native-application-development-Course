@@ -18,8 +18,10 @@ from src.assembly import (
     build_update_user_use_case,
 )
 from src.domain.models.auth_request import AuthRequest
+from src.domain.models.user_callback_request import UserCallbackRequest
 from src.domain.models.user_creation_request import UserCreationRequest
 from src.domain.models.user_update_request import UserUpdateRequest
+from src.domain.models.user_verify_request import UserVerifyRequest
 from src.domain.use_cases.base_use_case import BaseUseCase
 from src.errors import (
     InvalidCredentialsError,
@@ -30,8 +32,6 @@ from src.errors import (
     UserAlreadyExistsError,
     UserNotFoundError,
 )
-from src.domain.models.user_callback_request import UserCallbackRequest
-from src.domain.models.user_verify_request import UserVerifyRequest
 
 router = APIRouter(prefix="/users")
 

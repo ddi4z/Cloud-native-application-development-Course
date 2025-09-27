@@ -9,6 +9,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 from src.domain.models.user import User, UserStatus
+from src.domain.models.user_callback_request import UserCallbackRequest
 from src.domain.models.user_creation_request import UserCreationRequest
 from src.domain.models.user_db import Base, UserDB
 from src.domain.models.user_update_request import UserUpdateRequest
@@ -21,7 +22,6 @@ from src.errors import (
     UserAlreadyExistsError,
     UserNotFoundError,
 )
-from src.domain.models.user_callback_request import UserCallbackRequest
 
 load_dotenv()
 

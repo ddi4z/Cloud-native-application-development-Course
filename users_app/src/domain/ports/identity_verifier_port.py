@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+
 from src.domain.models.user_verify_request import UserVerifyRequest
 
 

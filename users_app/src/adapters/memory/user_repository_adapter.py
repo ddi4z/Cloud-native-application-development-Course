@@ -5,6 +5,7 @@ from typing import Dict, Optional
 from uuid import uuid4
 
 from src.domain.models.user import User, UserStatus
+from src.domain.models.user_callback_request import UserCallbackRequest
 from src.domain.models.user_creation_request import UserCreationRequest
 from src.domain.models.user_update_request import UserUpdateRequest
 from src.domain.ports.user_repository_port import UserRepositoryPort
@@ -17,7 +18,6 @@ from src.errors import (
     UserAlreadyExistsError,
     UserNotFoundError,
 )
-from src.domain.models.user_callback_request import UserCallbackRequest
 
 
 class InMemoryUserRepositoryAdapter(UserRepositoryPort):

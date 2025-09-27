@@ -1,8 +1,10 @@
 from datetime import datetime, timedelta
-import pytest
 from unittest.mock import MagicMock
-from src.domain.use_cases.send_user_email_use_case import SendUserEmailUseCase
+
+import pytest
+
 from src.domain.models.user import User, UserStatus
+from src.domain.use_cases.send_user_email_use_case import SendUserEmailUseCase
 
 
 def make_fake_user() -> User:

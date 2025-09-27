@@ -1,7 +1,9 @@
-import pytest
 from unittest.mock import MagicMock
-from src.domain.use_cases.identity_verifier_use_case import IdentityVerifierUseCase
+
+import pytest
+
 from src.domain.models.user_verify_request import UserVerifyRequest
+from src.domain.use_cases.identity_verifier_use_case import IdentityVerifierUseCase
 
 
 def make_fake_request() -> UserVerifyRequest:

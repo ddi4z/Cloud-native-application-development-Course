@@ -1,9 +1,11 @@
-from datetime import datetime, timedelta
+import hashlib
 import os
+from datetime import datetime, timedelta
 
 import pytest
 
 from src.domain.models.user import UserStatus
+from src.domain.models.user_callback_request import UserCallbackRequest
 from src.domain.models.user_creation_request import UserCreationRequest
 from src.domain.models.user_update_request import UserUpdateRequest
 from src.errors import (
@@ -11,14 +13,10 @@ from src.errors import (
     InvalidTokenError,
     MissingTokenError,
     MissingUserInformationError,
+    UnauthorizedUserStatusError,
     UserAlreadyExistsError,
     UserNotFoundError,
 )
-
-import hashlib
-from src.domain.models.user_update_request import UserUpdateRequest
-from src.domain.models.user_callback_request import UserCallbackRequest
-from src.errors import UnauthorizedUserStatusError
 
 
 def create_sample_user(

@@ -1,11 +1,11 @@
 import json
 import logging
+
 import boto3
 
-
-from src.errors import IntegrationError
 from src.domain.models.user import User
 from src.domain.ports.message_queue_port import MessageQueuePort
+from src.errors import IntegrationError
 
 
 class SQSMessageQueueAdapter(MessageQueuePort):

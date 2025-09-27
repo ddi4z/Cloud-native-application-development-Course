@@ -1,31 +1,30 @@
 import os
+
 from src.adapters.memory.user_repository_adapter import InMemoryUserRepositoryAdapter
 from src.adapters.postgres.user_repository_adapter import PostgresUserRepositoryAdapter
-from src.domain.ports.user_repository_port import UserRepositoryPort
-from src.domain.use_cases.authenticate_user_use_case import AuthenticateUserUseCase
-from src.domain.use_cases.base_use_case import BaseUseCase
-from src.domain.use_cases.create_user_use_case import CreateUserUseCase
-from src.domain.use_cases.get_current_user_use_case import GetCurrentUserUseCase
-from src.domain.use_cases.get_users_count_use_case import GetUsersCountUseCase
-from src.domain.use_cases.reset_users_use_case import ResetUsersUseCase
-from src.domain.use_cases.update_user_use_case import UpdateUserUseCase
-
 from src.adapters.sqs.sqs_email_adapter import SQSMessageQueueAdapter
 from src.adapters.true_native_identity_verifier_adapter import (
     TrueNativeIdentityVerifierAdapter,
 )
 from src.domain.ports.identity_verifier_port import IdentityVerifierPort
 from src.domain.ports.message_queue_port import MessageQueuePort
+from src.domain.ports.user_repository_port import UserRepositoryPort
+from src.domain.use_cases.authenticate_user_use_case import AuthenticateUserUseCase
+from src.domain.use_cases.base_use_case import BaseUseCase
+from src.domain.use_cases.create_user_use_case import CreateUserUseCase
 from src.domain.use_cases.create_user_with_verification_use_case import (
     CreateUserWithVerificationUseCase,
 )
+from src.domain.use_cases.get_current_user_use_case import GetCurrentUserUseCase
+from src.domain.use_cases.get_users_count_use_case import GetUsersCountUseCase
 from src.domain.use_cases.identity_verifier_use_case import (
     IdentityVerifierUseCase,
 )
 from src.domain.use_cases.patch_user_use_case import PatchUserUseCase
+from src.domain.use_cases.reset_users_use_case import ResetUsersUseCase
 from src.domain.use_cases.send_user_email_use_case import SendUserEmailUseCase
 from src.domain.use_cases.update_user_status_use_case import UpdateUserStatusUseCase
-
+from src.domain.use_cases.update_user_use_case import UpdateUserUseCase
 
 # Shared in-memory repository instance for all user use cases
 # repository: UserRepositoryPort = InMemoryUserRepositoryAdapter()

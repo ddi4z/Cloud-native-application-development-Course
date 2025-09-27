@@ -1,6 +1,5 @@
-from requests.models import Response
-
 import requests
+from requests.models import Response
 
 from src.domain.models.user_verify_request import UserVerifyRequest
 from src.domain.ports.identity_verifier_port import IdentityVerifierPort

@@ -1,10 +1,12 @@
-import pytest
 from unittest.mock import MagicMock
+
+import pytest
+
+from src.domain.models.user_creation_request import UserCreationRequest
+from src.domain.models.user_verify_request import UserVerifyRequest
 from src.domain.use_cases.create_user_with_verification_use_case import (
     CreateUserWithVerificationUseCase,
 )
-from src.domain.models.user_creation_request import UserCreationRequest
-from src.domain.models.user_verify_request import UserVerifyRequest
 
 
 def make_fake_user():

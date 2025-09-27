@@ -2,8 +2,8 @@ from abc import ABC, abstractmethod
 from typing import Optional
 
 from src.domain.models.user import User
-from src.domain.models.user_creation_request import UserCreationRequest
 from src.domain.models.user_callback_request import UserCallbackRequest
+from src.domain.models.user_creation_request import UserCreationRequest
 
 
 class UserRepositoryPort(ABC):
