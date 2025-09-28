@@ -2,36 +2,45 @@
   
 ![Vista de componentes](./diagrams/components.png "Vista de componentes")
 
-Arquitectura por servicios con propiedad de datos por dominio y acoplamiento bajo, enfocada en cubrir funcionalidades esenciales de la segunda entrega.
+Arquitectura por servicios con propiedad de datos por dominio y acoplamiento bajo, con integración a un validador de usuarios y tarjetas externo, enfocada en cubrir funcionalidades esenciales de la tercera entrega.
+
 ## Descripción del sistema
 
 ### Actor (líneas punteadas)
-El **User** interactúa vía **API REST** exclusivamente con los **nuevos servicios**:
-- **RF-003 Crear Publicación** → `POST rf003/posts`
-- **RF-004 Crear Ofertas** → `POST 	/rf004/posts/{id}/offers`
-- **RF-005 Consultar Publicaciones** → `GET /rf005/posts/{id}`  
+El **User** interactúa vía **API REST** exclusivamente con los **nuevos servicios expuestos**:
+- **RF-003 Crear Publicación** → `POST /rf003/posts`
+- **RF-004 Crear Ofertas** → `POST /rf004/posts/{id}/offers`
+- **RF-005 Consultar Publicaciones** → `GET /rf005/posts/{id}`
+- **RF-006 Gestión de Tarjetas de Crédito** → `POST /credit-cards` (aunque tiene otros para otras acciones, como consultar tarjetas)
+- **RF-007 Verificación de Usuario** → vía callback recibido en `POST /users/native/verify`
 
 Autenticación por Bearer Token.  
-Los servicios de dominio se consumen de forma interna por los RF-003-005.
+Los servicios de dominio se consumen de forma interna por los RF-003–005 y también por los nuevos orquestadores RF-006–007.
 
 ### Servicios (cajas rosadas)
-- **Orquestadores/fachada:** `rf003_app`, `rf004_app`, `rf005_app` (exponen las APIs al usuario).  
-- **Servicios de dominio:** `users_app`, `routes_app`, `posts_app`, `offers_app` (APIs internas).  
+- **Orquestadores/fachada:** `rf003_app`, `rf004_app`, `rf005_app`, `credit_card_app` (exponen las APIs al usuario).  
+- **Servicios de dominio:** `users_app`, `routes_app`, `posts_app`, `offers_app`, `scores_app`.  
+- **Servicios de soporte:**  
+  - `polling_worker` (verificación asíncrona de tarjetas RF-006).  
+  - `email_service` (envío de correos tanto para tarjetas RF-006 como usuarios RF-007).  
+- **Servicios externos integrados:**  
+  - `TrueNative` (proveedor simulado de verificación de tarjetas y usuarios).  
 
-Todos son **desplegables de forma independiente** y se comunican entre sí vía **HTTP/JSON**  
-(sin acceso directo a datos ajenos).
+Todos son **desplegables de forma independiente** y se comunican entre sí vía **HTTP/JSON** o **colas SQS**.  
+No existe acceso directo a datos ajenos: cada dominio mantiene su encapsulamiento.
 
 ### Persistencia (cilindro azul)
-- **Una sola base de datos** **PostgreSQL en la nube** (en AWS).  
+- **Una sola base de datos PostgreSQL en la nube** (en AWS).  
 - Cada servicio **posee sus propias tablas** (y/o *schema* lógico) dentro de esa BD única:  
   - `users.*`  
   - `routes.*`  
   - `posts.*`  
-  - `offers.*`
-  - `credit-cards.*`  
+  - `offers.*`  
+  - `scores.*`  
+  - `credit_cards.*`  
 - **Sin llaves foráneas cruzadas** entre dominios; **no** se realizan *joins* entre tablas de servicios distintos.  
 - La **propiedad y acceso** a cada tabla es exclusivo del servicio correspondiente;  
-  el **intercambio entre dominios es vía APIs**.  
+  el **intercambio entre dominios es vía APIs o eventos en colas**.  
 - Consistencia garantizada por **transacciones** y reglas de negocio en cada servicio.
 
 ### Entorno (env)
@@ -39,8 +48,10 @@ Un mismo **stack/cluster** (ej: Kubernetes + Ingress) encapsula los procesos y h
 **escalado y despliegue independientes** por servicio.  
 
 Las conexiones a la BD en la nube se manejan mediante **secrets** y políticas de red/VPC.  
-Se propaga `X-Request-Id` para trazabilidad.
+Se propaga `X-Request-Id` para trazabilidad.  
 
+El **email_service** y el **polling_worker** se ejecutan como **funciones serverless** desacopladas del resto,  
+mientras que `TrueNative` se despliega como servicio externo accesible vía Ingress.
 ### Componente RF-003
 
 | Componente                  | RF-003                                                                 |
