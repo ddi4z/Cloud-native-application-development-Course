@@ -41,8 +41,22 @@ def _update_card_status_via_api(card_id: str, new_status: CreditCardStatus) -> N
         r.raise_for_status()
 
 def _publish_email(card_id: str, user_email: str, status: CreditCardStatus) -> None:
-    msg = {"card_id": card_id, "user_email": user_email, "verification_status": status.value}
-    sqs_client.send_message(QueueUrl=EMAIL_QUEUE_URL, MessageBody=json.dumps(msg))
+    # Construimos el correo en el formato que emails_app espera
+    subject = f"Estado de verificación de tu tarjeta: {status.value.title()}"
+    body = f"""
+    <h3>Resultado de la verificación</h3>
+    <p>Tu tarjeta (ID: <b>{card_id}</b>) quedó con estado: <b>{status.value}</b>.</p>
+    <p>Si no fuiste tú, por favor contáctanos.</p>
+    """
+    message = {
+        "to": user_email,   
+        "subject": subject,
+        "body": body     
+    }
+    sqs_client.send_message(
+        QueueUrl=EMAIL_QUEUE_URL,
+        MessageBody=json.dumps(message)
+    )
 
 def _calc_delay_seconds(retry_count: int) -> int:
     # backoff exponencial con techo
