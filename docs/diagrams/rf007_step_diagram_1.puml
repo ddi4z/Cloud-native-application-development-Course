@@ -1,0 +1,86 @@
+@startuml
+title RF-007 – Verificación de usuario (creación + callback del tercero)
+
+actor Client
+participant "users_app" as users
+participant "TrueNative\n(native_client)" as native
+database "platform_db\n(PostgreSQL)" as db
+queue "SQS\nemail-notify" as sqs_email
+participant "emails_app\n(Lambda)" as emails
+
+== Creación de usuario e inicio de verificación ==
+Client -> users : POST /users\n(datos + token)
+activate users
+
+users -> users : Validar campos requeridos
+alt [Missing fields]
+  users <-- users : HTTP 400 Bad Request
+  deactivate users
+  return
+end
+
+users -> users : Verificar token presente/válido
+alt [Token missing/invalid]
+  users <-- users : HTTP 401/403
+  deactivate users
+  return
+end
+
+users -> db : INSERT user(status=POR_VERIFICAR, createdAt)
+db --> users : ok
+
+users -> native : POST /native/user-verifications\n(solicitud asíncrona)
+alt [Error comunicando con TrueNative]
+  users <-- users : HTTP 503 Service Unavailable
+  deactivate users
+  return
+else [OK]
+  native --> users : ack (sin resultado)
+end
+
+users <-- users : HTTP 201 Created\n{userId, status=POR_VERIFICAR}
+deactivate users
+
+== Callback de TrueNative (asíncrono) ==
+native -> users : POST /users/native/verify\n{ruv, userIdentifier, score, ...}
+activate users
+
+users -> users : Validar SECRET_TOKEN del callback
+alt [Token secreto inválido/ausente]
+  users <-- users : HTTP 401 Unauthorized
+  deactivate users
+  return
+end
+
+users -> users : Validar payload (ruv/score)
+alt [Payload inválido]
+  users <-- users : HTTP 400 Bad Request
+  deactivate users
+  return
+end
+
+users -> db : UPDATE user\nstatus = (score>=60 ? VERIFICADO : NO_VERIFICADO), updatedAt=now
+db --> users : ok
+
+users -> sqs_email : SendMessage {userId, email, ruv, status, score}
+alt [Fallo al publicar en cola]
+  users <-- users : HTTP 503 Service Unavailable
+  deactivate users
+  return
+else
+  users <-- users : HTTP 200 OK
+end
+deactivate users
+
+== Notificación por correo ==
+emails -> sqs_email : ReceiveMessage
+activate emails
+emails -> emails : Construir correo (estado final + RUV + datos de usuario)
+emails --> Client : Email enviado (informativo)
+deactivate emails
+
+== Excepciones adicionales ==
+... ServiceCommunicationError hacia DB/cola ...
+users <-- users : HTTP 503 Service Unavailable
+
+@enduml
