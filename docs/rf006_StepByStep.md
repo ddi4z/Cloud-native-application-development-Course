@@ -1,8 +1,6 @@
 # RF-006 — Crear y Validar Tarjetas de crédito
 
-![RF006 - paso a paso](./diagrams/rf006_step_diagram_1.png "Step by step 1")
-
-![Rf006 - paso a paso](./diagrams/rf006_step_diagram_2.png "Step by step 2")
+![RF006 - paso a paso](./diagrams/rf006_step_diagram_1.png "Step by step")
 
 ## Secuencia resumida
 1. credit_card_app recibe datos de tarjeta (`cardNumber`, `cvv`, `expirationDate`, `cardHolderName`) junto con `token` del usuario.  

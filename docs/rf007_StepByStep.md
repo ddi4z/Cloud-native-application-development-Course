@@ -1,8 +1,6 @@
 # RF-007 — Consultar Publicaciones
 
-![RF007 - paso a paso](./diagrams/rf007_step_diagram_1.png "Step by step 1")
-
-![Rf007 - paso a paso](./diagrams/rf007_step_diagram_2.png "Step by step 2")
+![RF007 - paso a paso](./diagrams/rf007_step_diagram_1.png "Step by step")
 
 ## Secuencia resumida
 1. users_app crea al usuario con estado POR_VERIFICAR al registrarlo.
