@@ -70,9 +70,9 @@ Puede consultar la documentación completa haciendo uso de la siguiente tabla de
      * [Documentación patrón solución requerimiento 5](./rf005_Patterns.md).
      * [Explicación del proceso paso a paso de la solución requerimiento 5](./rf005_StepByStep.md).
    * Requerimiento RF-006
-     * [Documentación patrón solución requerimiento 5](./rf006_Patterns.md).
+     * [Documentación patrón solución requerimiento 6](./rf006_Patterns.md).
      * [Explicación del proceso paso a paso de la solución requerimiento 6](./rf006_StepByStep.md).
    * Requerimiento RF-007
-     * [Documentación patrón solución requerimiento 5](./rf007_Patterns.md).
+     * [Documentación patrón solución requerimiento 7](./rf007_Patterns.md).
      * [Explicación del proceso paso a paso de la solución requerimiento 7](./rf007_StepByStep.md).
      
