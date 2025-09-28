@@ -1,0 +1,7 @@
+| Requerimiento | RF-007 – Verificación de Usuario (callback) |
+|---|---|
+| Patrón utilizado | Integración por webhook (inversión de control), publicación de evento a cola de notificaciones (productor consumidor) |
+| Justificación | `users_app` crea usuarios con `POR_VERIFICAR` y expone el webhook `POST /users/native/verify`. TrueNative ejecuta la verificación y hace callback al webhook con el resultado; `users_app` actualiza el estado (`VERIFICADO/NO_VERIFICADO`) e informa asíncronamente mediante SQS para que `email_app (Lambda)` envíe el correo. Este patrón evita polling, reduce carga y mantiene a `users_app` como dueño del estado de verificación. |
+| Atributos de calidad favorecidos | Eficiencia (sin polling), Bajo acoplamiento, Trazabilidad/Observabilidad, Mantenibilidad, Seguridad (validación de SECRET_TOKEN en webhook) |
+| Atributos de calidad desfavorecidos | Dependencia en la entrega del callback del tercero, Manejo de idempotencia/reintentos en webhook, Complejidad de diagnóstico si el callback falla |
+| Componentes involucrados | Ingress (ingress), Users API + Webhook (users_app), TrueNative (native_app), SQS (email-notify), Email Service (email_service – AWS Lambda), PostgreSQL RDS (platform_db) |

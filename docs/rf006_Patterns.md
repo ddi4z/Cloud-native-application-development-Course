@@ -1,0 +1,7 @@
+| Requerimiento | RF-006 – Gestión y verificación de Tarjetas de Crédito |
+|---|---|
+| Patrón utilizado | **Orquestación asíncrona dirigida por eventos** con **poller** y colas SQS |
+| Justificación | La verificación tarda hasta ~30s y no debe bloquear la API. `credit_card_app` tokeniza con TrueNative y encola un job en SQS. Un polling_worker (Lambda) consume, hace **GET /native/cards/{ruv}**, reintenta con **backoff** si obtiene 202, y al finalizar actualiza el estado en `credit_card_app`, usando el endpoint para actualizar tarjetas y emite un evento al SQS de los emails, para que `emails_app (Lambda)` notifique por correo al usuario. Esto desacopla a la API del tiempo de verificación, mejora resiliencia y permite escalar cada paso de forma independiente. |
+| Atributos de calidad favorecidos | Escalabilidad independiente, Resiliencia ante fallos (reintentos/DLQ), Bajo acoplamiento, Trazabilidad/Observabilidad, Mantenibilidad, Seguridad (no almacenar CVV; uso de tokens/secretos) |
+| Atributos de calidad desfavorecidos | **Consistencia eventual** (estado llega con retraso), Complejidad operativa (colas/Lambdas), Latencia de fin-a-fin mayor, Coste adicional (SQS/SES) |
+| Componentes involucrados | Ingress (ingress), Credit Card API (credit_card_app), TrueNative (native_app), Poller (polling_worker – AWS Lambda), SQS (cc-verification-jobs), SQS (email-notify), Email Service (email_service – AWS Lambda), PostgreSQL RDS (platform_db) |
