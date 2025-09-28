@@ -1,110 +1,129 @@
 import os
 import json
-import time
 import httpx
 import boto3
 from enum import Enum
 
-# 1. CONFIGURACIÓN Y CLIENTES
+# Configuración y clientes
 CREDIT_CARD_APP_URL = os.getenv("CREDIT_CARD_APP_URL")
 TRUENATIVE_SERVICE_URL = os.getenv("TRUENATIVE_SERVICE_URL")
 TRUENATIVE_SECRET_TOKEN = os.getenv("TRUENATIVE_SECRET_TOKEN")
 EMAIL_QUEUE_URL = os.getenv("EMAIL_QUEUE_URL")
-AWS_ENDPOINT_URL = os.getenv("AWS_ENDPOINT_URL")
+POLLING_QUEUE_URL = os.getenv("POLLING_QUEUE_URL")  
+AWS_REGION = os.getenv("AWS_REGION", "us-east-1")
+AWS_ENDPOINT_URL = os.getenv("AWS_ENDPOINT_URL") 
 
-MAX_POLLING_RETRIES = int(os.getenv("MAX_POLLING_RETRIES", "5"))
-POLLING_DELAY_SECONDS = int(os.getenv("POLLING_DELAY_SECONDS", "5"))
+# Para reintentos / encolamiento con delay
+BASE_DELAY_SECONDS = int(os.getenv("BASE_DELAY_SECONDS", "5"))      # 1er reintento
+MAX_DELAY_SECONDS = int(os.getenv("MAX_DELAY_SECONDS", "15"))       # techo por mensaje
+MAX_RETRY_COUNT   = int(os.getenv("MAX_RETRY_COUNT", "5"))         # máximo reintentos
 
-if not all([CREDIT_CARD_APP_URL, TRUENATIVE_SERVICE_URL, TRUENATIVE_SECRET_TOKEN, EMAIL_QUEUE_URL]):
-    raise ValueError("Una o más variables de entorno críticas no están configuradas.")
-# Inicializa el cliente de SQS
-sqs_client = boto3.client('sqs', endpoint_url=AWS_ENDPOINT_URL)
+if not all([CREDIT_CARD_APP_URL, TRUENATIVE_SERVICE_URL, TRUENATIVE_SECRET_TOKEN, EMAIL_QUEUE_URL, POLLING_QUEUE_URL]):
+    raise ValueError("Variables de entorno incompletas para el poller.")
 
-# 2. ENUMS
+sqs_client = boto3.client("sqs", region_name=AWS_REGION, endpoint_url=AWS_ENDPOINT_URL)
+
 class CreditCardStatus(str, Enum):
-    """Enum para el estado de la tarjeta."""
     REJECTED = "RECHAZADA"
     APPROVED = "APROBADA"
 
-# 3. FUNCIONES AUXILIARES
-def update_card_status_via_api(card_id: str, new_status: CreditCardStatus):
-    """Actualiza el estado de la tarjeta llamando a la API de credit_card_app."""
-    base = CREDIT_CARD_APP_URL.rstrip("/") 
+# Funciones auxiliares
+def _httpx_client():
+    # Un único cliente por request 
+    return httpx.Client(timeout=10.0)
+
+def _update_card_status_via_api(card_id: str, new_status: CreditCardStatus) -> None:
+    base = CREDIT_CARD_APP_URL.rstrip("/")
     update_url = f"{base}/credit-cards/internal/cards/{card_id}/status"
     payload = {"status": new_status.value}
-    
-    try:
-        with httpx.Client() as client:
-            response = client.patch(update_url, json=payload, timeout=10.0)
-            response.raise_for_status() 
-            print(f"Tarjeta {card_id} actualizada al estado {new_status.value} via API.")
-            
-    except httpx.HTTPStatusError as e:
-        print(f"Error al actualizar estado vía API para tarjeta {card_id}: {e.response.status_code} - {e.response.text}")
-        raise
-    except httpx.RequestError as e:
-        print(f"Error de conexión al intentar actualizar estado para tarjeta {card_id}: {e}")
-        raise
+    with _httpx_client() as client:
+        r = client.patch(update_url, json=payload)
+        r.raise_for_status()
 
-def publish_notification_message(card_id: str, user_email: str, status: CreditCardStatus):
-    """Publica un mensaje en la cola de emails con el resultado final."""
-    message_body = {
-        "card_id": card_id,
-        "user_email": user_email,
-        "verification_status": status.value
-    }
+def _publish_email(card_id: str, user_email: str, status: CreditCardStatus) -> None:
+    msg = {"card_id": card_id, "user_email": user_email, "verification_status": status.value}
+    sqs_client.send_message(QueueUrl=EMAIL_QUEUE_URL, MessageBody=json.dumps(msg))
+
+def _calc_delay_seconds(retry_count: int) -> int:
+    # backoff exponencial con techo
+    delay = BASE_DELAY_SECONDS * (2 ** retry_count)
+    return min(delay, MAX_DELAY_SECONDS)
+
+def _requeue_for_later(body: dict) -> None:
+    retry_count = int(body.get("retryCount", 0)) + 1
+    body["retryCount"] = retry_count
+    if retry_count > MAX_RETRY_COUNT:
+        # Dejamos que el redrive policy/DLQ se encargue si también falla allí,
+        # reencolamos sin delay para que la política haga su trabajo.
+        sqs_client.send_message(QueueUrl=POLLING_QUEUE_URL, MessageBody=json.dumps(body))
+        return
+    delay = _calc_delay_seconds(retry_count)
     sqs_client.send_message(
-        QueueUrl=EMAIL_QUEUE_URL,
-        MessageBody=json.dumps(message_body)
+        QueueUrl=POLLING_QUEUE_URL,
+        MessageBody=json.dumps(body),
+        DelaySeconds=delay
     )
-    print(f"Mensaje de notificación para {user_email} enviado a la cola de emails.")
 
-# 4. HANDLER PRINCIPAL DE LAMBDA
+def _query_truenative_status(ruv: str) -> httpx.Response:
+    with _httpx_client() as client:
+        return client.get(
+            f"{TRUENATIVE_SERVICE_URL}/native/cards/{ruv}",
+            headers={"Authorization": f"Bearer {TRUENATIVE_SECRET_TOKEN}"}
+        )
+
+# Lambda function handler
 def lambda_handler(event, context):
     """
-    Función principal que se activa con SQS, realiza el polling y dispara la actualización vía API.
+    - Procesa un solo intento por mensaje.
+    - Si TrueNative responde 202: reencola con DelaySeconds y termina (sin sleep).
+    - Si 200: actualiza estado en credit_card_app y publica mensaje de email.
+    - Si error inesperado: lanzamos excepción para que SQS+Lambda reintenten / DLQ.
     """
-    for record in event.get('Records', []):
+    for record in event.get("Records", []):
+        body_raw = record.get("body", "{}")
         try:
-            message_body = json.loads(record.get('body', '{}'))
-            card_id = message_body.get('cardId')
-            ruv = message_body.get('ruv')
-            user_email = message_body.get('userEmail')
+            body = json.loads(body_raw)
+        except Exception:
+            print(f"Mensaje malformado: {body_raw}")
+            # Dejar que falle para que el mensaje vaya a reintento/DLQ
+            raise
 
-            if not all([card_id, ruv, user_email]):
-                print(f"Mensaje SQS malformado, saltando: {message_body}")
+        card_id    = body.get("cardId")
+        ruv        = body.get("ruv")
+        user_email = body.get("userEmail")
+        retry_cnt  = int(body.get("retryCount", 0))
+
+        if not all([card_id, ruv, user_email]):
+            print(f"Mensaje sin campos requeridos: {body}")
+            raise ValueError("Mensaje SQS malformado")
+
+        print(f"[Attempt {retry_cnt}] Consultando TrueNative para RUV={ruv} (card={card_id})")
+
+        try:
+            resp = _query_truenative_status(ruv)
+
+            if resp.status_code == 202:
+                # Aún en proceso: reencolar y finalizar ejecución.
+                print("TrueNative=202 (pendiente). Reencolando con backoff…")
+                _requeue_for_later(body)
                 continue
 
-            print(f"Iniciando polling para tarjeta {card_id} (RUV: {ruv})")
-            
-            final_status_str = "RECHAZADA"
-            for attempt in range(MAX_POLLING_RETRIES):
-                with httpx.Client() as client:
-                    response = client.get(
-                        f"{TRUENATIVE_SERVICE_URL}/native/cards/{ruv}",
-                        headers={"Authorization": f"Bearer {TRUENATIVE_SECRET_TOKEN}"},
-                        timeout=10.0
-                    )
-                
-                if response.status_code == 200:
-                    final_status_str = response.json().get("status", "RECHAZADA")
-                    print(f"Polling exitoso. Estado final de TrueNative: {final_status_str}")
-                    break
-                
-                if response.status_code != 202:
-                    print(f"TrueNative respondió con un error inesperado ({response.status_code}). Finalizando polling.")
-                    break
+            if resp.status_code == 200:
+                status_str = resp.json().get("status", "RECHAZADA")
+                final_status = CreditCardStatus.APPROVED if status_str == "APROBADA" else CreditCardStatus.REJECTED
 
-                print(f"Intento {attempt + 1}/{MAX_POLLING_RETRIES}: Verificación pendiente. Esperando {POLLING_DELAY_SECONDS}s...")
-                time.sleep(POLLING_DELAY_SECONDS)
-            
-            final_status = CreditCardStatus.APPROVED if final_status_str == "APROBADA" else CreditCardStatus.REJECTED
-            
-            update_card_status_via_api(card_id, final_status)
-            publish_notification_message(card_id, user_email, final_status)
+                # Actualiza en credit_card_app (endpoint interno) y envía email
+                _update_card_status_via_api(card_id, final_status)
+                _publish_email(card_id, user_email, final_status)
+                print(f"Estado final {final_status.value}: actualizado y notificado.")
+                continue
+
+            print(f"Respuesta inesperada de TrueNative: {resp.status_code} - {resp.text}")
+            raise RuntimeError(f"TrueNative error {resp.status_code}")
 
         except Exception as e:
-            print(f"ERROR: Fallo catastrófico procesando el mensaje. Error: {e}")
-            raise e
-            
-    return {'statusCode': 200, 'body': json.dumps('Procesamiento de mensajes completado.')}
+            # Lanzar excepción permite reintentos automáticos / DLQ
+            print(f"ERROR procesando mensaje {body}: {e}")
+            raise
+
+    return {"statusCode": 200, "body": json.dumps("OK")}
