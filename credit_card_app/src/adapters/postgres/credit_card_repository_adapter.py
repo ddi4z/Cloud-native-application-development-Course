@@ -20,50 +20,63 @@ class PostgresCreditCardRepositoryAdapter(CreditCardRepositoryPort):
     def _get_db(self) -> Session:
         return self.SessionLocal()
 
+    def _to_domain(self, db_card: CreditCardDB) -> CreditCard:
+        return CreditCard.model_validate(db_card, from_attributes=True)
+
     def save(self, card: CreditCard) -> CreditCard:
         db = self._get_db()
-        db_card = CreditCardDB(**card.model_dump())
-        db.add(db_card)
-        db.commit()
-        db.refresh(db_card)
-        db.close()
-        return CreditCard.model_from_db(db_card)
+        try:
+            db_card = CreditCardDB(**card.model_dump())
+            db.add(db_card)
+            db.commit()
+            db.refresh(db_card)
+            return self._to_domain(db_card)
+        finally:
+            db.close()
 
     def find_by_user_id(self, user_id: str) -> List[CreditCard]:
         db = self._get_db()
-        db_cards = db.query(CreditCardDB).filter(CreditCardDB.userId == user_id).all()
-        db.close()
-        return [CreditCard.model_validate(c) for c in db_cards]
+        try:
+            db_cards = db.query(CreditCardDB).filter(CreditCardDB.userId == user_id).all()
+            return [self._to_domain(c) for c in db_cards]
+        finally:
+            db.close()
 
-    def update_status(self, card_id: UUID, status: CreditCardStatus) -> Optional[CreditCard]:
+    def update_status(self, card_id: str, status: CreditCardStatus) -> Optional[CreditCard]:
         db = self._get_db()
-        db_card = db.query(CreditCardDB).filter(CreditCardDB.id == card_id).first()
-        if db_card:
+        try:
+            db_card = db.query(CreditCardDB).filter(CreditCardDB.id == str(card_id)).first()
+            if not db_card:
+                return None
             db_card.status = status
             db.commit()
             db.refresh(db_card)
+            return self._to_domain(db_card)
+        finally:
             db.close()
-            return CreditCard.model_validate(db_card)
-        db.close()
-        return None
 
     def find_by_last_four_digits(self, user_id: str, last_four: str) -> Optional[CreditCard]:
         db = self._get_db()
-        db_card = db.query(CreditCardDB).filter(
-            CreditCardDB.userId == user_id,
-            CreditCardDB.lastFourDigits == last_four
-        ).first()
-        db.close()
-        return CreditCard.from_orm(db_card) if db_card else None
+        try:
+            db_card = db.query(CreditCardDB).filter(
+                CreditCardDB.userId == user_id,
+                CreditCardDB.lastFourDigits == last_four
+            ).first()
+            return self._to_domain(db_card) if db_card else None
+        finally:
+            db.close()
 
     def count(self) -> int:
         db = self._get_db()
-        count = db.query(CreditCardDB).count()
-        db.close()
-        return count
+        try:
+            return db.query(CreditCardDB).count()
+        finally:
+            db.close()
 
     def reset(self) -> None:
         db = self._get_db()
-        db.query(CreditCardDB).delete()
-        db.commit()
-        db.close()
+        try:
+            db.query(CreditCardDB).delete()
+            db.commit()
+        finally:
+            db.close()
