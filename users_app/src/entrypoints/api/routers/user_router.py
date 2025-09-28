@@ -5,15 +5,10 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
 from src.assembly import (
     build_authenticate_user_use_case,
-    build_create_user_use_case,
     build_create_user_with_verification_use_case,
     build_get_current_user_use_case,
     build_get_users_count_use_case,
-    build_identity_verifier_use_case,
-    build_patch_user_use_case,
     build_reset_users_use_case,
-    build_send_user_email_message_use_case,
-    build_send_user_email_use_case,
     build_update_user_status_use_case,
     build_update_user_use_case,
 )
@@ -21,7 +16,6 @@ from src.domain.models.auth_request import AuthRequest
 from src.domain.models.user_callback_request import UserCallbackRequest
 from src.domain.models.user_creation_request import UserCreationRequest
 from src.domain.models.user_update_request import UserUpdateRequest
-from src.domain.models.user_verify_request import UserVerifyRequest
 from src.domain.use_cases.base_use_case import BaseUseCase
 from src.errors import (
     InvalidCredentialsError,
