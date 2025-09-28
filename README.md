@@ -47,6 +47,7 @@
 ├── users_app               # Api de usuarios
 ├── emails_app              # App para envío de correos de confirmación a usuarios
 ├── credit_card_app         # Api de creación y verificación de tarjetas de crédito del usuario
+├── credit_card_poller      # Poller para hacer revisiones asíncronas a TrueNative sobre estado de verificación
 ├── terraform               # Archivos para creación y despliegue de infraestructura
 ├── vale.ini                # Configuración para Vale. NO MODIFICAR
 ├── build-all.ps1           # Script automatizacón compilación apps
