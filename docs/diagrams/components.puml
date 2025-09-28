@@ -14,16 +14,17 @@ skinparam database {
   FontColor white
 }
 
-title "Vista Funcional Componentes (arquitectura actualizada + scores_app)"
+title "Vista Funcional Componentes"
 
 actor User
 
 frame "env" {
 
-  frame "APIs REST expuestas (RF-003..005)" {
+  frame "APIs REST expuestas (RF-003..005 + RF-006)" {
     component "rf003_app\n(Crear publicación)" as rf003_app
     component "rf004_app\n(Consultar post + ofertas)" as rf004_app
     component "rf005_app\n(Crear oferta)" as rf005_app
+    component "credit_card_app\n(Tarjetas de crédito RF-006)" as credit_app
   }
 
   frame "Servicios de dominio (APIs internas)" {
@@ -34,23 +35,26 @@ frame "env" {
     component "scores_app\n(Score de ofertas)" as scores_app
   }
 
+  frame "Soporte / Funciones" {
+    component "email_service\n(Envía correos para RF-006 y RF-007)" as email_service
+    component "polling_worker\n(Poller verificación tarjetas RF-006)" as polling_worker
+  }
+
   database "PostgreSQL (Cloud)\nplatform_db" as platform_db
 
   note right of platform_db
     Tablas por servicio:
-    - users.*
-    - routes.*
-    - posts.*
-    - offers.*
-    - scores.*
+    - users.*, routes.*, posts.*, offers.*, scores.*
+    - credit_cards.*   (RF-006)
     Sin FKs cruzadas ni joins entre dominios.
     Acceso a tablas solo por su servicio dueño.
   end note
 
-  ' Interacción del usuario: solo con los nuevos RF via API REST
+  ' Interacción del usuario (sin cambios previos) + RF-006
   User ..> rf003_app
   User ..> rf004_app
   User ..> rf005_app
+  User ..> credit_app
 
   ' Orquestación RF-003 (sin scores_app)
   rf003_app --> users_app
@@ -76,5 +80,28 @@ frame "env" {
   posts_app  --> platform_db
   offers_app --> platform_db
   scores_app --> platform_db
+  credit_app --> platform_db
+
+  ' === RF-006: flujo tarjetas ===
+  credit_app --> polling_worker : encola/verificación asíncrona
+  polling_worker --> credit_app : actualizar estado tarjeta
+  polling_worker --> email_service : notificación resultado
+
+  ' === RF-007: verificación de usuario (callback) ===
+  users_app --> email_service : notificación verificación usuario
+
 }
+
+' ====== Sistema externo (TrueNative) ======
+frame "externo" {
+  component "TrueNative\n(native_app)" as native_app
+}
+
+' RF-006 con TrueNative
+credit_app --> native_app : POST /native/cards (token + RUV)
+polling_worker --> native_app : GET /native/cards/{ruv} (polling)
+
+' RF-007 con TrueNative (callback hacia users_app)
+native_app --> users_app : POST /native/verify (callback)
+
 @enduml
