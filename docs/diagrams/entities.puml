@@ -51,14 +51,30 @@ entity "offers" as offers {
 }
 
 entity "scores" as scores {
-  offer_id: string
-  value: int
+  offer_id : string
+  value    : int
 }
 
 
-posts -- "1" users
-posts -- "1" routes
+entity "credit_card" as credit_card {
+  id             : string         
+  token          : string         
+  userId         : string         
+  lastFourDigits : string         
+  ruv            : string         
+  issuer         : string         
+  status         : string         
+  createdAt      : datetime
+  updatedAt      : datetime
+}
+
+' ---------------- Relationships ----------------
+posts  -- "1" users
+posts  -- "1" routes
 offers "*" -- "1" posts
 offers -- "1" scores
+
+' A user can have many credit cards (by userId)
+credit_card "*" -- "1" users
 
 @enduml
