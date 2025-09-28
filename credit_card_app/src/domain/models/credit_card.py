@@ -27,7 +27,7 @@ class CreditCard(BaseModel):
     """Modelo de dominio para CreditCard"""
 
     id: str = Field(description="Identificador en formato UUID")
-    token: str = Field(min_length=256, max_length=256, description="Token generado por la plataforma de pagos (256 chars)")
+    token: str = Field(min_length=1, max_length=256, description="Token generado por la plataforma de pagos (256 chars)")
     userId: str = Field(description="Usuario propietario de la tarjeta de crédito, en formato UUID")
     lastFourDigits: str = Field(description="Últimos cuatro dígitos de la tarjeta de crédito", min_length=4, max_length=4)
     ruv: str = Field(description="Registro único de verificación")
