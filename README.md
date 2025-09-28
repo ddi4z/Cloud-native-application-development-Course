@@ -43,7 +43,11 @@
 ├── offers_app              # Api de ofertas
 ├── posts_app               # Api de publicaciones
 ├── routes_app              # Api de rutas
+├── scores_app              # Api de puntajes
 ├── users_app               # Api de usuarios
+├── emails_app              # App para envío de correos de confirmación a usuarios
+├── credit_card_app         # Api de creación y verificación de tarjetas de crédito del usuario
+├── terraform               # Archivos para creación y despliegue de infraestructura
 ├── vale.ini                # Configuración para Vale. NO MODIFICAR
 ├── build-all.ps1           # Script automatizacón compilación apps
 ├── deploy.ps1              # Script automatización despliegue apps
@@ -60,16 +64,21 @@ Cada aplicación incluye un `Dockerfile` y un archivo `README.md` con sus instru
 - [offers_app](./offers_app/README.md)  
 - [posts_app](./posts_app/README.md)  
 - [routes_app](./routes_app/README.md)  
-- [users_app](./users_app/README.md)  
+- [users_app](./users_app/README.md)
+- [rf003_app](./rf003_app/README.md)
+- [rf004_app](./rf004_app/README.md)
+- [rf005_app](./rf005_app/README.md)
+- [credit_card_app](./credit_card_app/README.md)
+- [emails_app](./emails_app/README.md)
 
-## Ejecución en Minikube
+## Ejecución en Minikube / AWS
 
 Para desplegar las aplicaciones, siga estos pasos:
 ---
 
 ### 0) Prerrequisitos
 - AWS CLI configurado (`aws configure`), `kubectl`, `docker`, y (opcional) `eksctl`, `helm`.
-- Cuenta/rol con permisos para EKS, ECR, RDS, IAM.
+- Cuenta/rol con permisos para EKS, ECR, RDS, IAM. SQS y SES.
 - Variables que usarás durante los pasos:
 ```bash
 export AWS_REGION=<tu-region>          # ej: us-east-1
@@ -97,6 +106,40 @@ for repo in users_app routes_app posts_app offers_app scores_app rf003_app rf004
 done
 
 ```
+> Nota: Las funciones de soporte (poller, emails_app) corren en AWS Lambda, y no requieren repos separados salvo que se empaqueten como imágenes de contenedor en ECR. A continuación un apartado de cómo desplegar las funciones:
+```bash
+# crear colas SQS
+aws sqs create-queue --queue-name <nombre_cola> --region $AWS_REGION
+
+# Configurar SES
+aws ses verify-email-identity --email-address <tu-email> --region $AWS_REGION
+
+# Rol IAM para Lambdas
+aws iam create-role --role-name LambdaSQSExecutionRole \
+  --assume-role-policy-document file://trust-policy.json
+aws iam attach-role-policy --role-name LambdaSQSExecutionRole \
+  --policy-arn arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+aws iam attach-role-policy --role-name LambdaSQSExecutionRole \
+  --policy-arn arn:aws:iam::aws:policy/AmazonSQSFullAccess
+aws iam attach-role-policy --role-name LambdaSQSExecutionRole \
+  --policy-arn arn:aws:iam::aws:policy/AmazonSESFullAccess
+
+# Crear función
+zip function.zip main.py
+aws lambda create-function --function-name <nombre_funcion> \
+  --runtime python3.11 --zip-file fileb://function.zip \
+  --handler main.lambda_handler \
+  --role arn:aws:iam::$AWS_ACCOUNT_ID:role/LambdaSQSExecutionRole
+
+# Vincular con cola (SQS)
+aws lambda create-event-source-mapping --function-name <nombre_funcion> \
+  --batch-size 10 --event-source-arn <ARN <nombre_cola>>
+
+# Variables de entorno
+aws lambda update-function-configuration --function-name <nombre_funcion> \
+  --environment "Variables={NATIVE_URL=https://<native>/native,SECRET_TOKEN=<token>}"
+```
+
 
 ### 3) Construir y publicar imágenes en ECR
 ```bash
@@ -107,6 +150,7 @@ docker push $ECR/posts_app:1.0.0
 
 ```
 * Asegurarse de actualizar la imagen en los manifests de k8s al URI de ECR correspondiente (ej.: $ECR/posts_app:1.0.0).
+> Nota: El servicio de TrueNative debe agregarse al cluster. Para ello se debe ejecutar `docker pull ghcr.io/misw-4301-desarrollo-apps-en-la-nube/true-native:2.0.0` seguido de los comandos que se indicaron arriba.
 
 ### 4) Provisionar RDS PostgreSQL
 ```bash
@@ -124,27 +168,33 @@ helm upgrade --install ingress-nginx ingress-nginx/ingress-nginx \
 
 ```
 
+### 5) Crear colas y credenciales para soporte (RF-006/007)
+Amazon SQS:
+- Servicio de Polling
+- Servicio de emails
+Amazon SES: configurar dominio o emails verificados para envío
+AWS Secrets Manager/K8s Secrets: guardar SECRET_TOKEN de TrueNative y credenciales SES
 
-### 6) Aplicar manifiestos de K8s
+### 7) Aplicar manifiestos de K8s
 ```bash
 kubectl apply -n $NAMESPACE -f k8s/
 # Si tienes una carpeta específica para cloud:
 # kubectl apply -n $NAMESPACE -f k8s/cloud/
 ```
 
-### 7) Verificar despliegue
+### 8) Verificar despliegue
 ```bash
 kubectl get pods,svc,ingress -n $NAMESPACE
 ```
 
-### 8) Actualizar imágenes en despliegues (si cambia de versión)
+### 9) Actualizar imágenes en despliegues (si cambia de versión)
 ```bash
 kubectl -n $NAMESPACE set image deployment/posts-app posts-app-container=$ECR/posts_app:1.0.1
 # Repite por servicio; observa rolling update:
 kubectl rollout status deployment/posts-app -n $NAMESPACE
 
 ```
-### 9) Limpieza (Opcional)
+### 10) Limpieza (Opcional)
 ```bash
 kubectl delete ns $NAMESPACE
 eksctl delete cluster --name platform-cluster --region $AWS_REGION
