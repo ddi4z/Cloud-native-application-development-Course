@@ -51,12 +51,6 @@ def build_update_user_use_case() -> BaseUseCase:
     """Get update user use case."""
     return UpdateUserUseCase(user_repository)
 
-
-def build_update_user_use_case() -> BaseUseCase:
-    """Get update user use case."""
-    return UpdateUserUseCase(user_repository)
-
-
 def build_patch_user_use_case() -> BaseUseCase:
     """Get patch user use case."""
     return PatchUserUseCase(user_repository)
