@@ -1,8 +1,8 @@
 ## Vista de desarollo 
 
-Se opta por utilizar una estructura similar a las 4 aplicaciones, así como para los nuevos requerimientos (RF003 - RF005). Tomando como base la arquitectura hexagonal (puertos y adaptadores) se definen las carpetas `domain`, `adapters` y `entrypoints`. En la primera carpera se almacenaran las clases del dominio, los puertos y los casos de uso, mientras que en la segunda y tercera carpeta irán respectivamente los adaptadores (implementaciones de los puertos) y los puntos de entrada a la aplicación, la API REST. 
+Se opta por utilizar una estructura similar para todas las aplicaciones, así como para los nuevos requerimientos (RF006 - RF007). Tomando como base la arquitectura hexagonal (puertos y adaptadores) se definen las carpetas `domain`, `adapters` y `entrypoints`. En la primera carpera se almacenaran las clases del dominio, los puertos y los casos de uso, mientras que en la segunda y tercera carpeta irán respectivamente los adaptadores (implementaciones de los puertos) y los puntos de entrada a la aplicación, la API REST. 
 
-Cabe mencionar que para los nuevos requerimientos no se desarrollaron pruebas unitarias, con lo cual el directorio `rf_00X_app/tests`, en el gráfico abajo no existe.
+Cabe mencionar que para los requerimientos RF-003 - RF-007 no se desarrollaron pruebas unitarias, con lo cual el directorio `rf_00X_app/tests`, en el gráfico abajo no existe.
 
 ```
 .
@@ -27,8 +27,20 @@ Cabe mencionar que para los nuevos requerimientos no se desarrollaron pruebas un
 └── README.md               # Este archivo
 ```
 
+Las **funciones de soporte** (emails_app y polling_worker) son **lambdas** y usan un esqueleto mínimo orientado a eventos.
 
-### Tabla de tecnologias
+```
+.
+support/<support_app_name>/
+├── src/
+│ └── main.py # handler principal (lambda_handler / entrypoint)
+├── requirements.txt # dependencias de runtime
+└── README.md
+```
+
+---
+
+### Tabla de tecnologías
 
 | Tecnología                                           | Descripción                                                                                                               | Desarrollo, ejecución, pruebas o despliegue |
 | ---------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------- |
@@ -41,13 +53,16 @@ Cabe mencionar que para los nuevos requerimientos no se desarrollaron pruebas un
 | Docker                                               | Plataforma de contenedores para empaquetar y ejecutar las apps (`*_app`). Imágenes publicadas en ECR.                     | Ejecución, Despliegue                       |
 | Kubernetes                                           | Orquestación de contenedores (Pods, Services, Ingress, HPA) para cada servicio.                                           | Ejecución, Despliegue                       |
 | Amazon EKS                                           | Servicio administrado de Kubernetes en AWS donde corre el clúster.                                                        | Despliegue, Ejecución                       |
-| Ingress Controller (Nginx / AWS LB Controller + ALB) | Punto único de entrada HTTP(S) que enruta por host/path a `rf003`, `rf004`, `rf005`.                                      | Despliegue, Ejecución                       |
+| Ingress Controller (Nginx / AWS LB Controller + ALB) | Punto único de entrada HTTP(S) que enruta por host/path a `rf003`, `rf004`, `rf005`, `credit_card_app`, `users_app`.      | Despliegue, Ejecución                       |
 | Amazon ECR                                           | Registro de imágenes de contenedor desde donde los Pods hacen *pull*.                                                     | Despliegue                                  |
 | Amazon RDS for PostgreSQL                            | Base de datos única en la nube (`platform_db`) con tablas por dominio.                                                    | Ejecución, Despliegue                       |
-| AWS Secrets Manager / Kubernetes Secrets             | Gestión de credenciales (DB, tokens) usadas por los Pods/Services.                                                        | Despliegue, Ejecución                       |
-| AWS IAM / IRSA                                       | Permisos mínimos para Pods hacia servicios AWS (ECR/RDS/Secrets).                                                         | Despliegue                                  |
+| AWS Secrets Manager / Kubernetes Secrets             | Gestión de credenciales (DB, tokens, secretos para TrueNative) usadas por los Pods/Services.                             | Despliegue, Ejecución                       |
+| AWS IAM / IRSA                                       | Permisos mínimos para Pods hacia servicios AWS (ECR/RDS/Secrets, SQS, SES).                                               | Despliegue                                  |
 | Amazon CloudWatch / Prometheus + Grafana             | Observabilidad: logs, métricas y trazas distribuidas.                                                                     | Ejecución, Despliegue                       |
 | Minikube (opcional local)                            | Kubernetes local para desarrollo/pruebas rápidas antes de EKS.                                                            | Despliegue                                  |
 | GitHub Actions                                       | CI/CD en GitHub: linting, pruebas (pytest/Newman) y *workflows* de integración.                                           | Desarrollo, Pruebas, Despliegue             |
+| AWS Lambda                                           | Funciones serverless usadas para `polling_worker` (verificación tarjetas) y `email_service` (notificaciones).             | Ejecución, Despliegue                       |
+| Amazon SQS                                           | Sistema de colas para jobs de verificación de tarjetas y notificaciones de email.                                          | Ejecución, Despliegue                       |
+| Amazon SES / SMTP externo                            | Servicio de correo usado por `email_service` para notificar resultados de verificación de tarjetas y usuarios.             | Ejecución, Despliegue                       |
 
 
