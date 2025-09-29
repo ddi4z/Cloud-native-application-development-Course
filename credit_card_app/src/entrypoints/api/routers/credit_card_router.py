@@ -104,7 +104,7 @@ def update_card_status_by_poller(
     de una tarjeta después de la verificación.
     """
     try:
-        updated_card = use_case.execute(card_id=str(card_id), status=request.status)
+        updated_card = use_case.execute(card_id=card_id, status=request.status)
         if not updated_card:
              raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Tarjeta no encontrada.")
         return {"msg": f"Estado de la tarjeta {card_id} actualizado exitosamente."}
