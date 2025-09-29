@@ -1,5 +1,5 @@
-from asyncio.log import logger
 import os
+from asyncio.log import logger
 
 from src.adapters.memory.user_repository_adapter import InMemoryUserRepositoryAdapter
 from src.adapters.postgres.user_repository_adapter import PostgresUserRepositoryAdapter

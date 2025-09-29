@@ -17,7 +17,7 @@ SMTP_PORT = int(os.environ.get("SMTP_PORT", 587))
 def send_email(to_addr: str, subject: str, body: str):
     msg = EmailMessage()
     msg["From"] = SMTP_USER or "no-reply@example.com"
-    msg["To"] =  "isis_maia@yopmail.com" #to_addr
+    msg["To"] = to_addr
     msg["Subject"] = subject
     msg.set_content(body, subtype="html")
 

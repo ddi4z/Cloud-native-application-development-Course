@@ -27,6 +27,7 @@ def user_request():
         userWebhook="http://fake-webhook.com",
     )
 
+
 def test_verify_success(adapter, user_request):
     mock_response = MagicMock()
     mock_response.status_code = 201

@@ -1,4 +1,5 @@
 from unittest.mock import MagicMock
+
 import pytest
 
 from src.domain.models.user_creation_request import UserCreationRequest
@@ -14,8 +15,9 @@ def make_fake_user():
     user.fullName = "John Doe"
     user.dni = "123456789"
     user.email = "john@example.com"
-    user.phone = "+573001112233" 
+    user.phone = "+573001112233"
     return user
+
 
 def test_execute_calls_create_and_verify():
     fake_user = make_fake_user()

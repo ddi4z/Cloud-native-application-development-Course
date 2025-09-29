@@ -24,9 +24,7 @@ class SQSMessageQueueAdapter(MessageQueuePort):
         region = os.getenv("AWS_REGION", "us-east-1")
         # 3. Inicializa el cliente de boto3 de forma directa y limpia.
         self.sqs_client = boto3.client(
-            "sqs", 
-            region_name=region, 
-            endpoint_url=endpoint_url
+            "sqs", region_name=region, endpoint_url=endpoint_url
         )
         # 4. Obtiene la URL de la cola y falla de forma controlada si no existe.
         self.queue_url = os.getenv("EMAIL_URL")
@@ -43,7 +41,15 @@ class SQSMessageQueueAdapter(MessageQueuePort):
         response = self.sqs_client.send_message(
             QueueUrl=self.queue_url, MessageBody=json.dumps(message)
         )
-        print(f"Message sent to SQS: {message}, Response: {response}", flush=True, file=sys.stdout)
+        print(
+            f"Message sent to SQS: {message}, Response: {response}",
+            flush=True,
+            file=sys.stdout,
+        )
         if response.get("ResponseMetadata", {}).get("HTTPStatusCode") != 200:
-            print(f"Failed to send message to SQS: {response}", flush=True, file=sys.stdout)
+            print(
+                f"Failed to send message to SQS: {response}",
+                flush=True,
+                file=sys.stdout,
+            )
             raise IntegrationError("Failed to send message to SQS")
