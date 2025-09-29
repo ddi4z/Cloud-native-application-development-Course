@@ -9,5 +9,5 @@ class UserCallbackRequest(BaseModel):
     userIdentifier: str
     createdAt: datetime
     status: Literal["POR_VERIFICAR", "VERIFICADO", "NO_VERIFICADO"]
-    score: int
+    score: float
     verifyToken: str

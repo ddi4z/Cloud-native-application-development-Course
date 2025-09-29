@@ -1,3 +1,4 @@
+from asyncio.log import logger
 import os
 
 from src.adapters.memory.user_repository_adapter import InMemoryUserRepositoryAdapter

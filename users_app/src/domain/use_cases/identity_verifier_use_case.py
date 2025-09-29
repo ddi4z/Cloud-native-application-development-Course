@@ -1,3 +1,5 @@
+from asyncio.log import logger
+import sys
 from src.domain.models.user_verify_request import UserVerifyRequest
 from src.domain.ports.identity_verifier_port import IdentityVerifierPort
 from src.domain.use_cases.base_use_case import BaseUseCase
@@ -12,3 +14,4 @@ class IdentityVerifierUseCase(BaseUseCase):
     def execute(self, user: UserVerifyRequest) -> None:
         """Verify user identity."""
         return self.identity_verifier.verify(user)
+    

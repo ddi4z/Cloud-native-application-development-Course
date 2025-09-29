@@ -29,4 +29,4 @@ RUN chown -R appuser:appuser /app
 USER appuser
 
 EXPOSE 9000
-CMD ["uvicorn", "src.entrypoints.api.main:app", "--host", "0.0.0.0", "--port", "9000"]
+CMD ["uvicorn", "src.entrypoints.api.main:app", "--host", "0.0.0.0", "--port", "9000", "--log-level", "debug"]

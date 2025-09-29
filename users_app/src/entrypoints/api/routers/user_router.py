@@ -1,3 +1,4 @@
+import sys
 from fastapi import APIRouter, Depends, Response
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse, PlainTextResponse
@@ -42,6 +43,7 @@ def create_user(
     The username and email must be unique.
     Returns the created user with ID and createdAt timestamp.
     """
+    print(">>> Entrando a crear usuario", flush=True, file=sys.stdout)
     try:
         created_user = use_case.execute(user_dto)
         return {
@@ -100,7 +102,7 @@ def generate_token(
     except MissingUserInformationError:
         return Response(status_code=400)
     except UnauthorizedUserStatusError:
-        return Response(status_code=403)
+        return Response(status_code=401)
 
 
 # 4. Consultar información del usuario

@@ -1,3 +1,4 @@
+import sys
 from src.domain.models.user import User
 from src.domain.ports import message_queue_port
 from src.domain.use_cases.base_use_case import BaseUseCase

@@ -1,6 +1,7 @@
 import json
 import logging
 import os
+import sys
 
 import boto3
 
@@ -28,21 +29,21 @@ class SQSMessageQueueAdapter(MessageQueuePort):
             endpoint_url=endpoint_url
         )
         # 4. Obtiene la URL de la cola y falla de forma controlada si no existe.
-        self.queue_url = os.getenv("POLLING_QUEUE_URL")
+        self.queue_url = os.getenv("EMAIL_URL")
         if not self.queue_url:
-            raise ValueError("La variable de entorno POLLING_QUEUE_URL es obligatoria.")
+            raise ValueError("La variable de entorno EMAIL_URL es obligatoria.")
 
     def send_message(self, userDto: User) -> None:
         """Send a message to the SQS queue."""
         message = {
             "to": userDto.email,
             "subject": "Resultado de verificación de identidad",
-            "body": f"Hola {userDto.name}, tu estado final es {userDto.status}. RUV: {userDto.ruv}",
+            "body": f"Hola {userDto.fullName}, tu estado final es {userDto.status.value}.",
         }
         response = self.sqs_client.send_message(
             QueueUrl=self.queue_url, MessageBody=json.dumps(message)
         )
-        logging.info(f"Message sent to SQS: {message}, Response: {response}")
+        print(f"Message sent to SQS: {message}, Response: {response}", flush=True, file=sys.stdout)
         if response.get("ResponseMetadata", {}).get("HTTPStatusCode") != 200:
-            logging.error(f"Failed to send message to SQS: {response}")
+            print(f"Failed to send message to SQS: {response}", flush=True, file=sys.stdout)
             raise IntegrationError("Failed to send message to SQS")
