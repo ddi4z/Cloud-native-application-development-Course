@@ -27,9 +27,21 @@ spec:
           env:
             - name: DATABASE_URL
               value: postgresql://user:password@postgres-service:5432/main_db
+            - name: IDENTITY_VERIFIER_SERVICE_URL
+              value: "http://service-truenative"
+            - name: POLLING_QUEUE_URL
+              value: "http://host.minikube.internal:55586/000000000000/credit-card-verification-queue" # Usar host.minikube.internal para acceder a LocalStack desde el cluster
+            - name: AWS_ENDPOINT_URL
+              value: "http://host.minikube.internal:55586" # Usar host.minikube.internal para acceder a LocalStack desde el cluster
+            - name: AWS_ACCESS_KEY_ID
+              value: "test"
+            - name: AWS_SECRET_ACCESS_KEY
+              value: "test"
+            - name: AWS_REGION
+              value: "us-east-1"
           livenessProbe:
             httpGet:
-              path: /users/ping   # ← puse "/" delante
+              path: /users/ping
               port: 9000
             initialDelaySeconds: 5 
             periodSeconds: 30

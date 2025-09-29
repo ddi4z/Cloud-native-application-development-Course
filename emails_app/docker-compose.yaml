@@ -1,0 +1,20 @@
+version: "3.9"
+
+services:
+  email-consumer:
+    build: .
+    container_name: email-consumer
+    environment:
+      - AWS_ACCESS_KEY_ID=test
+      - AWS_SECRET_ACCESS_KEY=test
+      - AWS_DEFAULT_REGION=us-east-1
+
+      # Endpoints de LocalStack en el host
+      - CREDIT_CARD_QUEUE_URL=http://host.docker.internal:4566/000000000000/credit-card-verification-queue
+      - EMAIL_QUEUE_URL=http://host.docker.internal:4566/000000000000/email-notification-queue
+
+      # Config SMTP
+      - SMTP_USER=no-reply@example.com
+      - SMTP_PASS=supersecret
+      - SMTP_HOST=smtp.gmail.com
+      - SMTP_PORT=587

@@ -42,7 +42,7 @@ spec:
         - containerPort: 8000
         env:
         - name: DATABASE_URL
-          value: "postgresql://user:password@postgres-service:5432/credit_cards_db"
+          value: "postgresql://user:password@postgres-service:5432/main_db"
         - name: USERS_SERVICE_URL
           value: "http://users-app-service"
         - name: POLLING_QUEUE_URL

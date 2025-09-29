@@ -32,24 +32,10 @@ spec:
               memory: "512Mi"
 
 ---
-apiVersion: cloud.google.com/v1
-kind: BackendConfig
-metadata:
-  name: truenative-config
-spec:
-  healthCheck:
-    checkIntervalSec: 30
-    port: 3000
-    type: HTTP
-    requestPath: /native/ping
-
----
-kind: Service
 apiVersion: v1
+kind: Service
 metadata:
   name: service-truenative
-  annotations:
-    cloud.google.com/backend-config: '{"default": "truenative-config"}'
 spec:
   type: NodePort
   selector:
