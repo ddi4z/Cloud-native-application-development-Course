@@ -135,7 +135,7 @@ def test_patch_success(memory_repo):
     os.environ["SECRET_TOKEN"] = "secret"
     secret_token = os.getenv("SECRET_TOKEN")
     ruv = "RUV123"
-    score = 90
+    score = 90.0
     token_str = f"{secret_token}:{ruv}:{score}"
     verify_token = hashlib.sha256(token_str.encode()).hexdigest()
 

@@ -1,5 +1,4 @@
 from unittest.mock import MagicMock
-
 import pytest
 
 from src.domain.models.user_creation_request import UserCreationRequest
@@ -15,8 +14,8 @@ def make_fake_user():
     user.fullName = "John Doe"
     user.dni = "123456789"
     user.email = "john@example.com"
+    user.phone = "+573001112233" 
     return user
-
 
 def test_execute_calls_create_and_verify():
     fake_user = make_fake_user()
@@ -34,9 +33,14 @@ def test_execute_calls_create_and_verify():
     args, _ = verify_uc.execute.call_args
     verify_request = args[0]
     assert isinstance(verify_request, UserVerifyRequest)
-    assert verify_request.fullName == fake_user.fullName
-    assert verify_request.dni == fake_user.dni
-    assert verify_request.email == fake_user.email
+
+    assert verify_request.user.fullName == fake_user.fullName
+    assert verify_request.user.dni == fake_user.dni
+    assert verify_request.user.email == fake_user.email
+
+    assert isinstance(verify_request.transactionIdentifier, str)
+    assert isinstance(verify_request.userIdentifier, str)
+    assert isinstance(verify_request.userWebhook, str)
     assert result == fake_user
 
 

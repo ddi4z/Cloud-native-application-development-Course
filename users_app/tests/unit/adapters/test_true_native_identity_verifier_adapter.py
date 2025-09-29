@@ -5,7 +5,7 @@ import pytest
 from src.adapters.true_native_identity_verifier_adapter import (
     TrueNativeIdentityVerifierAdapter,
 )
-from src.domain.models.user_verify_request import UserVerifyRequest
+from src.domain.models.user_verify_request import UserData, UserVerifyRequest
 
 
 @pytest.fixture
@@ -16,12 +16,16 @@ def adapter():
 @pytest.fixture
 def user_request():
     return UserVerifyRequest(
-        email="test@example.com",
-        dni="123456789",
-        fullName="John Doe",
-        phone="+573001112233",
+        user=UserData(
+            email="test@example.com",
+            dni="123456789",
+            fullName="John Doe",
+            phone="+573001112233",
+        ),
+        transactionIdentifier="tx-123",
+        userIdentifier="user-456",
+        userWebhook="http://fake-webhook.com",
     )
-
 
 def test_verify_success(adapter, user_request):
     mock_response = MagicMock()
@@ -37,7 +41,10 @@ def test_verify_success(adapter, user_request):
     mock_post.assert_called_once_with(
         "http://fake-service.com",
         json=user_request.model_dump(),
-        headers={"Content-Type": "application/json"},
+        headers={
+            "Content-Type": "application/json",
+            "Authorization": "Bearer secret",
+        },
         timeout=10,
     )
     assert result == {"status": "VERIFIED"}

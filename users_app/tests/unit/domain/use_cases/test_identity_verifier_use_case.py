@@ -2,16 +2,21 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from src.domain.models.user_verify_request import UserVerifyRequest
+from src.domain.models.user_verify_request import UserData, UserVerifyRequest
 from src.domain.use_cases.identity_verifier_use_case import IdentityVerifierUseCase
 
 
 def make_fake_request() -> UserVerifyRequest:
     return UserVerifyRequest(
-        email="john@example.com",
-        dni="123456789",
-        fullName="John Doe",
-        phone="1234567890",
+        user=UserData(
+            email="john@example.com",
+            dni="123456789",
+            fullName="John Doe",
+            phone="1234567890",
+        ),
+        transactionIdentifier="tx-999",
+        userIdentifier="user-999",
+        userWebhook="http://fake-webhook.com",
     )
 
 
