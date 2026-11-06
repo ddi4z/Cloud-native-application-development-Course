@@ -4,20 +4,20 @@
 
 ### Entrega 1 
 
-[![Evaluador Implementación Entrega 1](https://github.com/MISW-4301-Desarrollo-Apps-en-la-Nube/s202514-proyecto-grupo19/actions/workflows/ci_evaluador_entrega1_k8s.yml/badge.svg)](https://github.com/MISW-4301-Desarrollo-Apps-en-la-Nube/s202514-proyecto-grupo19/actions/workflows/ci_evaluador_entrega1_k8s.yml)
+[![Evaluador Implementación Entrega 1](https://github.com/ddi4z/Cloud-native-application-development-Course/actions/workflows/ci_evaluador_entrega1_k8s.yml/badge.svg)](https://github.com/ddi4z/Cloud-native-application-development-Course/actions/workflows/ci_evaluador_entrega1_k8s.yml)
 
-[![Evaluador Documentación Entrega 1](https://github.com/MISW-4301-Desarrollo-Apps-en-la-Nube/s202514-proyecto-grupo19/actions/workflows/ci_evaluador_entrega1_docs.yml/badge.svg)](https://github.com/MISW-4301-Desarrollo-Apps-en-la-Nube/s202514-proyecto-grupo19/actions/workflows/ci_evaluador_entrega1_docs.yml)
+[![Evaluador Documentación Entrega 1](https://github.com/ddi4z/Cloud-native-application-development-Course/actions/workflows/ci_evaluador_entrega1_docs.yml/badge.svg)](https://github.com/ddi4z/Cloud-native-application-development-Course/actions/workflows/ci_evaluador_entrega1_docs.yml)
 
-[![Evaluador Pruebas Unitarias](https://github.com/MISW-4301-Desarrollo-Apps-en-la-Nube/s202514-proyecto-grupo19/actions/workflows/ci_evaluador_unit.yml/badge.svg)](https://github.com/MISW-4301-Desarrollo-Apps-en-la-Nube/s202514-proyecto-grupo19/actions/workflows/ci_evaluador_unit.yml)
+[![Evaluador Pruebas Unitarias](https://github.com/ddi4z/Cloud-native-application-development-Course/actions/workflows/ci_evaluador_unit.yml/badge.svg)](https://github.com/ddi4z/Cloud-native-application-development-Course/actions/workflows/ci_evaluador_unit.yml)
 
 ### Entrega 2
 
-[![Evaluador Implementación Entrega 2](https://github.com/MISW-4301-Desarrollo-Apps-en-la-Nube/s202514-proyecto-grupo19/actions/workflows/ci_evaluador_entrega2.yml/badge.svg)](https://github.com/MISW-4301-Desarrollo-Apps-en-la-Nube/s202514-proyecto-grupo19/actions/workflows/ci_evaluador_entrega2.yml)
+[![Evaluador Implementación Entrega 2](https://github.com/ddi4z/Cloud-native-application-development-Course/actions/workflows/ci_evaluador_entrega2.yml/badge.svg)](https://github.com/ddi4z/Cloud-native-application-development-Course/actions/workflows/ci_evaluador_entrega2.yml)
 
 ### Entrega 3
-[![Evaluador Implementación Entrega 3](https://github.com/MISW-4301-Desarrollo-Apps-en-la-Nube/s202514-proyecto-grupo19/actions/workflows/ci_evaluador_entrega3.yml/badge.svg)](https://github.com/MISW-4301-Desarrollo-Apps-en-la-Nube/s202514-proyecto-grupo19/actions/workflows/ci_evaluador_entrega3.yml)
+[![Evaluador Implementación Entrega 3](https://github.com/ddi4z/Cloud-native-application-development-Course/actions/workflows/ci_evaluador_entrega3.yml/badge.svg)](https://github.com/ddi4z/Cloud-native-application-development-Course/actions/workflows/ci_evaluador_entrega3.yml)
 
-[![Evaluador Implementación Entrega 3 con Email](https://github.com/MISW-4301-Desarrollo-Apps-en-la-Nube/s202514-proyecto-grupo19/actions/workflows/ci_evaluador_entrega3_email.yml/badge.svg)](https://github.com/MISW-4301-Desarrollo-Apps-en-la-Nube/s202514-proyecto-grupo19/actions/workflows/ci_evaluador_entrega3_email.yml)
+[![Evaluador Implementación Entrega 3 con Email](https://github.com/ddi4z/Cloud-native-application-development-Course/actions/workflows/ci_evaluador_entrega3_email.yml/badge.svg)](https://github.com/ddi4z/Cloud-native-application-development-Course/actions/workflows/ci_evaluador_entrega3_email.yml)
 
 ---
 
@@ -201,4 +201,3 @@ kubectl delete ns $NAMESPACE
 eksctl delete cluster --name platform-cluster --region $AWS_REGION
 
 ```
-
